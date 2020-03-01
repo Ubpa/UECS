@@ -1,0 +1,3 @@
+[submodule "external/UTemplate"]
+	path = external/UTemplate
+	url = https://github.com/Ubpa/UTemplate
