@@ -8,6 +8,7 @@ namespace Ubpa {
 	struct EntityData : std::tuple<Archetype*, size_t> {
 		EntityData(Archetype* archetype, size_t idx)
 			: std::tuple<Archetype*, size_t>{ archetype,idx } {}
+
 		inline Archetype*& archetype() noexcept { return std::get<0>(*this); }
 		inline const Archetype* archetype() const noexcept { return std::get<0>(*this); }
 
