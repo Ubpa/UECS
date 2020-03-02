@@ -7,7 +7,8 @@ using namespace std;
 
 const tuple<size_t, vector<size_t>> Chunk::CO(const vector<size_t>& sizes) noexcept {
 	size_t N = sizes.size();
-	assert(N > 0);
+	if (N == 0)
+		return { Chunk::size,vector<size_t>(1,1) };
 
 	size_t sumSize = 0;
 	for (auto s : sizes) {

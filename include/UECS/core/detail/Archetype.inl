@@ -2,7 +2,7 @@
 
 namespace Ubpa {
 	template<typename... Cmpts>
-	Archetype::Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept : mngr(mngr) {
+	Archetype::Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept : mngr(mngr), id(TypeList<Cmpts...>{}) {
 		using CmptList = TypeList<Cmpts...>;
 
 		constexpr size_t N = sizeof...(Cmpts);
@@ -10,7 +10,6 @@ namespace Ubpa {
 		constexpr auto info = Chunk::StaticInfo<Cmpts...>();
 		chunkCapacity = info.capacity;
 		((h2so[TypeID<Cmpts>] = std::make_tuple(info.sizes[Find_v<CmptList, Cmpts>], info.offsets[Find_v<CmptList, Cmpts>])), ...);
-		id.Add<Cmpts...>();
 	}
 
 	template<typename Cmpt>

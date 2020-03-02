@@ -1,5 +1,12 @@
 #pragma once
 
+namespace Ubpa {
+	template<typename... Cmpts>
+	Entity* World::CreateEntity() {
+		return reinterpret_cast<Entity*>(mngr->CreateEntity<Cmpts...>());
+	}
+}
+
 namespace Ubpa::detail::World_ {
 	template<typename... Cmpts>
 	struct Each<TypeList<Cmpts * ...>> {
@@ -7,7 +14,7 @@ namespace Ubpa::detail::World_ {
 		using CmptList = TypeList<Cmpts...>;
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archetype : w->mngr->LocateArchetypeWith<Cmpts...>()) {
+			for (auto archetype : w->mngr->GetArchetypeWith<Cmpts...>()) {
 				auto cmptsVecTuple = archetype->Locate<Cmpts...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
@@ -23,11 +30,4 @@ namespace Ubpa::detail::World_ {
 			}
 		}
 	};
-}
-
-namespace Ubpa {
-	template<typename... Cmpts>
-	Entity* World::CreateEntityWith() {
-		return reinterpret_cast<Entity*>(mngr->CreateEntity<Cmpts...>());
-	}
 }

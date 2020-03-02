@@ -24,8 +24,9 @@ namespace Ubpa {
 			std::array<size_t, N> offsets;
 		};
 
+		// return Info<max(1,sizeof...(Cmpts))>
 		template<typename... Cmpts>
-		static constexpr Info<sizeof...(Cmpts)> StaticInfo() noexcept;
+		static constexpr auto StaticInfo() noexcept;
 
 		// capacity, offsets
 		static const std::tuple<size_t, std::vector<size_t>> CO(const std::vector<size_t>& sizes) noexcept;

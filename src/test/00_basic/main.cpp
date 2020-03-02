@@ -21,20 +21,20 @@ int main() {
 	set<Entity*> entities;
 
 	for (size_t i = 0; i < 10; i++) {
-		auto entity = w.CreateEntityWith<velocity, position>();
+		auto entity = w.CreateEntity<velocity, position>();
 		entities.insert(entity);
 		entity->Get<velocity>()->v = static_cast<float>(i);
 	}
 
 	for (size_t i = 0; i < 5; i++) {
-		auto entity = w.CreateEntityWith<position>();
+		auto entity = w.CreateEntity<position>();
 		entity->Attach<velocity>();
 		entities.insert(entity);
 		entity->Get<velocity>()->v = 10 + static_cast<float>(i);
 	}
 
 	for (size_t i = 0; i < 5; i++) {
-		auto entity = w.CreateEntityWith<position>();
+		auto entity = w.CreateEntity<position>();
 		entities.insert(entity);
 	}
 	

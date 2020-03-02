@@ -40,6 +40,8 @@ namespace Ubpa {
 
 			bool operator<(const ID& id) const noexcept;
 			bool operator==(const ID& id) const noexcept;
+
+			friend class Archetype;
 		};
 
 		Archetype() = default;
@@ -47,7 +49,6 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
 
-		
 		template<typename Cmpt>
 		struct Add {
 			static Archetype* From(Archetype* srcArchetype) noexcept;
@@ -95,6 +96,7 @@ namespace Ubpa {
 		inline size_t ChunkCapacity() const noexcept { return chunkCapacity; }
 		inline const ID& GetID() const noexcept { return id; }
 		inline ArchetypeMngr* GetArchetypeMngr() const noexcept { return mngr; }
+		inline size_t CmptNum() const noexcept { return id.size(); }
 
 		template<typename... Cmpts>
 		inline bool IsContain() const noexcept {
@@ -114,6 +116,7 @@ namespace Ubpa {
 
 	private:
 		friend class Entity;
+		friend class ArchetypeMngr;
 
 		ArchetypeMngr* mngr;
 		ID id;
