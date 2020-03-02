@@ -28,7 +28,7 @@ int main() {
 
 	for (size_t i = 0; i < 5; i++) {
 		auto entity = w.CreateEntityWith<position>();
-		entity->Add<velocity>();
+		entity->Attach<velocity>();
 		entities.insert(entity);
 		entity->Get<velocity>()->v = 10 + static_cast<float>(i);
 	}
@@ -37,7 +37,7 @@ int main() {
 		auto entity = w.CreateEntityWith<position>();
 		entities.insert(entity);
 	}
-	 
+	
 	for (auto e : entities)
 		cout << e->Get<position>()->x << endl;
 
@@ -52,4 +52,11 @@ int main() {
 
 	for (auto e : entities)
 		cout << e->Get<position>()->x << endl;
+
+	for (auto e : entities) {
+		if (e->Get<velocity>()) {
+			e->Detach<velocity>();
+			e->Attach<velocity>();
+		}
+	}
 }

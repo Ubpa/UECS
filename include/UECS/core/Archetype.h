@@ -22,6 +22,8 @@ namespace Ubpa {
 
 			template<typename... Cmpts>
 			void Add() noexcept { (insert(TypeID<Cmpts>),...); }
+			template<typename... Cmpts>
+			void Remove() noexcept { (erase(TypeID<Cmpts>), ...); }
 
 			template<typename... Cmpts>
 			bool IsContain() const noexcept {
@@ -40,12 +42,22 @@ namespace Ubpa {
 			bool operator==(const ID& id) const noexcept;
 		};
 
+		Archetype() = default;
 		// argument is for type deduction
 		template<typename... Cmpts>
 		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
 
+		
 		template<typename Cmpt>
-		Archetype(Archetype* srcArchetype, IType<Cmpt>) noexcept;
+		struct Add {
+			static Archetype* From(Archetype* srcArchetype) noexcept;
+		};
+		template<typename Cmpt>
+		struct Remove {
+			static Archetype* From(Archetype* srcArchetype) noexcept;
+		};
+		template<typename Cmpt>
+		friend struct Add;
 
 		inline ~Archetype(){
 			for (auto c : chunks)
@@ -64,7 +76,7 @@ namespace Ubpa {
 
 		// no init
 		inline size_t CreateEntity() {
-			if (num % chunkCapacity == 0)
+			if (num == chunks.size() * chunkCapacity)
 				chunks.push_back(new Chunk);
 			return num++;
 		}

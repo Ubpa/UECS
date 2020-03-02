@@ -39,7 +39,7 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt, typename... Args>
-	Cmpt* ArchetypeMngr::EntityAdd(EntityData* e, Args&&... args) {
+	Cmpt* ArchetypeMngr::EntityAttach(EntityData* e, Args&&... args) {
 		Archetype* srcArchetype = e->archetype();
 		size_t srcIdx = e->idx();
 
@@ -50,7 +50,7 @@ namespace Ubpa {
 		Archetype* dstArchetype;
 		auto target = id2a.find(dstID);
 		if (target == id2a.end()) {
-			dstArchetype = new Archetype(srcArchetype, IType<Cmpt>{});
+			dstArchetype = Archetype::Add<Cmpt>::From(srcArchetype);
 			assert(dstID == dstArchetype->GetID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
@@ -83,5 +83,49 @@ namespace Ubpa {
 		e->idx() = dstIdx;
 
 		return cmpt;
+	}
+
+	template<typename Cmpt>
+	void ArchetypeMngr::EntityDetach(EntityData* e) {
+		Archetype* srcArchetype = e->archetype();
+		size_t srcIdx = e->idx();
+
+		auto& srcID = srcArchetype->GetID();
+		auto dstID = srcID;
+		dstID.Remove<Cmpt>();
+
+		Archetype* dstArchetype;
+		auto target = id2a.find(dstID);
+		if (target == id2a.end()) {
+			dstArchetype = Archetype::Remove<Cmpt>::From(srcArchetype);
+			assert(dstID == dstArchetype->GetID());
+			id2a[dstID] = dstArchetype;
+			ids.insert(dstID);
+		}
+		else
+			dstArchetype = target->second;
+
+		size_t dstIdx = dstArchetype->CreateEntity();
+		for (auto cmptHash : dstID) {
+			auto srcCmpt = srcArchetype->At(cmptHash, srcIdx);
+			auto dstCmpt = dstArchetype->At(cmptHash, dstIdx);
+			size_t size = std::get<1>(srcCmpt);
+			assert(size == std::get<1>(dstCmpt));
+			memcpy(std::get<0>(dstCmpt), std::get<0>(srcCmpt), size);
+		}
+
+		size_t srcMovedIdx = srcArchetype->Erase(srcIdx);
+		if (srcMovedIdx != static_cast<size_t>(-1)) {
+			auto srcMovedEntityTarget = d2p.find({ srcArchetype, srcMovedIdx });
+			auto srcMovedEntity = srcMovedEntityTarget->second;
+			d2p.erase(srcMovedEntityTarget);
+			d2p[{srcArchetype, srcIdx}] = srcMovedEntity;
+			srcMovedEntity->idx() = srcMovedIdx;
+		}
+
+		d2p[{dstArchetype, dstIdx}] = e;
+
+		e->archetype() = dstArchetype;
+		e->idx() = dstIdx;
 	}
 }

@@ -14,14 +14,15 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt>
-	Archetype::Archetype(Archetype* srcArchetype, IType<Cmpt>) noexcept {
-		ArchetypeMngr* mngr = srcArchetype->mngr;
+	Archetype* Archetype::Add<Cmpt>::From(Archetype* srcArchetype) noexcept {
+		Archetype* rst = new Archetype;
+		rst->mngr = srcArchetype->mngr;
 
-		id = srcArchetype->id;
-		id.Add<Cmpt>();
+		rst->id = srcArchetype->id;
+		rst->id.Add<Cmpt>();
 
 		std::map<size_t, size_t> s2h; // size to hash
-		for (auto h : id) {
+		for (auto h : rst->id) {
 			if (h == TypeID<Cmpt>)
 				s2h[sizeof(Cmpt)] = h;
 			else
@@ -31,12 +32,41 @@ namespace Ubpa {
 		for (auto p : s2h)
 			sizes.push_back(p.first); // sorted
 		auto co = Chunk::CO(sizes);
-		chunkCapacity = std::get<0>(co);
+		rst->chunkCapacity = std::get<0>(co);
 		size_t i = 0;
-		for (auto h : id) {
-			h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
+		for (auto h : rst->id) {
+			rst->h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
 			i++;
 		}
+
+		return rst;
+	}
+
+	template<typename Cmpt>
+	Archetype* Archetype::Remove<Cmpt>::From(Archetype* srcArchetype) noexcept {
+		assert(srcArchetype->id.IsContain<Cmpt>());
+
+		Archetype* rst = new Archetype;
+		rst->mngr = srcArchetype->mngr;
+
+		rst->id = srcArchetype->id;
+		rst->id.Remove<Cmpt>();
+
+		std::map<size_t, size_t> s2h; // size to hash
+		for (auto h : rst->id)
+			s2h[std::get<0>(srcArchetype->h2so[h])] = h;
+		std::vector<size_t> sizes;
+		for (auto p : s2h)
+			sizes.push_back(p.first); // sorted
+		auto co = Chunk::CO(sizes);
+		rst->chunkCapacity = std::get<0>(co);
+		size_t i = 0;
+		for (auto h : rst->id) {
+			rst->h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
+			i++;
+		}
+
+		return rst;
 	}
 
 	template<typename Cmpt>

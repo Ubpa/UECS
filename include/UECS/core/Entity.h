@@ -20,9 +20,15 @@ namespace Ubpa {
 		}
 
 		template<typename Cmpt, typename... Args>
-		inline Cmpt* Add(Args&&... args) {
+		inline Cmpt* Attach(Args&&... args) {
 			assert(IsAlive());
-			return archetype()->mngr->EntityAdd<Cmpt>(this, std::forward<Args>(args)...);
+			return archetype()->mngr->EntityAttach<Cmpt>(this, std::forward<Args>(args)...);
+		}
+
+		template<typename Cmpt>
+		inline void Detach() {
+			assert(IsAlive());
+			return archetype()->mngr->EntityDetach<Cmpt>(this);
 		}
 
 		inline bool IsAlive() const noexcept { return archetype() != nullptr; }
