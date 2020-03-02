@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UECS/core/ArchetypeMngr.h>
+#include <UECS/ArchetypeMngr.h>
 
 using namespace Ubpa;
 

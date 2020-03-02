@@ -1,3 +1,3 @@
-#include <UECS/core/World.h>
+#include <UECS/World.h>
 
 using namespace Ubpa;

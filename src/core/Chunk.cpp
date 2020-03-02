@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UECS/core/Chunk.h>
+#include <UECS/Chunk.h>
 
 using namespace Ubpa;
 using namespace std;
