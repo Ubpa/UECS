@@ -5,7 +5,7 @@
 namespace Ubpa {
 	class World;
 
-	class Entity : private EntityData {
+	class Entity final : private EntityData {
 	public:
 		template<typename Cmpt, typename... Args>
 		inline void Init(Args... args) {

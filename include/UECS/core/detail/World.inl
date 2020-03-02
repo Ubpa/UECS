@@ -46,6 +46,7 @@ namespace Ubpa::detail::World_ {
 
 				size_t coreNum = std::thread::hardware_concurrency();
 				assert(coreNum > 0);
+
 				auto job = [=](size_t ID) {
 					for (size_t i = ID; i < chunkNum; i += coreNum) {
 						auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[i]...);
@@ -54,6 +55,7 @@ namespace Ubpa::detail::World_ {
 							s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
 					}
 				};
+
 				std::vector<std::thread> workers;
 				for (size_t i = 0; i < coreNum; i++)
 					workers.emplace_back(job, i);

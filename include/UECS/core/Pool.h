@@ -5,6 +5,7 @@
 #include <array>
 #include <unordered_set>
 
+// no release
 namespace Ubpa {
 	template<typename T>
 	class Pool {

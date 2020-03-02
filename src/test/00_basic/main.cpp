@@ -1,4 +1,4 @@
-#include <UECS/World.h>
+#include <UECS/core/World.h>
 
 #include <iostream>
 #include <set>
