@@ -34,10 +34,10 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		EntityData* CreateEntity();
 
-		template<typename Cmpt, typename... Args>
-		Cmpt* EntityAttach(EntityData* e, Args&&... args);
+		template<typename... Cmpts>
+		std::tuple<Cmpts*...> EntityAttach(EntityData* e);
 
-		template<typename Cmpt>
+		template<typename... Cmpts>
 		void EntityDetach(EntityData* e);
 
 		void Release(EntityData* e);

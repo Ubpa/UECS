@@ -38,21 +38,21 @@ namespace Ubpa {
 		return rst;
 	}
 
-	template<typename Cmpt, typename... Args>
-	Cmpt* ArchetypeMngr::EntityAttach(EntityData* e, Args&&... args) {
-		assert(!e->archetype()->id.IsContain<Cmpt>());
+	template<typename... Cmpts>
+	std::tuple<Cmpts*...> ArchetypeMngr::EntityAttach(EntityData* e) {
+		assert(!e->archetype()->id.IsContain<Cmpts...>());
 
 		Archetype* srcArchetype = e->archetype();
 		size_t srcIdx = e->idx();
 
 		auto& srcID = srcArchetype->GetID();
 		auto dstID = srcID;
-		dstID.Add<Cmpt>();
+		dstID.Add<Cmpts...>();
 
 		Archetype* dstArchetype;
 		auto target = id2a.find(dstID);
 		if (target == id2a.end()) {
-			dstArchetype = Archetype::Add<Cmpt>::From(srcArchetype);
+			dstArchetype = Archetype::Add<Cmpts...>::From(srcArchetype);
 			assert(dstID == dstArchetype->GetID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
@@ -61,7 +61,6 @@ namespace Ubpa {
 			dstArchetype = target->second;
 
 		size_t dstIdx = dstArchetype->CreateEntity();
-		Cmpt* cmpt = dstArchetype->Init<Cmpt>(dstIdx, std::forward<Args>(args)...);
 		for (auto cmptHash : srcID) {
 			auto srcCmpt = srcArchetype->At(cmptHash, srcIdx);
 			auto dstCmpt = dstArchetype->At(cmptHash, dstIdx);
@@ -84,24 +83,30 @@ namespace Ubpa {
 		e->archetype() = dstArchetype;
 		e->idx() = dstIdx;
 
-		return cmpt;
+		if (srcArchetype->Size() == 0 && srcArchetype->CmptNum() != 0) {
+			ids.erase(srcArchetype->id);
+			id2a.erase(srcArchetype->id);
+			delete srcArchetype;
+		}
+
+		return { dstArchetype->At<Cmpts>(dstIdx)... };
 	}
 
-	template<typename Cmpt>
+	template<typename... Cmpts>
 	void ArchetypeMngr::EntityDetach(EntityData* e) {
-		assert(e->archetype()->id.IsContain<Cmpt>());
+		assert(e->archetype()->id.IsContain<Cmpts...>());
 
 		Archetype* srcArchetype = e->archetype();
 		size_t srcIdx = e->idx();
 
 		auto& srcID = srcArchetype->GetID();
 		auto dstID = srcID;
-		dstID.Remove<Cmpt>();
+		dstID.Remove<Cmpts...>();
 
 		Archetype* dstArchetype;
 		auto target = id2a.find(dstID);
 		if (target == id2a.end()) {
-			dstArchetype = Archetype::Remove<Cmpt>::From(srcArchetype);
+			dstArchetype = Archetype::Remove<Cmpts...>::From(srcArchetype);
 			assert(dstID == dstArchetype->GetID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
@@ -131,5 +136,11 @@ namespace Ubpa {
 
 		e->archetype() = dstArchetype;
 		e->idx() = dstIdx;
+
+		if (srcArchetype->Size() == 0) {
+			ids.erase(srcArchetype->id);
+			id2a.erase(srcArchetype->id);
+			delete srcArchetype;
+		}
 	}
 }

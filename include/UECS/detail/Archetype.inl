@@ -12,59 +12,55 @@ namespace Ubpa {
 		((h2so[TypeID<Cmpts>] = std::make_tuple(info.sizes[Find_v<CmptList, Cmpts>], info.offsets[Find_v<CmptList, Cmpts>])), ...);
 	}
 
-	template<typename Cmpt>
-	Archetype* Archetype::Add<Cmpt>::From(Archetype* srcArchetype) noexcept {
+	template<typename... Cmpts>
+	Archetype* Archetype::Add<Cmpts...>::From(Archetype* srcArchetype) noexcept {
+		using CmptList = TypeList<Cmpts...>;
+		assert(((!srcArchetype->id.IsContain<Cmpts>())&&...));
+
 		Archetype* rst = new Archetype;
 		rst->mngr = srcArchetype->mngr;
 
 		rst->id = srcArchetype->id;
-		rst->id.Add<Cmpt>();
+		rst->id.Add<Cmpts...>();
 
-		std::map<size_t, size_t> s2h; // size to hash
-		for (auto h : rst->id) {
-			if (h == TypeID<Cmpt>)
-				s2h[sizeof(Cmpt)] = h;
-			else
-				s2h[std::get<0>(srcArchetype->h2so[h])] = h;
+		std::vector<size_t> h;
+		std::vector<size_t> s;
+		((h.push_back(TypeID<Cmpts>), s.push_back(sizeof(Cmpts))), ...);
+		for (auto p : srcArchetype->h2so) {
+			h.push_back(p.first);
+			s.push_back(std::get<0>(p.second));
 		}
-		std::vector<size_t> sizes;
-		for (auto p : s2h)
-			sizes.push_back(p.first); // sorted
-		auto co = Chunk::CO(sizes);
+		auto co = Chunk::CO(s);
 		rst->chunkCapacity = std::get<0>(co);
-		size_t i = 0;
-		for (auto h : rst->id) {
-			rst->h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
-			i++;
-		}
-
+		((rst->h2so[TypeID<Cmpts>]=std::make_tuple(s[Find_v<CmptList,Cmpts>], std::get<1>(co)[Find_v<CmptList, Cmpts>])), ...);
+		for (size_t i = sizeof...(Cmpts); i < rst->id.size(); i++)
+			rst->h2so[h[i]] = std::make_tuple(s[i], std::get<1>(co)[i]);
 		return rst;
 	}
 
-	template<typename Cmpt>
-	Archetype* Archetype::Remove<Cmpt>::From(Archetype* srcArchetype) noexcept {
-		assert(srcArchetype->id.IsContain<Cmpt>());
+	template<typename... Cmpts>
+	Archetype* Archetype::Remove<Cmpts...>::From(Archetype* srcArchetype) noexcept {
+		using CmptList = TypeList<Cmpts...>;
+		assert((srcArchetype->id.IsContain<Cmpts>() &&...));
 
 		Archetype* rst = new Archetype;
 		rst->mngr = srcArchetype->mngr;
 
 		rst->id = srcArchetype->id;
-		rst->id.Remove<Cmpt>();
+		rst->id.Remove<Cmpts...>();
 
-		std::map<size_t, size_t> s2h; // size to hash
-		for (auto h : rst->id)
-			s2h[std::get<0>(srcArchetype->h2so[h])] = h;
-		std::vector<size_t> sizes;
-		for (auto p : s2h)
-			sizes.push_back(p.first); // sorted
-		auto co = Chunk::CO(sizes);
-		rst->chunkCapacity = std::get<0>(co);
-		size_t i = 0;
-		for (auto h : rst->id) {
-			rst->h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
-			i++;
+		std::vector<size_t> h;
+		std::vector<size_t> s;
+		for (auto p : rst->h2so) {
+			if (rst->id.IsContain(p.first))
+				continue;
+			h.push_back(p.first);
+			s.push_back(std::get<0>(p.second));
 		}
-
+		auto co = Chunk::CO(s);
+		rst->chunkCapacity = std::get<0>(co);
+		for (size_t i = 0; i < rst->id.size(); i++)
+			rst->h2so[h[i]] = std::make_tuple(s[i], std::get<1>(co)[i]);
 		return rst;
 	}
 

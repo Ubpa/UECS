@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Chunk.h"
+#include "Pool.h"
 
 #include <UTemplate/TypeID.h>
 
@@ -30,6 +31,10 @@ namespace Ubpa {
 				return ((find(TypeID<Cmpts>) != end()) &&...);
 			}
 
+			bool IsContain(size_t cmptHash) const noexcept {
+				return find(cmptHash) != end();
+			}
+
 			template<typename... Cmpts>
 			bool Is() const noexcept {
 				return sizeof...(Cmpts) == size() && IsContain<Cmpts...>();
@@ -49,20 +54,22 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
 
-		template<typename Cmpt>
+		template<typename... Cmpts>
 		struct Add {
 			static Archetype* From(Archetype* srcArchetype) noexcept;
 		};
-		template<typename Cmpt>
+		template<typename... Cmpts>
 		struct Remove {
 			static Archetype* From(Archetype* srcArchetype) noexcept;
 		};
-		template<typename Cmpt>
+		template<typename... Cmpts>
 		friend struct Add;
+		template<typename... Cmpts>
+		friend struct Remove;
 
-		inline ~Archetype(){
+		inline ~Archetype() {
 			for (auto c : chunks)
-				delete c;
+				chunkPools.recycle(c);
 		}
 
 		template<typename... Cmpts>
@@ -78,7 +85,7 @@ namespace Ubpa {
 		// no init
 		inline size_t CreateEntity() {
 			if (num == chunks.size() * chunkCapacity)
-				chunks.push_back(new Chunk);
+				chunks.push_back(chunkPools.request());
 			return num++;
 		}
 
@@ -124,6 +131,8 @@ namespace Ubpa {
 		size_t chunkCapacity;
 		std::vector<Chunk*> chunks;
 		size_t num{ 0 };
+
+		static Pool<Chunk> chunkPools; // TODO: lock
 	};
 }
 

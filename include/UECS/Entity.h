@@ -19,19 +19,28 @@ namespace Ubpa {
 			return archetype()->At<Cmpt>(idx());
 		}
 
-		template<typename Cmpt, typename... Args>
-		inline Cmpt* Attach(Args&&... args) {
+		template<typename... Cmpts>
+		inline std::tuple<Cmpts*...> Attach() {
+			// TODO: static_assert(Different_v<TypeList<Cmpts...>>);
+			static_assert(sizeof...(Cmpts) > 0);
 			assert(IsAlive());
-			return archetype()->mngr->EntityAttach<Cmpt>(this, std::forward<Args>(args)...);
+			return archetype()->mngr->EntityAttach<Cmpts...>(this);
 		}
 
-		template<typename Cmpt>
+		template<typename... Cmpts>
 		inline void Detach() {
+			// TODO: static_assert(Different_v<TypeList<Cmpts...>>);
+			static_assert(sizeof...(Cmpts) > 0);
 			assert(IsAlive());
-			return archetype()->mngr->EntityDetach<Cmpt>(this);
+			return archetype()->mngr->EntityDetach<Cmpts...>(this);
 		}
 
 		inline bool IsAlive() const noexcept { return archetype() != nullptr; }
+
+		void Release() noexcept {
+			assert(IsAlive());
+			archetype()->mngr->Release(this);
+		}
 
 	private:
 		friend class World;

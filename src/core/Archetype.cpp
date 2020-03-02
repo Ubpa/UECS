@@ -3,6 +3,8 @@
 using namespace std;
 using namespace Ubpa;
 
+Pool<Chunk> Archetype::chunkPools;
+
 bool Archetype::ID::operator<(const ID& id) const noexcept {
 	auto l = begin(), r = id.begin();
 	while (l != end() && r != id.end()) {
@@ -57,6 +59,11 @@ size_t Archetype::Erase(size_t idx) {
 		movedIdx = static_cast<size_t>(-1);
 
 	num--;
+
+	if (chunks.size() * chunkCapacity - num >= chunkCapacity) {
+		Chunk* back = chunks.back();
+		chunkPools.recycle(back);
+	}
 
 	return movedIdx;
 }
