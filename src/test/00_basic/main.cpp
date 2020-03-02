@@ -23,18 +23,33 @@ int main() {
 	for (size_t i = 0; i < 10; i++) {
 		auto entity = w.CreateEntityWith<velocity, position>();
 		entities.insert(entity);
-		entity->Get<velocity>().v = static_cast<float>(i);
+		entity->Get<velocity>()->v = static_cast<float>(i);
+	}
+
+	for (size_t i = 0; i < 5; i++) {
+		auto entity = w.CreateEntityWith<position>();
+		entity->Add<velocity>();
+		entities.insert(entity);
+		entity->Get<velocity>()->v = 10 + static_cast<float>(i);
+	}
+
+	for (size_t i = 0; i < 5; i++) {
+		auto entity = w.CreateEntityWith<position>();
+		entities.insert(entity);
 	}
 	 
 	for (auto e : entities)
-		cout << e->Get<velocity>().v << endl;
+		cout << e->Get<position>()->x << endl;
 
-	auto sys = [](velocity* v, position* p) {
+	int i = 0;
+	auto sys = [&i](velocity* v, position* p) {
 		p->x += v->v * 0.01f;
+		cout << "i: " << i << endl;
+		i++;
 	};
 
 	w.Each(sys);
 
 	for (auto e : entities)
-		cout << e->Get<position>().x << endl;
+		cout << e->Get<position>()->x << endl;
 }

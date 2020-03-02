@@ -1,105 +1,224 @@
 #pragma once
 
+#include "Chunk.h"
+
 #include <UTemplate/TypeID.h>
 
 #include <vector>
+#include <tuple>
 #include <map>
+#include <set>
 #include <cassert>
 
-namespace Ubpa::detail {
-	class ArcheType {
-	private:
-		using byte = std::uint8_t;
+namespace Ubpa {
+	class ArchetypeMngr;
+
+	class Archetype {
 	public:
-		template<typename...Cmpts>
-		void Init() {
-			map.clear();
-			size.clear();
-			n = 0;
-			if constexpr (sizeof...(Cmpts) == 0) {
-				map[Ubpa::TypeID<void>] = std::vector<byte>{};
-				size[Ubpa::TypeID<void>] = sizeof(byte);
+		class ID : private std::set<size_t> {
+		public:
+			ID() = default;
+			template<typename... Cmpts>
+			ID(TypeList<Cmpts...>) noexcept { Add<Cmpts...>(); }
+
+			template<typename... Cmpts>
+			void Add() noexcept { (insert(TypeID<Cmpts>),...); }
+
+			template<typename... Cmpts>
+			bool IsContain() const noexcept {
+				return ((find(TypeID<Cmpts>) != end()) &&...);
 			}
-			else {
-				((map[Ubpa::TypeID<Cmpts>] = std::vector<byte>{}), ...);
-				((size[Ubpa::TypeID<Cmpts>] = sizeof(Cmpts)), ...);
+
+			template<typename... Cmpts>
+			bool Is() const noexcept {
+				return sizeof...(Cmpts) == size() && IsContain<Cmpts...>();
 			}
+
+			using std::set<size_t>::begin;
+			using std::set<size_t>::end;
+
+			bool operator<(const ID& id) const noexcept {
+				auto l = begin(), r = id.begin();
+				while (l != end() && r != id.end()) {
+					if (*l < *r)
+						return true;
+					if (*l > *r)
+						return false;
+					++l;
+					++r;
+				}
+				return l == end() && r != id.end();
+			}
+
+			bool operator==(const ID& id) const noexcept {
+				if (size() != id.size())
+					return false;
+				for (auto l = begin(), r = id.begin(); l != end(); ++l, ++r) {
+					if (*l != *r)
+						return false;
+				}
+				return true;
+			}
+		};
+
+		// argument is for type deduction
+		template<typename... Cmpts>
+		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) : mngr(mngr) {
+			using CmptList = TypeList<Cmpts...>;
+
+			constexpr size_t N = sizeof...(Cmpts);
+
+			constexpr auto info = Chunk::StaticInfo<Cmpts...>();
+			chunkCapacity = info.capacity;
+			((h2so[TypeID<Cmpts>] = std::make_tuple(info.sizes[Find_v<CmptList, Cmpts>], info.offsets[Find_v<CmptList, Cmpts>])), ...);
+			id.Add<Cmpts...>();
+		}
+
+		template<typename Cmpt>
+		Archetype(Archetype* srcArchetype, IType<Cmpt>) {
+			ArchetypeMngr* mngr = srcArchetype->mngr;
+
+			id = srcArchetype->id;
+			id.Add<Cmpt>();
+
+			std::map<size_t, size_t> s2h; // size to hash
+			for (auto h : id) {
+				if (h == TypeID<Cmpt>)
+					s2h[sizeof(Cmpt)] = h;
+				else
+					s2h[std::get<0>(srcArchetype->h2so[h])] = h;
+			}
+			std::vector<size_t> sizes;
+			for (auto p : s2h)
+				sizes.push_back(p.first); // sorted
+			auto co = Chunk::CO(sizes);
+			chunkCapacity = std::get<0>(co);
+			size_t i = 0;
+			for (auto h : id) {
+				h2so[h] = std::make_tuple(sizes[i], std::get<1>(co)[i]);
+				i++;
+			}
+		}
+
+		~Archetype(){
+			for (auto c : chunks)
+				delete c;
 		}
 
 		template<typename... Cmpts>
-		size_t CreateEntity() {
-			if constexpr (sizeof...(Cmpts) == 0)
-				assert(map.size() == 1 && map.find(Ubpa::TypeID<void>) != map.end());
-			else
-				assert(!(sizeof...(Cmpts) != map.size()) || !((map.find(Ubpa::TypeID<Cmpts>) != map.end()) && ...));
-
-			(push_back<Cmpts>(), ...);
-
-			return n++;
+		const std::tuple<std::vector<Cmpts*>...> Locate() {
+			return { LocateOne<Cmpts>()... };
 		}
 
+		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx) {
+			auto target = h2so.find(cmptHash);
+			assert(target != h2so.end());
+
+			size_t size = std::get<0>(target->second);
+			size_t offset = std::get<1>(target->second);
+			size_t idxInChunk = idx % chunkCapacity;
+			byte* buffer = chunks[idx / chunkCapacity]->Data();
+			return { buffer + offset + size * idxInChunk, size };
+		}
+
+		template<typename Cmpt>
+		Cmpt* At(size_t idx) {
+			auto target = h2so.find(TypeID<Cmpt>);
+			if (target == h2so.end())
+				return nullptr;
+			assert(sizeof(Cmpt) == std::get<0>(target->second));
+			size_t offset = std::get<1>(target->second);
+			size_t idxInChunk = idx % chunkCapacity;
+			byte* buffer = chunks[idx / chunkCapacity]->Data();
+			return reinterpret_cast<Cmpt*>(buffer + offset + sizeof(Cmpt) * idxInChunk);
+		}
+
+		// no init
 		size_t CreateEntity() {
-			assert(size.size() > 0);
-			for (auto& p : size) {
-				auto& arr = map[p.first];
-				for (size_t i = 0; i < p.second; i++)
-					arr.emplace_back();
+			if (num % chunkCapacity == 0)
+				chunks.push_back(new Chunk);
+			return num++;
+		}
+
+		// init all cmpts
+		template<typename... Cmpts>
+		size_t CreateEntity() {
+			assert(id.Is<Cmpts...>());
+
+			using CmptList = TypeList<Cmpts...>;
+			size_t idx = CreateEntity();
+			size_t idxInChunk = idx % chunkCapacity;
+			byte* buffer = chunks[idx / chunkCapacity]->Data();
+			std::array<std::tuple<size_t, size_t>, sizeof...(Cmpts)> soArr{ h2so[TypeID<Cmpts>]... };
+			(new(buffer + std::get<1>(soArr[Find_v<CmptList, Cmpts>]) + idxInChunk * std::get<0>(soArr[Find_v<CmptList, Cmpts>])) Cmpts(), ...);
+
+			return idx;
+		}
+
+		// erase idx-th entity
+		// if idx != num-1, back entity will put at idx, return num-1
+		// else return static_cast<size_t>(-1)
+		size_t Erase(size_t idx) {
+			assert(idx < num);
+			size_t movedIdx;
+			if (idx != num - 1) {
+				size_t idxInChunk = idx % chunkCapacity;
+				byte* buffer = chunks[idx / chunkCapacity]->Data();
+				for (auto p : h2so) {
+					size_t size = std::get<0>(p.second);
+					size_t offset = std::get<1>(p.second);
+					byte* dst = buffer + offset + size * idxInChunk;
+					byte* src = buffer + offset + (num - 1) * idxInChunk;
+					memcpy(dst, src, size);
+				}
+				movedIdx = num - 1;
 			}
-			return n++;
+			else
+				movedIdx = static_cast<size_t>(-1);
+
+			num--;
+			
+			return movedIdx;
+		}
+
+		inline size_t Size() const noexcept { return num; }
+		inline size_t ChunkNum() const noexcept { return chunks.size(); }
+		inline size_t ChunkCapacity() const noexcept { return chunkCapacity; }
+		inline const ID& GetID() const noexcept { return id; }
+		inline ArchetypeMngr* GetArchetypeMngr() const noexcept { return mngr; }
+
+		template<typename... Cmpts>
+		bool IsContain() const noexcept {
+			return id.IsContain<Cmpts...>();
 		}
 
 		template<typename Cmpt, typename... Args>
-		void Init(size_t ID, Args&&... args) {
-			void* addr = &Get<Cmpt>(ID);
-			new(addr) Cmpt{ std::forward<Args>(args)... };
+		Cmpt* Init(size_t idx, Args&&... args) noexcept {
+			Cmpt* cmpt = reinterpret_cast<Cmpt*>(At<Cmpt>(idx));
+			new (cmpt) Cmpt(std::forward<Args>(args)...);
+			return cmpt;
 		}
-
-		template<typename Cmpt>
-		Cmpt& Get(size_t ID) {
-			auto target = map.find(Ubpa::TypeID<Cmpt>);
-			assert(target != map.end() && target->second.size() >= sizeof(Cmpt) * (ID + 1));
-			return reinterpret_cast<Cmpt&>(target->second[sizeof(Cmpt) * ID]);
-		}
-		template<typename Cmpt>
-		Cmpt* Get() const noexcept {
-			auto target = map.find(Ubpa::TypeID<Cmpt>);
-			assert(target != map.end());
-			return reinterpret_cast<Cmpt*>(const_cast<byte*>(target->second.data()));
-		}
-
-		template<typename... Cmpts>
-		bool IsContain() const {
-			return ((map.find(Ubpa::TypeID<Cmpts>) != map.end()) &&...);
-		}
-		
-		size_t Delete(size_t ID) {
-			assert(n > ID);
-			if (ID != n - 1) {
-				for (auto& p : map) {
-					size_t s = size[p.first];
-					auto& arr = p.second;
-					auto dst = &arr[ID * s];
-					auto src = &arr[(n - 1) * s];
-					memcpy(dst, src, s);
-					for (size_t i = 0; i < s; i++)
-						arr.pop_back();
-				}
-			}
-			return --n;
-		}
-
-		inline size_t Size() const noexcept { return n; }
 
 	private:
 		template<typename Cmpt>
-		void push_back() {
-			auto target = map.find(Ubpa::TypeID<Cmpt>);
-			for (size_t i = 0; i < sizeof(Cmpt); i++)
-				target->second.emplace_back();
+		const std::vector<Cmpt*> LocateOne() {
+			auto target = h2so.find(TypeID<Cmpt>);
+			assert(target != h2so.end());
+			const size_t offset = std::get<1>(target->second);
+			std::vector<Cmpt*> rst;
+			for (auto c : chunks)
+				rst.push_back(reinterpret_cast<Cmpt*>(c->Data() + offset));
+			return rst;
 		}
 
-		size_t n{ 0 };
-		std::map<size_t, size_t> size;
-		std::map<size_t, std::vector<byte>> map;
+	private:
+		friend class Entity;
+
+		size_t num{ 0 };
+		ArchetypeMngr* mngr;
+		ID id;
+		std::map<size_t, std::tuple<size_t, size_t>> h2so; // hash to {size, offset}
+		size_t chunkCapacity;
+		std::vector<Chunk*> chunks;
 	};
 }

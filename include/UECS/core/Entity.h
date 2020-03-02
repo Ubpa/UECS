@@ -1,29 +1,35 @@
 #pragma once
 
-#include "Archetype.h"
-#include "Component.h"
+#include "ArchetypeMngr.h"
 
 namespace Ubpa {
 	class World;
 
-	class Entity {
+	class Entity : private EntityData {
 	public:
 		template<typename Cmpt, typename... Args>
 		inline void Init(Args... args) {
-			archeType->Init<Cmpt>(ID, std::forward<Args>(args)...);
+			assert(IsAlive());
+			archetype->Init<Cmpt>(idx, std::forward<Args>(args)...);
 		}
 
 		template<typename Cmpt>
-		inline Cmpt& Get() {
-			return archeType->Get<Cmpt>(ID);
+		inline Cmpt* Get() {
+			assert(IsAlive());
+			return archetype()->At<Cmpt>(idx());
 		}
 
-		inline bool IsAlive() const noexcept { return isAlive; }
+		template<typename Cmpt, typename... Args>
+		inline Cmpt* Add(Args&&... args) {
+			assert(IsAlive());
+			return archetype()->mngr->EntityAdd<Cmpt>(this, std::forward<Args>(args)...);
+		}
+
+		inline bool IsAlive() const noexcept { return archetype() != nullptr; }
 
 	private:
 		friend class World;
-		bool isAlive{ false };
-		detail::ArcheType* archeType;
-		size_t ID;
 	};
+
+	static_assert(sizeof(Entity) == sizeof(EntityData) && std::is_base_of_v<EntityData, Entity>);
 }

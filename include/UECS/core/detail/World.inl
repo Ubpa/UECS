@@ -3,13 +3,23 @@
 namespace Ubpa::detail::World_ {
 	template<typename... Cmpts>
 	struct Each<TypeList<Cmpts * ...>> {
+		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<Cmpts...>;
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archeType : w->mngr.GetArcheTypeWith<Cmpts...>()) {
-				std::array<void*, sizeof...(Cmpts)> arr = { archeType->Get<Cmpts>() ... };
-				for (size_t i = 0; i < archeType->Size(); i++)
-					s((reinterpret_cast<Cmpts*>(arr[Find_v<CmptList, Cmpts>]) + i)...);
+			for (auto archetype : w->mngr->LocateArchetypeWith<Cmpts...>()) {
+				auto cmptsVecTuple = archetype->Locate<Cmpts...>();
+				size_t num = archetype->Size();
+				size_t chunkNum = archetype->ChunkNum();
+				size_t chunkCapacity = archetype->ChunkCapacity();
+				for (size_t i = 0; i < chunkNum - 1; i++) {
+					auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[i]...);
+					for(size_t j =0;j< chunkCapacity;j++)
+						s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
+				}
+				auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[chunkNum - 1]...);
+				for (size_t j = 0; j < num-((chunkNum-1)*chunkCapacity); j++)
+					s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
 			}
 		}
 	};
@@ -18,17 +28,6 @@ namespace Ubpa::detail::World_ {
 namespace Ubpa {
 	template<typename... Cmpts>
 	Entity* World::CreateEntityWith() {
-		detail::ArcheType& c = mngr.GetArcheTypeOf<Cmpts...>();
-		size_t id = c.CreateEntity<Cmpts...>();
-
-		auto entity = entities.request();
-		entity->isAlive = true;
-		entity->ID = id;
-		entity->archeType = &c;
-
-		atid2e[std::make_tuple(&c, id)] = entity;
-		e2atid[entity] = std::make_tuple(&c, id);
-
-		return entity;
+		return reinterpret_cast<Entity*>(mngr->CreateEntity<Cmpts...>());
 	}
 }
