@@ -5,6 +5,7 @@
 namespace Ubpa {
 	template<typename... Cmpts>
 	std::tuple<Entity*, Cmpts*...> World::CreateEntity() {
+		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		auto rst = mngr->CreateEntity<Cmpts...>();
 		return {reinterpret_cast<Entity*>(std::get<0>(rst)),
 			std::get<1 + Find_v<TypeList<Cmpts...>, Cmpts>>(rst)...};
@@ -16,6 +17,7 @@ namespace Ubpa::detail::World_ {
 	struct Each<TypeList<Cmpts * ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<Cmpts...>;
+		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
 			for (auto archetype : w->mngr->GetArchetypeWith<Cmpts...>()) {
@@ -38,6 +40,7 @@ namespace Ubpa::detail::World_ {
 	struct ParallelEach<TypeList<Cmpts * ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<Cmpts...>;
+		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
 			for (auto archetype : w->mngr->GetArchetypeWith<Cmpts...>()) {
