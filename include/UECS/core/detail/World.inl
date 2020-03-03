@@ -4,8 +4,10 @@
 
 namespace Ubpa {
 	template<typename... Cmpts>
-	Entity* World::CreateEntity() {
-		return reinterpret_cast<Entity*>(mngr->CreateEntity<Cmpts...>());
+	std::tuple<Entity*, Cmpts*...> World::CreateEntity() {
+		auto rst = mngr->CreateEntity<Cmpts...>();
+		return {reinterpret_cast<Entity*>(std::get<0>(rst)),
+			std::get<1 + Find_v<TypeList<Cmpts...>, Cmpts>>(rst)...};
 	}
 }
 

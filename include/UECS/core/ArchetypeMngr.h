@@ -32,10 +32,10 @@ namespace Ubpa {
 		const std::vector<Archetype*> GetArchetypeWith();
 
 		template<typename... Cmpts>
-		EntityData* CreateEntity();
+		const std::tuple<EntityData*, Cmpts*...> CreateEntity();
 
 		template<typename... Cmpts>
-		std::tuple<Cmpts*...> EntityAttach(EntityData* e);
+		const std::tuple<Cmpts*...> EntityAttach(EntityData* e);
 
 		template<typename... Cmpts>
 		void EntityDetach(EntityData* e);
