@@ -1,8 +1,19 @@
 #pragma once
 
-#include <thread>
-
 namespace Ubpa {
+	World::World() : mngr(new ArchetypeMngr(this)) {}
+	World::~World() { delete mngr; }
+
+	template<typename Sys>
+	inline void World::Each(Sys&& s) {
+		detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+	}
+
+	template<typename Sys>
+	inline void World::ParallelEach(Sys&& s) {
+		detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+	}
+
 	template<typename... Cmpts>
 	std::tuple<Entity*, Cmpts*...> World::CreateEntity() {
 		// static_assert(sizeof...(Cmpts) > 0);

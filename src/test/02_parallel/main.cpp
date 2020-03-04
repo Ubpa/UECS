@@ -3,47 +3,76 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <random>
 
 using namespace std;
 using namespace Ubpa;
 
-struct velocity { float v{ 0.f }; };
-struct position { float x{ 0.f }; };
+struct velocity { float v{ 0.f }; float pad[31]; };
+struct position { float x{ 0.f }; float pad[31]; };
 
 int main() {
-	constexpr size_t N = 1000000;
+	constexpr size_t N = 1<<22;
+	constexpr size_t M = 100;
 	World w;
-	set<Entity*> entities;
+	vector<velocity*> vs;
+	vector<position*> ps;
+	vector<pair<size_t, size_t>> table;
+	vs.reserve(N);
+	ps.reserve(N);
 
 	default_random_engine engine;
-	uniform_real_distribution uniform(0.f, 1.f);
+	uniform_real_distribution uni_f(0.f, 1.f);
+	uniform_int_distribution uni_i;
 
 	for (size_t i = 0; i < N; i++) {
 		auto [e,v,p] = w.CreateEntity<velocity, position>();
-		v->v = uniform(engine);
-		p->x = uniform(engine);
-		entities.insert(e);
+		v->v = uni_f(engine);
+		p->x = uni_f(engine);
+		vs.push_back(v);
+		ps.push_back(p);
 	}
 
-	auto sys = [](velocity* v, position* x) {
-		for (size_t i = 0; i < 6000; i++)
+	//reorder
+	for (size_t i = 0; i < N; i++) {
+		auto vidx = uni_i(engine) % (N - i);
+		auto pidx = uni_i(engine) % (N - i);
+		vs[i] = vs[vidx + i];
+		ps[i] = ps[pidx + i];
+		table.push_back({ vidx, pidx });
+	}
+
+	auto sys = [M](velocity* v, position* x) {
+		for (size_t i = 0; i < M; i++)
 			x->x += v->v * 0.01f;
 	};
 
 	auto t0 = chrono::steady_clock::now();
-	w.Each(sys);
+	for (size_t i = 0; i < N; i++) {
+		// simulate entity pointer
+		auto vpidx = table[i];
+		auto p = ps[vpidx.first];
+		auto v = ps[vpidx.second];
+		// component pointer
+		auto& pX = p->x;
+		auto vX = v->x;
+		for (size_t i = 0; i < M; i++)
+			pX += vX * 0.01f;
+	}
 	auto t1 = chrono::steady_clock::now();
-	w.ParallelEach(sys);
+	w.Each(sys);
 	auto t2 = chrono::steady_clock::now();
+	w.ParallelEach(sys);
+	auto t3 = chrono::steady_clock::now();
 
 	chrono::duration<double> t01 = chrono::duration_cast<chrono::duration<double>>(t1 - t0);
 	chrono::duration<double> t12 = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
-	cout << "Each use: " << t01.count() << "s" << endl;
-	cout << "core: " << thread::hardware_concurrency() << endl;
-	cout << "ParallelEach use: " << t12.count() << "s" << endl;
+	chrono::duration<double> t32 = chrono::duration_cast<chrono::duration<double>>(t3 - t2);
 
-	for (auto e : entities)
-		cout << e->Get<position>()->x << endl;
+	cout << "core: " << thread::hardware_concurrency() << endl;
+	cout << "[   Native   ] consume: " << t01.count() << "s" << endl;
+	cout << "[    Each    ] consume: " << t12.count() << "s" << endl;
+	cout << "[ParallelEach] consume: " << t32.count() << "s" << endl;
 
 	return 0;
 }

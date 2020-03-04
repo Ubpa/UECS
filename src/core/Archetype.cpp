@@ -1,9 +1,9 @@
-#include <UECS/core/Archetype.h>
+#include <UECS/core/detail/Archetype.h>
 
 using namespace std;
 using namespace Ubpa;
 
-pool<Chunk> Archetype::chunkPool;
+Pool<Chunk> Archetype::chunkPool;
 
 bool Archetype::ID::operator<(const ID& id) const noexcept {
 	auto l = begin(), r = id.begin();

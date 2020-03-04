@@ -39,4 +39,4 @@ namespace Ubpa {
 	static_assert(sizeof(Chunk) == Chunk::size);
 }
 
-#include "detail/Chunk.inl"
+#include "Chunk.inl"

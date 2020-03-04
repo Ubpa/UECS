@@ -6,11 +6,8 @@
 
 #include <UTemplate/TypeID.h>
 
-#include <vector>
-#include <tuple>
 #include <map>
 #include <set>
-#include <cassert>
 
 namespace Ubpa {
 	class ArchetypeMngr;
@@ -139,8 +136,8 @@ namespace Ubpa {
 		std::vector<Chunk*> chunks;
 		size_t num{ 0 };
 
-		static pool<Chunk> chunkPool; // TODO: lock
+		static Pool<Chunk> chunkPool; // TODO: lock
 	};
 }
 
-#include "detail/Archetype.inl"
+#include "Archetype.inl"

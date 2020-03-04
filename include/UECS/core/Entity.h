@@ -1,60 +1,28 @@
 #pragma once
 
-#include "ArchetypeMngr.h"
+#include "detail/ArchetypeMngr.h"
 
 namespace Ubpa {
-	class World;
-
 	class Entity final : private EntityBase {
 	public:
-		/*template<typename Cmpt, typename... Args>
-		inline void Init(Args&&... args) {
-			assert(IsAlive());
-			archetype->Init<Cmpt>(idx, std::forward<Args>(args)...);
-		}*/
-
 		template<typename Cmpt>
-		inline Cmpt* Get() {
-			assert(IsAlive());
-			return archetype->At<Cmpt>(idx);
-		}
+		inline Cmpt* Get();
 
 		template<typename... Cmpts>
-		inline std::tuple<Cmpts*...> Attach() {
-			static_assert(sizeof...(Cmpts) > 0);
-			static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-			static_assert(((std::is_constructible_v<Cmpts> || std::is_constructible_v<Cmpts, Entity*>) &&...));
-			assert(IsAlive());
-			return archetype->mngr->EntityAttach<Cmpts...>(this);
-		}
+		inline std::tuple<Cmpts *...> Attach();
 
 		template<typename Cmpt>
-		inline Cmpt* GetOrAttach() {
-			assert(IsAlive());
-			Cmpt* cmpt = archetype->At<Cmpt>(idx);
-			if (!cmpt)
-				std::tie(cmpt) = Attach<Cmpt>();
-			return cmpt;
-		}
+		inline Cmpt* GetOrAttach();
 
 		template<typename... Cmpts>
-		inline void Detach() {
-			static_assert(sizeof...(Cmpts) > 0);
-			static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-			assert(IsAlive());
-			return archetype->mngr->EntityDetach<Cmpts...>(this);
-		}
+		inline void Detach();
 
-		inline bool IsAlive() const noexcept { return archetype != nullptr; }
+		inline bool IsAlive() const noexcept;
 
-		void Release() noexcept {
-			assert(IsAlive());
-			archetype->mngr->Release(this);
-		}
-
-	private:
-		friend class World;
+		inline void Release() noexcept;
 	};
 
 	static_assert(sizeof(Entity) == sizeof(EntityBase) && std::is_base_of_v<EntityBase, Entity>);
 }
+
+#include "detail/Entity.inl"

@@ -3,7 +3,6 @@
 using namespace Ubpa::Cmpt;
 
 Node::~Node() {
-	std::cout << "Node release" << std::endl;
 	for (auto child : children)
 		child->entity->Release();
 

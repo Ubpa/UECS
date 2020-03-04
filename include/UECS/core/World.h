@@ -1,12 +1,10 @@
 #pragma once
 
-#include "ArchetypeMngr.h"
 #include "Entity.h"
-#include "pool.h"
 
 #include <UTemplate/FuncTraits.h>
 
-#include <tuple>
+#include <thread>
 
 namespace Ubpa::detail::World_ {
 	template<typename Args>
@@ -19,29 +17,26 @@ namespace Ubpa::detail::World_ {
 namespace Ubpa {
 	class World {
 	public:
-		World() : mngr(new ArchetypeMngr(this)) {}
-		~World() { delete mngr; }
+		World();
+		~World();
 
 		template<typename... Cmpts>
 		inline std::tuple<Entity*, Cmpts*...> CreateEntity();
 
 		// s must be a callable object and it's argument-list isn't empty
-		template<typename ArgList>
-		friend struct detail::World_::Each;
 		template<typename Sys>
-		inline void Each(Sys&& s) {
-			detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
-		}
+		inline void Each(Sys&& s);
 
 		// s must be a callable object and it's argument-list isn't empty
-		template<typename ArgList>
-		friend struct detail::World_::ParallelEach;
 		template<typename Sys>
-		inline void ParallelEach(Sys&& s) {
-			detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
-		}
+		inline void ParallelEach(Sys&& s);
 
 	private:
+		template<typename ArgList>
+		friend struct detail::World_::Each;
+		template<typename ArgList>
+		friend struct detail::World_::ParallelEach;
+
 		ArchetypeMngr* mngr;
 	};
 }
