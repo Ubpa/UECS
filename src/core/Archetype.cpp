@@ -3,7 +3,7 @@
 using namespace std;
 using namespace Ubpa;
 
-Pool<Chunk> Archetype::chunkPools;
+pool<Chunk> Archetype::chunkPool;
 
 bool Archetype::ID::operator<(const ID& id) const noexcept {
 	auto l = begin(), r = id.begin();
@@ -28,42 +28,44 @@ bool Archetype::ID::operator==(const ID& id) const noexcept {
 	return true;
 }
 
-tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
+pair<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
 	auto target = h2so.find(cmptHash);
 	if (target == h2so.end())
 		return { nullptr,static_cast<size_t>(-1) };
 
-	size_t size = get<0>(target->second);
-	size_t offset = get<1>(target->second);
+	size_t size = target->second.first;
+	size_t offset = target->second.second;
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 	return { buffer + offset + size * idxInChunk, size };
 }
 
-size_t Archetype::Erase(size_t idx) {
+pair<size_t, vector<pair<void*, void*>>> Archetype::Erase(size_t idx) {
 	assert(idx < num);
-	size_t movedIdx;
+	pair<size_t, vector<pair<void*, void*>>> rst;
+	
 	if (idx != num - 1) {
 		size_t idxInChunk = idx % chunkCapacity;
 		byte* buffer = chunks[idx / chunkCapacity]->Data();
 		for (auto p : h2so) {
-			size_t size = std::get<0>(p.second);
-			size_t offset = std::get<1>(p.second);
+			size_t size = p.second.first;
+			size_t offset = p.second.second;
 			byte* dst = buffer + offset + size * idxInChunk;
 			byte* src = buffer + offset + (num - 1) * idxInChunk;
+			rst.second.emplace_back(dst, src);
 			memcpy(dst, src, size);
 		}
-		movedIdx = num - 1;
+		rst.first = num - 1;
 	}
 	else
-		movedIdx = static_cast<size_t>(-1);
+		rst.first = static_cast<size_t>(-1);
 
 	num--;
 
 	if (chunks.size() * chunkCapacity - num >= chunkCapacity) {
 		Chunk* back = chunks.back();
-		chunkPools.recycle(back);
+		chunkPool.recycle(back);
 	}
 
-	return movedIdx;
+	return rst;
 }

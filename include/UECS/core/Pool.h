@@ -5,23 +5,25 @@
 #include <array>
 #include <unordered_set>
 
-// no release
+// have new and release
 namespace Ubpa {
 	template<typename T>
-	class Pool {
+	class pool {
 	public:
-		~Pool() { clear(); }
+		~pool() { clear(); }
 
 	public:
 		T* const request() {
 			if (freeAdresses.empty())
 				NewBlock();
 			T* freeAdress = freeAdresses.back();
+			new(freeAdress)T;
 			freeAdresses.pop_back();
 			return freeAdress;
 		}
 
 		void recycle(T* object) {
+			object->~T();
 			freeAdresses.push_back(object);
 		}
 
@@ -34,11 +36,11 @@ namespace Ubpa {
 		void clear() {
 			std::unordered_set<T*> freeAdressesSet(freeAdresses.begin(), freeAdresses.end());
 			for (auto block : blocks) {
-				/*for (size_t i = 0; i < BLOCK_SIZE; i++) {
+				for (size_t i = 0; i < BLOCK_SIZE; i++) {
 					T* adress = block->data() + i;
 					if (freeAdressesSet.find(adress) == freeAdressesSet.end())
 						adress->~T();
-				}*/
+				}
 				free(block);
 			}
 			blocks.clear();

@@ -5,16 +5,21 @@
 using namespace Ubpa;
 
 void ArchetypeMngr::Release(EntityData* e) {
-	Archetype* archetype = e->archetype();
-	size_t movedEntityIdx = archetype->Erase(e->idx());
+	auto archetype = e->archetype();
+	auto idx = e->idx();
+	entityPool.recycle(e);
 
-	auto target = d2p.find({ archetype, movedEntityIdx });
+	auto [movedEntityIdx, pairs] = archetype->Erase(idx);
+
 	if (movedEntityIdx != static_cast<size_t>(-1)) {
+		auto target = d2p.find({ archetype, movedEntityIdx });
 		EntityData* movedEntity = target->second;
-		movedEntity->idx() = e->idx();
+		for (auto p : pairs)
+			movedEntity->MoveCmpt(p.first, p.second);
+		movedEntity->idx() = idx;
 		d2p[*e] = movedEntity;
+		d2p.erase(target);
 	}
-	d2p.erase(target);
 
 	if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
 		ids.erase(archetype->id);
@@ -22,8 +27,6 @@ void ArchetypeMngr::Release(EntityData* e) {
 		delete archetype;
 	}
 
-	e->archetype() = nullptr;
-	e->idx() = static_cast<size_t>(-1);
-
-	entityPool.recycle(e);
+	archetype = nullptr;
+	idx = static_cast<size_t>(-1);
 }

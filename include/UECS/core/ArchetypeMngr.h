@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Archetype.h"
-#include "Pool.h"
+#include "pool.h"
 #include "EntityData.h"
 
 #include <UTemplate/Typelist.h>
@@ -43,7 +43,7 @@ namespace Ubpa {
 		void Release(EntityData* e);
 
 	private:
-		Pool<EntityData> entityPool;
+		pool<EntityData> entityPool;
 		std::map<EntityData, EntityData*> d2p;
 		std::set<Archetype::ID> ids;
 		Ubpa::World* w;

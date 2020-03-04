@@ -69,7 +69,7 @@ namespace Ubpa {
 
 		inline ~Archetype() {
 			for (auto c : chunks)
-				chunkPools.recycle(c);
+				chunkPool.recycle(c);
 		}
 
 		template<typename... Cmpts>
@@ -77,7 +77,7 @@ namespace Ubpa {
 			return { LocateOne<Cmpts>()... };
 		}
 
-		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx);
+		std::pair<void*, size_t> At(size_t cmptHash, size_t idx);
 
 		template<typename Cmpt>
 		Cmpt* At(size_t idx);
@@ -85,7 +85,7 @@ namespace Ubpa {
 		// no init
 		inline size_t CreateEntity() {
 			if (num == chunks.size() * chunkCapacity)
-				chunks.push_back(chunkPools.request());
+				chunks.push_back(chunkPool.request());
 			return num++;
 		}
 
@@ -96,7 +96,8 @@ namespace Ubpa {
 		// erase idx-th entity
 		// if idx != num-1, back entity will put at idx, return num-1
 		// else return static_cast<size_t>(-1)
-		size_t Erase(size_t idx);
+		// return: (movedIdx, [(src, dst)...])
+		std::pair<size_t, std::vector<std::pair<void*,void*>>> Erase(size_t idx);
 
 		inline size_t Size() const noexcept { return num; }
 		inline size_t ChunkNum() const noexcept { return chunks.size(); }
@@ -127,12 +128,12 @@ namespace Ubpa {
 
 		ArchetypeMngr* mngr;
 		ID id;
-		std::map<size_t, std::tuple<size_t, size_t>> h2so; // hash to {size, offset}
+		std::map<size_t, std::pair<size_t, size_t>> h2so; // hash to (size, offset)
 		size_t chunkCapacity;
 		std::vector<Chunk*> chunks;
 		size_t num{ 0 };
 
-		static Pool<Chunk> chunkPools; // TODO: lock
+		static pool<Chunk> chunkPool; // TODO: lock
 	};
 }
 

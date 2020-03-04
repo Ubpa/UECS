@@ -2,7 +2,7 @@
 
 #include "ArchetypeMngr.h"
 #include "Entity.h"
-#include "Pool.h"
+#include "pool.h"
 
 #include <UTemplate/FuncTraits.h>
 
@@ -20,6 +20,7 @@ namespace Ubpa {
 	class World {
 	public:
 		World() : mngr(new ArchetypeMngr(this)) {}
+		~World() { delete mngr; }
 
 		template<typename... Cmpts>
 		inline std::tuple<Entity*, Cmpts*...> CreateEntity();

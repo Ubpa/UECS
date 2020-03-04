@@ -3,6 +3,7 @@
 #include <set>
 
 namespace Ubpa::Cmpt {
+	// auto delete children
 	struct Node {
 		Entity* entity{ nullptr };
 		Node* parent{ nullptr };
@@ -10,6 +11,17 @@ namespace Ubpa::Cmpt {
 
 		Node(Entity* entity = nullptr, Node* parent = nullptr)
 			: entity(entity), parent(parent) { }
+
+		~Node() {
+			for (auto child : children)
+				child->entity->Release();
+			children.clear();
+			if (parent) {
+				parent->children.erase(this);
+				parent = nullptr;
+			}
+			entity = nullptr;
+		}
 
 		void AddChild(Node* child) {
 			if (child->parent != nullptr)
