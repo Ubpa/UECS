@@ -1,16 +1,18 @@
 #pragma once
 
+#include "../core/Entity.h"
+
 #include <set>
 
 namespace Ubpa::Cmpt {
 	// auto delete children
 	struct Node {
-		Entity* entity{ nullptr };
+		Entity* entity;
 		Node* parent{ nullptr };
 		std::set<Node*> children;
 
-		Node(Entity* entity = nullptr, Node* parent = nullptr)
-			: entity(entity), parent(parent) { }
+		Node(Entity* entity)
+			: entity(entity) { }
 
 		~Node() {
 			for (auto child : children)
@@ -50,7 +52,7 @@ namespace Ubpa::Cmpt {
 			return parent->IsDescendantOf(node);
 		}
 
-		Node(const Node& tree) = delete;
-		Node& operator=(const Node& tree) = delete;
+		Node(const Node& node) = delete;
+		Node& operator=(const Node& node) = delete;
 	};
 }

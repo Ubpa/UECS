@@ -21,16 +21,17 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		inline std::tuple<Cmpts*...> Attach() {
-			static_assert(IsSet_v<TypeList<Cmpts...>>);
 			static_assert(sizeof...(Cmpts) > 0);
+			static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
+			static_assert(((std::is_constructible_v<Cmpts> || std::is_constructible_v<Cmpts, Entity*>) &&...));
 			assert(IsAlive());
 			return archetype()->mngr->EntityAttach<Cmpts...>(this);
 		}
 
 		template<typename... Cmpts>
 		inline void Detach() {
-			static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 			static_assert(sizeof...(Cmpts) > 0);
+			static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 			assert(IsAlive());
 			return archetype()->mngr->EntityDetach<Cmpts...>(this);
 		}

@@ -31,6 +31,7 @@ namespace Ubpa {
 
 	private:
 		friend class ArchetypeMngr;
+		friend class Archetype;
 		template<typename Cmpt>
 		void RegistCmptRelease(Cmpt* cmpt) {
 			releases[cmpt] = [](void* c) {
