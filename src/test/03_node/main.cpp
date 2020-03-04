@@ -15,10 +15,13 @@ int main() {
 	auto [e3] = w.CreateEntity<>();
 	auto [n3] = e3->Attach<Cmpt::Node>();
 
-	/*n0->entity = e0;
+	/*
+	// CreateEntity and Attach will auto-bind entity
+	n0->entity = e0;
 	n1->entity = e1;
 	n2->entity = e2;
-	n3->entity = e3;*/
+	n3->entity = e3;
+	*/
 
 	n0->AddChild(n1);
 	n0->AddChild(n2);

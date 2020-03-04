@@ -1,2 +1,2 @@
-Ubpa_GetTargetName(core "${PROJECT_SOURCE_DIR}/src/core")
-Ubpa_AddTarget(MODE "EXE" LIBS ${core})
+Ubpa_GetTargetName(cmpt "${PROJECT_SOURCE_DIR}/src/cmpt")
+Ubpa_AddTarget(MODE "EXE" LIBS ${cmpt})

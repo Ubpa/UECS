@@ -16,15 +16,15 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<EntityData*, Cmpts*...> ArchetypeMngr::CreateEntity() {
+	const std::tuple<EntityBase*, Cmpts*...> ArchetypeMngr::CreateEntity() {
 		auto entity = entityPool.request();
 
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		auto [idx, cmpts] = archetype->CreateEntity<Cmpts...>(entity);
 
-		entity->archetype() = archetype;
-		entity->idx() = idx;
-		d2p[*entity] = entity;
+		entity->archetype = archetype;
+		entity->idx = idx;
+		ai2e[{archetype,idx}] = entity;
 
 		// ((entity->RegistCmptRelease(std::get<Find_v<CmptList, Cmpts>>(cmpts))),...);
 
@@ -43,11 +43,11 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> ArchetypeMngr::EntityAttach(EntityData* e) {
-		assert(!e->archetype()->id.IsContain<Cmpts...>());
+	const std::tuple<Cmpts*...> ArchetypeMngr::EntityAttach(EntityBase* e) {
+		assert(!e->archetype->id.IsContain<Cmpts...>());
 
-		Archetype* srcArchetype = e->archetype();
-		size_t srcIdx = e->idx();
+		Archetype* srcArchetype = e->archetype;
+		size_t srcIdx = e->idx;
 
 		auto& srcID = srcArchetype->GetID();
 		auto dstID = srcID;
@@ -80,19 +80,19 @@ namespace Ubpa {
 		// erase
 		auto [srcMovedIdx, pairs]  = srcArchetype->Erase(srcIdx);
 		if (srcMovedIdx != static_cast<size_t>(-1)) {
-			auto srcMovedEntityTarget = d2p.find({ srcArchetype, srcMovedIdx });
+			auto srcMovedEntityTarget = ai2e.find({ srcArchetype, srcMovedIdx });
 			auto srcMovedEntity = srcMovedEntityTarget->second;
 			for (auto p : pairs)
 				srcMovedEntity->MoveCmpt(p.first, p.second);
-			d2p.erase(srcMovedEntityTarget);
-			d2p[{srcArchetype, srcIdx}] = srcMovedEntity;
-			srcMovedEntity->idx() = srcMovedIdx;
+			ai2e.erase(srcMovedEntityTarget);
+			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
+			srcMovedEntity->idx = srcMovedIdx;
 		}
 
-		d2p[{dstArchetype, dstIdx}] = e;
+		ai2e[{dstArchetype, dstIdx}] = e;
 
-		e->archetype() = dstArchetype;
-		e->idx() = dstIdx;
+		e->archetype = dstArchetype;
+		e->idx = dstIdx;
 
 		if (srcArchetype->Size() == 0 && srcArchetype->CmptNum() != 0) {
 			ids.erase(srcArchetype->id);
@@ -104,11 +104,11 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	void ArchetypeMngr::EntityDetach(EntityData* e) {
-		assert(e->archetype()->id.IsContain<Cmpts...>());
+	void ArchetypeMngr::EntityDetach(EntityBase* e) {
+		assert(e->archetype->id.IsContain<Cmpts...>());
 
-		Archetype* srcArchetype = e->archetype();
-		size_t srcIdx = e->idx();
+		Archetype* srcArchetype = e->archetype;
+		size_t srcIdx = e->idx;
 
 		auto& srcID = srcArchetype->GetID();
 		auto dstID = srcID;
@@ -143,19 +143,19 @@ namespace Ubpa {
 		// erase
 		auto [srcMovedIdx, pairs] = srcArchetype->Erase(srcIdx);
 		if (srcMovedIdx != static_cast<size_t>(-1)) {
-			auto srcMovedEntityTarget = d2p.find({ srcArchetype, srcMovedIdx });
+			auto srcMovedEntityTarget = ai2e.find({ srcArchetype, srcMovedIdx });
 			auto srcMovedEntity = srcMovedEntityTarget->second;
 			for (auto p : pairs)
 				srcMovedEntity->MoveCmpt(p.first, p.second);
-			d2p.erase(srcMovedEntityTarget);
-			d2p[{srcArchetype, srcIdx}] = srcMovedEntity;
-			srcMovedEntity->idx() = srcMovedIdx;
+			ai2e.erase(srcMovedEntityTarget);
+			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
+			srcMovedEntity->idx = srcMovedIdx;
 		}
 
-		d2p[{dstArchetype, dstIdx}] = e;
+		ai2e[{dstArchetype, dstIdx}] = e;
 
-		e->archetype() = dstArchetype;
-		e->idx() = dstIdx;
+		e->archetype = dstArchetype;
+		e->idx = dstIdx;
 
 		if (srcArchetype->Size() == 0) {
 			ids.erase(srcArchetype->id);

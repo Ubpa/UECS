@@ -2,7 +2,7 @@
 
 #include "Archetype.h"
 #include "pool.h"
-#include "EntityData.h"
+#include "EntityBase.h"
 
 #include <UTemplate/Typelist.h>
 
@@ -32,19 +32,19 @@ namespace Ubpa {
 		const std::vector<Archetype*> GetArchetypeWith();
 
 		template<typename... Cmpts>
-		const std::tuple<EntityData*, Cmpts*...> CreateEntity();
+		const std::tuple<EntityBase*, Cmpts*...> CreateEntity();
 
 		template<typename... Cmpts>
-		const std::tuple<Cmpts*...> EntityAttach(EntityData* e);
+		const std::tuple<Cmpts*...> EntityAttach(EntityBase* e);
 
 		template<typename... Cmpts>
-		void EntityDetach(EntityData* e);
+		void EntityDetach(EntityBase* e);
 
-		void Release(EntityData* e);
+		void Release(EntityBase* e);
 
 	private:
-		pool<EntityData> entityPool;
-		std::map<EntityData, EntityData*> d2p;
+		pool<EntityBase> entityPool;
+		std::map<std::pair<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
 		std::set<Archetype::ID> ids;
 		Ubpa::World* w;
 		std::map<Archetype::ID, Archetype*> id2a; // id to archetype

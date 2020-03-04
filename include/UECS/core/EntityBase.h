@@ -1,33 +1,27 @@
 #pragma once
 
-#include <tuple>
 #include <map>
 #include <functional>
 
 namespace Ubpa {
 	class Archetype;
 
-	// tuple use for compare and hash
-	struct EntityData : std::tuple<Archetype*, size_t> {
-		EntityData(Archetype* archetype = nullptr, size_t idx = static_cast<size_t>(-1))
-			: std::tuple<Archetype*, size_t>{ archetype,idx } {}
+	struct EntityBase {
+		Archetype* archetype{nullptr};
+		size_t idx{ static_cast<size_t>(-1) };
 
-		~EntityData() {
+		~EntityBase() {
 			for (auto p : releases)
 				p.second(p.first);
 			releases.clear();
+			archetype = nullptr;
+			idx = static_cast<size_t>(-1);
 		}
 
-		inline Archetype*& archetype() noexcept { return std::get<0>(*this); }
-		inline const Archetype* archetype() const noexcept { return std::get<0>(*this); }
-
-		inline size_t& idx() noexcept { return std::get<1>(*this); }
-		inline size_t idx() const noexcept { return std::get<1>(*this); }
-
-		/*void Deregist(void* cmpt) {
-			assert(releases.find(cmpt) != releases.end());
-			releases.erase(cmpt);
-		}*/
+		bool operator<(const EntityBase& e) const noexcept {
+			return archetype < e.archetype ||
+				(archetype == e.archetype && idx < e.idx);
+		}
 
 	private:
 		friend class ArchetypeMngr;

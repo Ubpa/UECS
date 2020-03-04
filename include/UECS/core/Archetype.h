@@ -2,7 +2,7 @@
 
 #include "Chunk.h"
 #include "Pool.h"
-#include "EntityData.h"
+#include "EntityBase.h"
 
 #include <UTemplate/TypeID.h>
 
@@ -93,7 +93,7 @@ namespace Ubpa {
 
 		// init cmpts (with e if std::is_constructible_v<Cmpt, Entity*>)
 		template<typename... Cmpts>
-		const std::pair<size_t, std::tuple<Cmpts*...>> CreateEntity(EntityData* e);
+		const std::pair<size_t, std::tuple<Cmpts*...>> CreateEntity(EntityBase* e);
 
 		// erase idx-th entity
 		// if idx != num-1, back entity will put at idx, return num-1
@@ -124,9 +124,9 @@ namespace Ubpa {
 		template<typename Cmpt>
 		const std::vector<Cmpt*> LocateOne();
 		template<typename Cmpt>
-		Cmpt* New(size_t idx, EntityData* e);
+		Cmpt* New(size_t idx, EntityBase* e);
 		template<typename Cmpt>
-		static Cmpt* New(void* addr, EntityData* e);
+		static Cmpt* New(void* addr, EntityBase* e);
 
 	private:
 		friend class Entity;

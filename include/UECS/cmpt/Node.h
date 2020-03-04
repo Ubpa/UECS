@@ -6,53 +6,26 @@
 
 namespace Ubpa::Cmpt {
 	// auto delete children
-	struct Node {
-		Entity* entity;
-		Node* parent{ nullptr };
-		std::set<Node*> children;
+	class Node {
+	public:
+		Node(Ubpa::Entity* entity) : entity(entity) {}
+		~Node();
 
-		Node(Entity* entity)
-			: entity(entity) { }
+		inline Ubpa::Entity* Entity() noexcept { return entity; }
+		inline const Ubpa::Entity* Entity() const noexcept { return entity; }
 
-		~Node() {
-			for (auto child : children)
-				child->entity->Release();
-			children.clear();
-			if (parent) {
-				parent->children.erase(this);
-				parent = nullptr;
-			}
-			entity = nullptr;
-		}
+		// don't call it in parallel
+		void AddChild(Node* child);
+		void DelChild(Node* child);
 
-		void AddChild(Node* child) {
-			if (child->parent != nullptr)
-				child->parent->DelChild(child);
+		bool IsDescendantOf(Node* e) const;
 
-			child->parent = this;
-			children.insert(child);
-		}
-
-		void DelChild(Node* child) {
-			assert(child == this);
-			if (child->parent != this)
-				return;
-
-			children.erase(child);
-			child->parent = nullptr;
-		}
-
-		bool IsDescendantOf(Node* node) const {
-			if (this == node)
-				return true;
-
-			if (parent == nullptr)
-				return false;
-
-			return parent->IsDescendantOf(node);
-		}
-
+	private:
 		Node(const Node& node) = delete;
 		Node& operator=(const Node& node) = delete;
+
+		Ubpa::Entity* entity;
+		Node* parent{ nullptr };
+		std::set<Node*> children;
 	};
 }
