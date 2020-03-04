@@ -112,4 +112,9 @@ namespace Ubpa {
 		e->RegistCmptRelease(cmpt);
 		return cmpt;
 	}
+
+	template<typename Cmpt>
+	Cmpt* Archetype::New(size_t idx, EntityData* e) {
+		return New<Cmpt>(At<Cmpt>(idx), e);
+	}
 }

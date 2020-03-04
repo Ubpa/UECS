@@ -11,7 +11,9 @@ int main() {
 	auto [e0, n0] = w.CreateEntity<Cmpt::Node>();
 	auto [e1, n1] = w.CreateEntity<Cmpt::Node>();
 	auto [e2, n2] = w.CreateEntity<Cmpt::Node>();
-	auto [e3, n3] = w.CreateEntity<Cmpt::Node>();
+	//auto [e3, n3] = w.CreateEntity<Cmpt::Node>();
+	auto [e3] = w.CreateEntity<>();
+	auto [n3] = e3->Attach<Cmpt::Node>();
 
 	/*n0->entity = e0;
 	n1->entity = e1;
