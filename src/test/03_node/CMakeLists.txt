@@ -1,2 +1,1 @@
-Ubpa_GetTargetName(cmpt "${PROJECT_SOURCE_DIR}/src/cmpt")
-Ubpa_AddTarget(MODE "EXE" LIBS ${cmpt} TEST ON)
+Ubpa_AddTarget(MODE "EXE" TEST ON LIBS Ubpa::UECS_cmpt)

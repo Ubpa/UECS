@@ -2,7 +2,7 @@
 
 #include "Entity.h"
 
-#include <UTemplate/FuncTraits.h>
+#include <UTemplate/Func.h>
 
 #include <thread>
 

@@ -2,13 +2,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # 设定项目
-project(UECS VERSION 1.0)
+project(UECS VERSION 0.1.0)
 message(STATUS "[Project] ${PROJECT_NAME}")
-
-# 修改默认的安装路径前缀
-if(CMAKE_INSTALL_PREFIX_InitIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR} CACHE PATH "install prefix" FORCE)
-endif()
 
 # 在 Debug 模式下自动对 dll 和 lib 文件名后边加 d，但 exe 仍然需要手动设置
 set(CMAKE_DEBUG_POSTFIX d)
@@ -36,30 +31,25 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(FetchContent)
-FetchContent_Declare(
-  UGit
-  GIT_REPOSITORY https://github.com/Ubpa/UGit
-  GIT_TAG        59787a5
-)
-FetchContent_MakeAvailable(UGit)
 
-Ubpa_InitGit()
-Ubpa_UpdateSubModule()
+find_package(UCMake 0.2.0 EXACT QUIET)
+if(${UCMake_FOUND})
+	message(STATUS "UCMake-0.2.0 found")
+else()
+	message(STATUS "UCMake-0.2.0 not found, so fetch it ...")
+	FetchContent_Declare(
+	  UCMake
+	  GIT_REPOSITORY https://github.com/Ubpa/UCMake
+	  GIT_TAG "v0.2.0"
+	)
+	FetchContent_MakeAvailable(UCMake)
+	message(STATUS "UCMake-0.2.0 fetch done")
+endif()
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/external/UCMake/cmake")
-include(UbpaTool)
+# 修改默认的安装路径前缀
+Ubpa_InitInstallPrefix()
 
-include_directories (
-	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/external/UTemplate/include
-	# $ENV{XXX_INCLUDE_PATH}
-	# ...
-)
-link_directories (
-	${PROJECT_SOURCE_DIR}/lib
-	# $ENV{XXX_LIB_PATH}
-	# ...
-)
+Ubpa_AddDep(UTemplate 0.1)
 
 Ubpa_AddSubDirsRec(src)
 

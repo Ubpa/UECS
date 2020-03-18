@@ -1,4 +1,5 @@
+message(STATUS "config @PROJECT_NAME@...")
 
 @PACKAGE_INIT@
 
-include ( "${CMAKE_CURRENT_LIST_DIR}/UECSTargets.cmake" )
+message(STATUS "config @PROJECT_NAME@ done")

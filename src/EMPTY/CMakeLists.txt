@@ -3,4 +3,4 @@ Ubpa_GlobGroupSrcs(RST sources PATHS
 	"${PROJECT_SOURCE_DIR}/include/UECS"
 )
 
-Ubpa_AddTarget(MODE "EXE" SOURCES ${sources} TEST ON)
+Ubpa_AddTarget(MODE "EXE" SOURCES ${sources} TEST ON LIBS Ubpa::UECS_core)
