@@ -8,14 +8,12 @@
 
 namespace Ubpa {
 	class World;
+
 	class ArchetypeMngr {
 	public:
 		ArchetypeMngr(World* w) : w(w) {}
 
-		~ArchetypeMngr() {
-			for (auto p : id2a)
-				delete p.second;
-		}
+		~ArchetypeMngr();
 
 		inline World* World() const noexcept { return w; }
 
@@ -44,7 +42,7 @@ namespace Ubpa {
 
 	private:
 		Pool<EntityBase> entityPool;
-		std::map<std::pair<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
+		std::map<std::tuple<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
 		std::set<Archetype::ID> ids;
 		Ubpa::World* w;
 		std::map<Archetype::ID, Archetype*> id2a; // id to archetype

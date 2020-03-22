@@ -7,6 +7,10 @@ namespace Ubpa {
 		return archetype->At<Cmpt>(idx);
 	}
 
+	const std::vector<std::tuple<void*, size_t>> Entity::Components() const {
+		return archetype->Components(idx);
+	}
+
 	template<typename... Cmpts>
 	inline std::tuple<Cmpts *...> Entity::Attach() {
 		static_assert(sizeof...(Cmpts) > 0);

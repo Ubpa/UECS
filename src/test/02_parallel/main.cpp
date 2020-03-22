@@ -1,4 +1,4 @@
-#include <UECS/core/World.h>
+#include <UECS/World.h>
 
 #include <iostream>
 #include <random>
@@ -18,7 +18,7 @@ int main() {
 	World w;
 	vector<velocity*> vs;
 	vector<position*> ps;
-	vector<pair<size_t, size_t>> table;
+	vector<tuple<size_t, size_t>> table;
 	vs.reserve(N);
 	ps.reserve(N);
 	table.reserve(N);
@@ -52,9 +52,9 @@ int main() {
 	auto t0 = chrono::steady_clock::now();
 	for (size_t i = 0; i < N; i++) {
 		// simulate entity pointer
-		auto vpidx = table[i];
-		auto p = ps[vpidx.first];
-		auto v = ps[vpidx.second];
+		auto [vidx, pidx] = table[i];
+		auto v = ps[vidx];
+		auto p = ps[pidx];
 		// component pointer
 		auto& pX = p->x;
 		auto vX = v->x;

@@ -66,20 +66,19 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		friend struct Remove;
 
-		inline ~Archetype() {
-			for (auto c : chunks)
-				chunkPool.recycle(c);
-		}
+		~Archetype();
 
 		template<typename... Cmpts>
 		inline const std::tuple<std::vector<Cmpts*>...> Locate() {
 			return { LocateOne<Cmpts>()... };
 		}
 
-		std::pair<void*, size_t> At(size_t cmptHash, size_t idx);
+		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx);
 
 		template<typename Cmpt>
 		Cmpt* At(size_t idx);
+
+		std::vector<std::tuple<void*, size_t>> Components(size_t idx);
 
 		// no init
 		inline size_t CreateEntity() {
@@ -90,13 +89,13 @@ namespace Ubpa {
 
 		// init cmpts (with e if std::is_constructible_v<Cmpt, Entity*>)
 		template<typename... Cmpts>
-		const std::pair<size_t, std::tuple<Cmpts*...>> CreateEntity(EntityBase* e);
+		const std::tuple<size_t, std::tuple<Cmpts*...>> CreateEntity(EntityBase* e);
 
 		// erase idx-th entity
 		// if idx != num-1, back entity will put at idx, return num-1
 		// else return static_cast<size_t>(-1)
 		// return: (movedIdx, [(src, dst)...])
-		std::pair<size_t, std::vector<std::pair<void*,void*>>> Erase(size_t idx);
+		std::tuple<size_t, std::vector<std::tuple<void*,void*>>> Erase(size_t idx);
 
 		inline size_t Size() const noexcept { return num; }
 		inline size_t ChunkNum() const noexcept { return chunks.size(); }
@@ -106,16 +105,7 @@ namespace Ubpa {
 		inline size_t CmptNum() const noexcept { return id.size(); }
 
 		template<typename... Cmpts>
-		inline bool IsContain() const noexcept {
-			return id.IsContain<Cmpts...>();
-		}
-
-		/*template<typename Cmpt, typename... Args>
-		inline Cmpt* Init(size_t idx, Args&&... args) noexcept {
-			Cmpt* cmpt = reinterpret_cast<Cmpt*>(At<Cmpt>(idx));
-			new (cmpt) Cmpt(std::forward<Args>(args)...);
-			return cmpt;
-		}*/
+		inline bool IsContain() const noexcept;
 
 	private:
 		template<typename Cmpt>
@@ -131,7 +121,7 @@ namespace Ubpa {
 
 		ArchetypeMngr* mngr;
 		ID id;
-		std::map<size_t, std::pair<size_t, size_t>> h2so; // hash to (size, offset)
+		std::map<size_t, std::tuple<size_t, size_t>> h2so; // hash to (size, offset)
 		size_t chunkCapacity;
 		std::vector<Chunk*> chunks;
 		size_t num{ 0 };

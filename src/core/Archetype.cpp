@@ -1,9 +1,14 @@
-#include <UECS/core/detail/Archetype.h>
+#include <UECS/detail/Archetype.h>
 
 using namespace std;
 using namespace Ubpa;
 
 Pool<Chunk> Archetype::chunkPool;
+
+Archetype::~Archetype() {
+	for (auto c : chunks)
+		chunkPool.recycle(c);
+}
 
 bool Archetype::ID::operator<(const ID& id) const noexcept {
 	auto l = begin(), r = id.begin();
@@ -28,37 +33,39 @@ bool Archetype::ID::operator==(const ID& id) const noexcept {
 	return true;
 }
 
-pair<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
+tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
 	auto target = h2so.find(cmptHash);
 	if (target == h2so.end())
 		return { nullptr,static_cast<size_t>(-1) };
 
-	size_t size = target->second.first;
-	size_t offset = target->second.second;
+	auto [size, offset] = target->second;
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
-	return { buffer + offset + size * idxInChunk, size };
+	return { buffer + offset + idxInChunk * size, size };
 }
 
-pair<size_t, vector<pair<void*, void*>>> Archetype::Erase(size_t idx) {
+tuple<size_t, vector<tuple<void*, void*>>> Archetype::Erase(size_t idx) {
 	assert(idx < num);
-	pair<size_t, vector<pair<void*, void*>>> rst;
+
+	size_t movedIdx;
+	vector<tuple<void*, void*>> src_dst;
 	
 	if (idx != num - 1) {
-		size_t idxInChunk = idx % chunkCapacity;
-		byte* buffer = chunks[idx / chunkCapacity]->Data();
+		movedIdx = num - 1;
+		size_t dstIdxInChunk = idx % chunkCapacity;
+		byte* dstBuffer = chunks[idx / chunkCapacity]->Data();
+		size_t srcIdxInChunk = movedIdx % chunkCapacity;
+		byte* srcBuffer = chunks[movedIdx / chunkCapacity]->Data();
 		for (auto p : h2so) {
-			size_t size = p.second.first;
-			size_t offset = p.second.second;
-			byte* dst = buffer + offset + size * idxInChunk;
-			byte* src = buffer + offset + (num - 1) * idxInChunk;
-			rst.second.emplace_back(dst, src);
+			auto [size, offset] = p.second;
+			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
+			byte* src = srcBuffer + offset + srcIdxInChunk * size;
+			src_dst.emplace_back(src, dst);
 			memcpy(dst, src, size);
 		}
-		rst.first = num - 1;
 	}
 	else
-		rst.first = static_cast<size_t>(-1);
+		movedIdx = static_cast<size_t>(-1);
 
 	num--;
 
@@ -66,6 +73,15 @@ pair<size_t, vector<pair<void*, void*>>> Archetype::Erase(size_t idx) {
 		Chunk* back = chunks.back();
 		chunkPool.recycle(back);
 	}
+
+	return {movedIdx, src_dst};
+}
+
+vector<tuple<void*, size_t>> Archetype::Components(size_t idx) {
+	vector<tuple<void*, size_t>> rst;
+
+	for (const auto& [h, so] : h2so)
+		rst.push_back(At(h, idx));
 
 	return rst;
 }

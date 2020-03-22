@@ -7,6 +7,10 @@ namespace Ubpa {
 	public:
 		template<typename Cmpt>
 		inline Cmpt* Get();
+		template<typename Cmpt>
+		inline const Cmpt* Get() const { return const_cast<Entity*>(this)->Get(); }
+
+		inline const std::vector<std::tuple<void*,size_t>> Components() const;
 
 		template<typename... Cmpts>
 		inline std::tuple<Cmpts *...> Attach();

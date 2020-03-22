@@ -26,9 +26,9 @@ namespace Ubpa {
 		std::vector<size_t> h;
 		std::vector<size_t> s;
 		((h.push_back(TypeID<Cmpts>), s.push_back(sizeof(Cmpts))), ...);
-		for (auto p : srcArchetype->h2so) {
-			h.push_back(p.first);
-			s.push_back(std::get<0>(p.second));
+		for (auto [hash, so] : srcArchetype->h2so) {
+			h.push_back(hash);
+			s.push_back(std::get<0>(so));
 		}
 		auto co = Chunk::CO(s);
 		rst->chunkCapacity = std::get<0>(co);
@@ -51,11 +51,11 @@ namespace Ubpa {
 
 		std::vector<size_t> h;
 		std::vector<size_t> s;
-		for (auto p : rst->h2so) {
-			if (rst->id.IsContain(p.first))
+		for (auto [hash, so] : srcArchetype->h2so) {
+			if (!rst->id.IsContain(hash))
 				continue;
-			h.push_back(p.first);
-			s.push_back(std::get<0>(p.second));
+			h.push_back(hash);
+			s.push_back(std::get<0>(so));
 		}
 		auto co = Chunk::CO(s);
 		rst->chunkCapacity = std::get<0>(co);
@@ -66,26 +66,21 @@ namespace Ubpa {
 
 	template<typename Cmpt>
 	Cmpt* Archetype::At(size_t idx) {
-		auto target = h2so.find(TypeID<Cmpt>);
-		if (target == h2so.end())
-			return nullptr;
-		assert(sizeof(Cmpt) == target->second.first);
-		size_t offset = target->second.second;
-		size_t idxInChunk = idx % chunkCapacity;
-		byte* buffer = chunks[idx / chunkCapacity]->Data();
-		return reinterpret_cast<Cmpt*>(buffer + offset + sizeof(Cmpt) * idxInChunk);
+		auto [ptr, s] = At(TypeID<Cmpt>, idx);
+		assert(ptr == nullptr || sizeof(Cmpt) == s);
+		return reinterpret_cast<Cmpt*>(ptr);
 	}
 
 	template<typename... Cmpts>
-	const std::pair<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity(EntityBase* e) {
+	const std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity(EntityBase* e) {
 		assert(id.Is<Cmpts...>());
 
 		using CmptList = TypeList<Cmpts...>;
 		size_t idx = CreateEntity();
 		size_t idxInChunk = idx % chunkCapacity;
 		byte* buffer = chunks[idx / chunkCapacity]->Data();
-		std::array<std::pair<size_t, size_t>, sizeof...(Cmpts)> soArr{ h2so[TypeID<Cmpts>]... };
-		std::tuple<Cmpts *...> cmpts = { New<Cmpts>(buffer + soArr[Find_v<CmptList, Cmpts>].second + idxInChunk * soArr[Find_v<CmptList, Cmpts>].first, e)... };
+		std::array<std::tuple<size_t, size_t>, sizeof...(Cmpts)> soArr{ h2so[TypeID<Cmpts>]... };
+		std::tuple<Cmpts *...> cmpts = { New<Cmpts>(buffer + std::get<1>(soArr[Find_v<CmptList, Cmpts>]) + idxInChunk * std::get<0>(soArr[Find_v<CmptList, Cmpts>]), e)... };
 
 		return { idx,cmpts };
 	}
@@ -94,8 +89,8 @@ namespace Ubpa {
 	const std::vector<Cmpt*> Archetype::LocateOne() {
 		auto target = h2so.find(TypeID<Cmpt>);
 		assert(target != h2so.end());
-		assert(sizeof(Cmpt) == target->second.first);
-		const size_t offset = target->second.second;
+		assert(sizeof(Cmpt) == std::get<0>(target->second));
+		const size_t offset = std::get<1>(target->second);
 		std::vector<Cmpt*> rst;
 		for (auto c : chunks)
 			rst.push_back(reinterpret_cast<Cmpt*>(c->Data() + offset));
@@ -109,12 +104,17 @@ namespace Ubpa {
 			cmpt = new(addr)Cmpt(reinterpret_cast<Entity*>(e));
 		else
 			cmpt = new(addr)Cmpt;
-		e->RegistCmptRelease(cmpt);
+		e->RegistCmptFuncs(cmpt);
 		return cmpt;
 	}
 
 	template<typename Cmpt>
 	Cmpt* Archetype::New(size_t idx, EntityBase* e) {
 		return New<Cmpt>(At<Cmpt>(idx), e);
+	}
+
+	template<typename... Cmpts>
+	inline bool Archetype::IsContain() const noexcept {
+		return id.IsContain<Cmpts...>();
 	}
 }
