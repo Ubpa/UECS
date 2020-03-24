@@ -15,6 +15,12 @@ namespace Ubpa {
 			return target->second;
 	}
 
+	inline Archetype* ArchetypeMngr::GetArchetypeOf(const Archetype::ID& archetypeID) {
+		auto target = id2a.find(archetypeID);
+		assert(target != id2a.end());
+		return target->second;
+	}
+
 	template<typename... Cmpts>
 	const std::tuple<EntityBase*, Cmpts*...> ArchetypeMngr::CreateEntity() {
 		auto entity = entityPool.request();
