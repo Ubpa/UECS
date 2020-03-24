@@ -15,7 +15,7 @@ namespace Ubpa {
 	inline std::tuple<Cmpts *...> Entity::Attach() {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-		static_assert(((std::is_constructible_v<Cmpts> || std::is_constructible_v<Cmpts, Entity*>) &&...));
+		(CmptMngr::Instance().Regist<Cmpts>(), ...);
 		assert(IsAlive());
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
 	}

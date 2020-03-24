@@ -12,14 +12,12 @@ void ArchetypeMngr::Release(EntityBase* e) {
 	auto idx = e->idx;
 	entityPool.recycle(e);
 
-	auto [movedEntityIdx, pairs] = archetype->Erase(idx);
+	auto movedEntityIdx = archetype->Erase(idx);
 
 	if (movedEntityIdx != static_cast<size_t>(-1)) {
 		auto target = ai2e.find({ archetype, movedEntityIdx });
 		EntityBase* movedEntity = target->second;
 		ai2e.erase(target);
-		for (auto [src, dst] : pairs)
-			movedEntity->MoveCmpt(src, dst);
 		movedEntity->idx = idx;
 		ai2e[{archetype, idx}] = movedEntity;
 	}

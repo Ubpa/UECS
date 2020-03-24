@@ -20,7 +20,7 @@ namespace Ubpa {
 		auto entity = entityPool.request();
 
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
-		auto [idx, cmpts] = archetype->CreateEntity<Cmpts...>(entity);
+		auto [idx, cmpts] = archetype->CreateEntity<Cmpts...>();
 
 		entity->archetype = archetype;
 		entity->idx = idx;
@@ -66,24 +66,21 @@ namespace Ubpa {
 			dstArchetype = target->second;
 
 		// move src to dst
-		size_t dstIdx = dstArchetype->CreateEntity();
+		size_t dstIdx = dstArchetype->RequestBuffer();
 		
-		(dstArchetype->New<Cmpts>(dstIdx, e), ...);
+		(new(dstArchetype->At<Cmpts>(dstIdx))Cmpts, ...);
 		for (auto cmptHash : srcID) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(cmptHash, srcIdx);
 			auto [dstCmpt, dstSize] = dstArchetype->At(cmptHash, dstIdx);
-			e->MoveCmpt(srcCmpt, dstCmpt);
 			assert(srcSize == dstSize);
-			memcpy(dstCmpt, srcCmpt, srcSize);
+			CmptMngr::Instance().MoveConstruct(cmptHash, dstCmpt, srcCmpt);
 		}
 
 		// erase
-		auto [srcMovedIdx, pairs]  = srcArchetype->Erase(srcIdx);
+		auto srcMovedIdx = srcArchetype->Erase(srcIdx);
 		if (srcMovedIdx != static_cast<size_t>(-1)) {
 			auto srcMovedEntityTarget = ai2e.find({ srcArchetype, srcMovedIdx });
 			auto srcMovedEntity = srcMovedEntityTarget->second;
-			for (auto [src, dst] : pairs)
-				srcMovedEntity->MoveCmpt(src, dst);
 			ai2e.erase(srcMovedEntityTarget);
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
 			srcMovedEntity->idx = srcMovedIdx;
@@ -127,26 +124,23 @@ namespace Ubpa {
 			dstArchetype = target->second;
 
 		// move src to dst
-		size_t dstIdx = dstArchetype->CreateEntity();
+		size_t dstIdx = dstArchetype->RequestBuffer();
 		for (auto cmptHash : srcID) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(cmptHash, srcIdx);
 			if (dstID.IsContain(cmptHash)) {
 				auto [dstCmpt, dstSize] = dstArchetype->At(cmptHash, dstIdx);
-				e->MoveCmpt(srcCmpt, dstCmpt);
 				assert(srcSize == dstSize);
-				memcpy(dstCmpt, srcCmpt, srcSize);
+				CmptMngr::Instance().MoveConstruct(cmptHash, dstCmpt, srcCmpt);
 			}
 			else
-				e->ReleaseCmpt(srcCmpt);
+				CmptMngr::Instance().Destruct(cmptHash, srcCmpt);
 		}
 
 		// erase
-		auto [srcMovedIdx, pairs] = srcArchetype->Erase(srcIdx);
+		auto srcMovedIdx = srcArchetype->Erase(srcIdx);
 		if (srcMovedIdx != static_cast<size_t>(-1)) {
 			auto srcMovedEntityTarget = ai2e.find({ srcArchetype, srcMovedIdx });
 			auto srcMovedEntity = srcMovedEntityTarget->second;
-			for (auto [src, dst] : pairs)
-				srcMovedEntity->MoveCmpt(src, dst);
 			ai2e.erase(srcMovedEntityTarget);
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
 			srcMovedEntity->idx = srcMovedIdx;

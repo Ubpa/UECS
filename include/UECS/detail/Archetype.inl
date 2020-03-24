@@ -72,15 +72,14 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity(EntityBase* e) {
+	const std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity() {
 		assert(id.Is<Cmpts...>());
 
 		using CmptList = TypeList<Cmpts...>;
-		size_t idx = CreateEntity();
+		size_t idx = RequestBuffer();
 		size_t idxInChunk = idx % chunkCapacity;
 		byte* buffer = chunks[idx / chunkCapacity]->Data();
-		std::array<std::tuple<size_t, size_t>, sizeof...(Cmpts)> soArr{ h2so[TypeID<Cmpts>]... };
-		std::tuple<Cmpts *...> cmpts = { New<Cmpts>(buffer + std::get<1>(soArr[Find_v<CmptList, Cmpts>]) + idxInChunk * std::get<0>(soArr[Find_v<CmptList, Cmpts>]), e)... };
+		std::tuple<Cmpts *...> cmpts = { new(buffer + std::get<1>(h2so[TypeID<Cmpts>]) + idxInChunk * std::get<0>(h2so[TypeID<Cmpts>]))Cmpts... };
 
 		return { idx,cmpts };
 	}
@@ -95,22 +94,6 @@ namespace Ubpa {
 		for (auto c : chunks)
 			rst.push_back(reinterpret_cast<Cmpt*>(c->Data() + offset));
 		return rst;
-	}
-
-	template<typename Cmpt>
-	Cmpt* Archetype::New(void* addr, EntityBase* e) {
-		Cmpt* cmpt;
-		if constexpr (std::is_constructible_v<Cmpt, Entity*>)
-			cmpt = new(addr)Cmpt(reinterpret_cast<Entity*>(e));
-		else
-			cmpt = new(addr)Cmpt;
-		e->RegistCmptFuncs(cmpt);
-		return cmpt;
-	}
-
-	template<typename Cmpt>
-	Cmpt* Archetype::New(size_t idx, EntityBase* e) {
-		return New<Cmpt>(At<Cmpt>(idx), e);
 	}
 
 	template<typename... Cmpts>

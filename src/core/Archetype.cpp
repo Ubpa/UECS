@@ -44,24 +44,24 @@ tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
 	return { buffer + offset + idxInChunk * size, size };
 }
 
-tuple<size_t, vector<tuple<void*, void*>>> Archetype::Erase(size_t idx) {
+size_t Archetype::Erase(size_t idx) {
 	assert(idx < num);
 
 	size_t movedIdx;
-	vector<tuple<void*, void*>> src_dst;
 	
 	if (idx != num - 1) {
 		movedIdx = num - 1;
+
 		size_t dstIdxInChunk = idx % chunkCapacity;
 		byte* dstBuffer = chunks[idx / chunkCapacity]->Data();
 		size_t srcIdxInChunk = movedIdx % chunkCapacity;
 		byte* srcBuffer = chunks[movedIdx / chunkCapacity]->Data();
-		for (auto p : h2so) {
-			auto [size, offset] = p.second;
+
+		for (auto [h, so] : h2so) {
+			auto [size, offset] = so;
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
-			src_dst.emplace_back(src, dst);
-			memcpy(dst, src, size);
+			CmptMngr::Instance().MoveConstruct(h, dst, src);
 		}
 	}
 	else
@@ -74,7 +74,7 @@ tuple<size_t, vector<tuple<void*, void*>>> Archetype::Erase(size_t idx) {
 		chunkPool.recycle(back);
 	}
 
-	return {movedIdx, src_dst};
+	return movedIdx;
 }
 
 vector<tuple<void*, size_t>> Archetype::Components(size_t idx) {
