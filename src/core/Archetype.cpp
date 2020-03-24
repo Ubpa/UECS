@@ -3,8 +3,6 @@
 using namespace std;
 using namespace Ubpa;
 
-Pool<Chunk> Archetype::chunkPool;
-
 Archetype::~Archetype() {
 	for (auto c : chunks)
 		chunkPool.recycle(c);
