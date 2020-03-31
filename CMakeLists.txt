@@ -32,28 +32,28 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(FetchContent)
 
-message(STATUS "find package: UCMake v0.3.0")
-find_package(UCMake 0.3.0 QUIET)
+message(STATUS "find package: UCMake v0.3.3")
+find_package(UCMake 0.3.3 QUIET)
 if(${UCMake_FOUND})
 	message(STATUS "UCMake v${UCMake_VERSION} found")
 else()
 	set(_address "https://github.com/Ubpa/UCMake")
-	message(STATUS "UCMake v0.3.0 not found, so fetch it ...\n"
-	"fetch: ${_address} with tag v0.3.0")
+	message(STATUS "UCMake v0.3.3 not found, so fetch it ...\n"
+	"fetch: ${_address} with tag v0.3.3")
 	FetchContent_Declare(
 	  UCMake
 	  GIT_REPOSITORY ${_address}
-	  GIT_TAG "v0.3.0"
+	  GIT_TAG "v0.3.3"
 	)
-	message(STATUS "UCMake v0.3.0 fetch done, building ...")
+	message(STATUS "UCMake v0.3.3 fetch done, building ...")
 	FetchContent_MakeAvailable(UCMake)
-	message(STATUS "UCMake v0.3.0 build done")
+	message(STATUS "UCMake v0.3.3 build done")
 endif()
 
 # 修改默认的安装路径前缀
 Ubpa_InitInstallPrefix()
 
-Ubpa_AddDep(UTemplate 0.2)
+Ubpa_AddDep(UTemplate 0.2.0)
 
 Ubpa_AddSubDirsRec(src)
 
