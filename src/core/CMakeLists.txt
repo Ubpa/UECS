@@ -3,10 +3,9 @@ Ubpa_GlobGroupSrcs(RST sources PATHS
 	"${PROJECT_SOURCE_DIR}/include/UECS"
 )
 
-Ubpa_ToPackageName(utemplate_package_name UTemplate ${UTemplate_VERSION})
-
-Ubpa_AddTarget(MODE "LIB"
+Ubpa_AddTarget_GDR(MODE "LIB"
 	SOURCES ${sources}
 	INTERFACE_INC ON
-	LIBS "Ubpa::${utemplate_package_name}_core"
+	INC_DIRS "_deps"
+	PUBLIC_GLIBS "Ubpa::UTemplate_core"
 )

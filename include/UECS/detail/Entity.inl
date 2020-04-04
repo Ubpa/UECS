@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SystemMngr.h"
+
 namespace Ubpa {
 	template<typename Cmpt>
 	inline Cmpt* Entity::Get() {
@@ -17,6 +19,7 @@ namespace Ubpa {
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		(CmptMngr::Instance().Regist<Cmpts>(), ...);
 		assert(IsAlive());
+		(archetype->sysmngr->Regist<Cmpts>(archetype->mngr), ...);
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
 	}
 
@@ -30,7 +33,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	inline void Entity::Detach() {
+	void Entity::Detach() {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		assert(IsAlive());

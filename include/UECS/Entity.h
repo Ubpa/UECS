@@ -10,7 +10,7 @@ namespace Ubpa {
 		template<typename Cmpt>
 		inline const Cmpt* Get() const { return const_cast<Entity*>(this)->Get(); }
 
-		inline const std::vector<std::tuple<void*,size_t>> Components() const;
+		inline const std::vector<std::tuple<void*, size_t>> Components() const;
 
 		template<typename... Cmpts>
 		inline std::tuple<Cmpts *...> Attach();
@@ -19,7 +19,7 @@ namespace Ubpa {
 		inline Cmpt* GetOrAttach();
 
 		template<typename... Cmpts>
-		inline void Detach();
+		void Detach();
 
 		inline bool IsAlive() const noexcept;
 

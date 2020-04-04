@@ -6,12 +6,14 @@
 
 #include <UTemplate/Typelist.h>
 
+#include <taskflow/taskflow.hpp>
+
 namespace Ubpa {
 	class World;
 
 	class ArchetypeMngr {
 	public:
-		ArchetypeMngr(World* w) : w(w) {}
+		ArchetypeMngr(SystemMngr* sysmngr, World* w) : sysmngr{ sysmngr }, w{ w } {}
 
 		~ArchetypeMngr();
 
@@ -36,6 +38,9 @@ namespace Ubpa {
 
 		void Release(EntityBase* e);
 
+		template<typename Sys>
+		void GenTaskflow(tf::Taskflow& taskflow, Sys&& sys);
+
 	private:
 		Pool<EntityBase> entityPool;
 		std::map<std::tuple<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
@@ -44,6 +49,7 @@ namespace Ubpa {
 		std::map<Archetype::ID, Archetype*> id2a; // id to archetype
 
 		Ubpa::World* w;
+		SystemMngr* sysmngr;
 	};
 }
 
