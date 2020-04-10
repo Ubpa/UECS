@@ -1,13 +1,16 @@
 #include <UECS/World.h>
 
 using namespace Ubpa;
+using namespace std;
 
-World::World() : mngr{ &sysMngr, this } {}
+World::World() : sysMngr{&mngr}, mngr { &sysMngr, this } {}
 
 void World::Update(bool dump) {
-	SystemMngr::Table table;
-	sysMngr.GenTaskflow(table);
-	if (dump)
-		table.finalSys.dump(std::cout);
-	executor.run(table.finalSys).wait();
+	map<SystemMngr::ScheduleType, tf::Taskflow> type2tf;
+	sysMngr.GenTaskflow(type2tf);
+	for (auto& [type, taskflow] : type2tf) {
+		if (dump)
+			taskflow.dump(std::cout);
+		executor.run(taskflow).wait();
+	}
 }

@@ -39,7 +39,7 @@ namespace Ubpa {
 		void Release(EntityBase* e);
 
 		template<typename Sys>
-		void GenTaskflow(tf::Taskflow& taskflow, Sys&& sys);
+		void GenTaskflow(tf::Taskflow* taskflow, Sys&& sys);
 
 	private:
 		Pool<EntityBase> entityPool;

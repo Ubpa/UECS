@@ -19,7 +19,7 @@ namespace Ubpa {
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		(CmptMngr::Instance().Regist<Cmpts>(), ...);
 		assert(IsAlive());
-		(archetype->sysmngr->Regist<Cmpts>(archetype->mngr), ...);
+		(archetype->sysmngr->Regist<Cmpts>(), ...);
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
 	}
 

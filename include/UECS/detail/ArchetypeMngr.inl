@@ -172,8 +172,8 @@ namespace Ubpa {
 	}
 
 	template<typename Sys>
-	void ArchetypeMngr::GenTaskflow(tf::Taskflow& taskflow, Sys&& sys) {
-		return detail::ArchetypeMngr_::GenTaskflow<FuncTraits_ArgList<Sys>>::run(taskflow, this, std::forward<Sys>(sys));
+	void ArchetypeMngr::GenTaskflow(tf::Taskflow* taskflow, Sys&& sys) {
+		return detail::ArchetypeMngr_::GenTaskflow<FuncTraits_ArgList<std::decay_t<Sys>>>::run(taskflow, this, std::forward<Sys>(sys));
 	}
 }
 
@@ -184,8 +184,8 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 		using CmptList = TypeList<Cmpts...>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
-		static void run(tf::Taskflow& taskflow, ArchetypeMngr* mngr, Sys&& s) {
-			taskflow.clear();
+		static void run(tf::Taskflow* taskflow, ArchetypeMngr* mngr, Sys&& s) {
+			taskflow->clear();
 			for (auto archetype : mngr->GetArchetypeWith<std::remove_const_t<Cmpts>...>()) {
 				auto cmptsVecTuple = archetype->Locate<std::remove_const_t<Cmpts>...>();
 				size_t num = archetype->Size();
@@ -195,7 +195,7 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 				for (size_t i = 0; i < chunkNum; i++) {
 					auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[i]...);
 					size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
-					taskflow.emplace([s, cmptsTuple, J]() {
+					taskflow->emplace([s, cmptsTuple, J]() {
 						for (size_t j = 0; j < J; j++)
 							s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
 					});
