@@ -8,7 +8,7 @@ using namespace Ubpa;
 struct Position {
 	float x;
 	void OnUpdate() const {
-		cout << "position: " << x << endl;
+		//cout << "position: " << x << endl;
 	}
 };
 
@@ -16,12 +16,11 @@ struct Velocity {
 	float x;
 
 	void Update(Position* p) const {
-		p->x += x;
-		cout << "update Position" << endl;
+		for(size_t i=0;i< 1000000;i++)
+			p->x *= x;
 	}
 
 	void Update() const {
-		cout << "update Position(aha)" << endl;
 	}
 
 	static void OnSchedule(std::map<SystemMngr::ScheduleType, SystemSchedule*>& type2schedule) {
@@ -35,14 +34,15 @@ struct Acceleration {
 	float x;
 
 	void OnUpdate(Velocity* v) const {
-		v->x += x;
-		cout << "update Velocity" << endl;
+		for (size_t i = 0; i < 1000000; i++)
+			v->x *= x;
 	}
 };
 
 int main() {
 	World w;
-	w.CreateEntity<Velocity, Position, Acceleration>();
+	for (size_t i = 0; i < 10000; i++)
+		w.CreateEntity<Velocity, Position, Acceleration>();
 	w.Update(true);
 	return 0;
 }

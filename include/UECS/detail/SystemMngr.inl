@@ -18,11 +18,15 @@ namespace Ubpa::detail::SystemMngr_ {
 namespace Ubpa{
 	template<typename Cmpt>
 	void SystemMngr::Regist() {
-		if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>) {
-			Regist(ScheduleType::OnUpdate, detail::SystemMngr_::GenUpdateSystem<Cmpt>::run());
-		}
-		if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>) {
-			dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
+		static bool isRegisted = false;
+		if (!isRegisted) {
+			if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>) {
+				Regist(ScheduleType::OnUpdate, detail::SystemMngr_::GenUpdateSystem<Cmpt>::run());
+			}
+			if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>) {
+				dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
+			}
+			isRegisted = true;
 		}
 	}
 
