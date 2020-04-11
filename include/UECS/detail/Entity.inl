@@ -4,17 +4,16 @@
 
 namespace Ubpa {
 	template<typename Cmpt>
-	inline Cmpt* Entity::Get() {
+	Cmpt* Entity::Get() {
 		assert(IsAlive());
 		return archetype->At<Cmpt>(idx);
 	}
 
-	const std::vector<std::tuple<void*, size_t>> Entity::Components() const {
-		return archetype->Components(idx);
-	}
+	template<typename Cmpt>
+	const Cmpt* Entity::Get() const { return const_cast<Entity*>(this)->Get(); }
 
 	template<typename... Cmpts>
-	inline std::tuple<Cmpts *...> Entity::Attach() {
+	std::tuple<Cmpts *...> Entity::Attach() {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		(CmptMngr::Instance().Regist<Cmpts>(), ...);
@@ -38,14 +37,5 @@ namespace Ubpa {
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
 		assert(IsAlive());
 		return archetype->mngr->EntityDetach<Cmpts...>(this);
-	}
-
-	inline void Entity::Release() noexcept {
-		assert(IsAlive());
-		archetype->mngr->Release(this);
-	}
-
-	inline bool Entity::IsAlive() const noexcept {
-		return archetype != nullptr;
 	}
 }

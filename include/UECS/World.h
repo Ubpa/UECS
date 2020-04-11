@@ -24,6 +24,7 @@ namespace Ubpa {
 		inline std::tuple<Entity*, Cmpts*...> CreateEntity();
 
 		void Update(bool dump = false);
+		void RunCommand();
 
 		// s must be a callable object and it's argument-list isn't empty
 		template<typename Sys>
