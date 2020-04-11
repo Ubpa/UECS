@@ -2,12 +2,22 @@
 
 namespace Ubpa {
 	template<typename Sys>
-	inline void World::Each(Sys&& s) {
+	void World::Each(Sys&& s) {
 		detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
 	}
 
 	template<typename Sys>
-	inline void World::ParallelEach(Sys&& s) {
+	void World::Each(Sys&& s) const {
+		detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+	}
+
+	template<typename Sys>
+	void World::ParallelEach(Sys&& s) {
+		detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+	}
+
+	template<typename Sys>
+	void World::ParallelEach(Sys&& s) const {
 		detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
 	}
 
@@ -30,8 +40,8 @@ namespace Ubpa::detail::World_ {
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archetype : w->mngr.GetArchetypeWith<Cmpts...>()) {
-				auto cmptsVecTuple = archetype->Locate<Cmpts...>();
+			for (auto archetype : w->mngr.GetArchetypeWith<std::decay_t<Cmpts>...>()) {
+				auto cmptsVecTuple = archetype->Locate<std::decay_t<Cmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
 				size_t chunkCapacity = archetype->ChunkCapacity();
@@ -44,6 +54,13 @@ namespace Ubpa::detail::World_ {
 				}
 			}
 		}
+
+		template<typename Sys>
+		static void run(const World* w, Sys&& s) {
+			static_assert((std::is_const_v<Cmpts> &&...),
+				"arguments must be const <Component>*");
+			run(const_cast<World*>(w), std::forward<Sys>(s));
+		}
 	};
 
 	template<typename... Cmpts>
@@ -53,38 +70,16 @@ namespace Ubpa::detail::World_ {
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archetype : w->mngr.GetArchetypeWith<Cmpts...>()) {
-				auto cmptsVecTuple = archetype->Locate<Cmpts...>();
-				size_t num = archetype->Size();
-				size_t chunkNum = archetype->ChunkNum();
-				size_t chunkCapacity = archetype->ChunkCapacity();
+			tf::Taskflow taskflow;
+			w->mngr.GenTaskflow(&taskflow, std::forward<Sys>(s));
+			w->executor.run(taskflow).wait();
+		}
 
-				if (chunkNum == 1) {
-					auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[0]...);
-					for (size_t j = 0; j < num; j++)
-						s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
-					return;
-				}
-
-				size_t coreNum = std::thread::hardware_concurrency();
-				assert(coreNum > 0);
-
-				auto job = [=](size_t ID) {
-					for (size_t i = ID; i < chunkNum; i += coreNum) {
-						auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[i]...);
-						size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
-						for (size_t j = 0; j < J; j++)
-							s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
-					}
-				};
-
-				std::vector<std::thread> workers;
-				for (size_t i = 0; i < std::min(chunkNum, coreNum); i++)
-					workers.emplace_back(job, i);
-
-				for (auto& worker : workers)
-					worker.join();
-			}
+		template<typename Sys>
+		static void run(const World* w, Sys&& s) {
+			static_assert((std::is_const_v<Cmpts> &&...),
+				"arguments must be const <Component>*");
+			run(const_cast<World*>(w), std::forward<Sys>(s));
 		}
 	};
 }
