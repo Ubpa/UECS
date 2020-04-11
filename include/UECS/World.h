@@ -14,7 +14,6 @@ namespace Ubpa::detail::World_ {
 	struct ParallelEach;
 }
 
-// no any lock !
 namespace Ubpa {
 	class World {
 	public:
@@ -26,11 +25,9 @@ namespace Ubpa {
 		void Update(bool dump = false);
 		void RunCommand();
 
-		// s must be a callable object and it's argument-list isn't empty
 		template<typename Sys>
 		inline void Each(Sys&& s);
 
-		// s must be a callable object and it's argument-list isn't empty
 		template<typename Sys>
 		inline void ParallelEach(Sys&& s);
 

@@ -30,15 +30,24 @@ bool SystemSchedule::GenTaskflow(tf::Taskflow& taskflow) const {
 	unordered_map<System*, tf::Task> sys2task;
 
 	for (auto& [ID, rw] : id2rw) {
-		tf::Task writerTask;
-		if (rw.writer) {
-			auto writerTarget = sys2task.find(rw.writer);
+		tf::Task backWriterTask;
+		tf::Task preTask;
+		for (size_t i = 0; i < rw.writers.size(); i++) {
+			size_t idx = rw.writers.size() - i - 1;
+			size_t preIdx = idx + 1;
+			tf::Task writerTask;
+			auto writerTarget = sys2task.find(rw.writers[idx]);
 			if (writerTarget == sys2task.end()) {
-				writerTask = taskflow.composed_of(*rw.writer);
-				sys2task[rw.writer] = writerTask;
+				writerTask = taskflow.composed_of(*rw.writers[idx]);
+				sys2task[rw.writers[idx]] = writerTask;
 			}
 			else
 				writerTask = writerTarget->second;
+			if (!preTask.empty())
+				writerTask.precede(preTask);
+			else
+				backWriterTask = writerTask;
+			preTask = writerTask;
 		}
 
 		for (auto reader : rw.readers) {
@@ -51,8 +60,8 @@ bool SystemSchedule::GenTaskflow(tf::Taskflow& taskflow) const {
 			else
 				readerTask = readerTarget->second;
 
-			if (!writerTask.empty())
-				readerTask.succeed(writerTask);
+			if (!backWriterTask.empty())
+				readerTask.succeed(backWriterTask);
 		}
 	}
 
@@ -62,12 +71,12 @@ bool SystemSchedule::GenTaskflow(tf::Taskflow& taskflow) const {
 bool SystemSchedule::IsDAG() const noexcept {
 	std::map<System*, std::vector<System*>> graph;
 	for (const auto& [ID, rw] : id2rw) {
-		if (!rw.writer)
-			continue;
-		auto& children = graph[rw.writer];
-		for (auto reader : rw.readers) {
-			if (reader != rw.writer)
-				children.push_back(reader);
+		for (const auto& writer : rw.writers) {
+			auto& children = graph[writer];
+			for (auto reader : rw.readers) {
+				if (reader != writer)
+					children.push_back(reader);
+			}
 		}
 	}
 

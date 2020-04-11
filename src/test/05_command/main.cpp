@@ -33,7 +33,7 @@ struct B {
 
 int main() {
 	World w;
-	auto [e,b] = w.CreateEntity<B>();
+	auto [e, b] = w.CreateEntity<B>();
 	b->num = 2;
 	b->entity = e;
 	for (size_t i = 0; i < 20; i++) {
