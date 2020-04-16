@@ -13,7 +13,7 @@ ArchetypeMngr::~ArchetypeMngr() {
 void ArchetypeMngr::Release(EntityBase* e) {
 	auto archetype = e->archetype;
 	auto idx = e->idx;
-	entityPool.recycle(e);
+	entityPool.Recycle(e);
 
 	auto movedEntityIdx = archetype->Erase(idx);
 

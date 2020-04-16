@@ -4,7 +4,7 @@ using namespace Ubpa;
 using namespace std;
 
 System* SystemSchedule::RequestSystem() {
-	System* sys = syspool.request();
+	System* sys = syspool.Request();
 	requestedSysVec.push_back(sys);
 	return sys;
 }
@@ -18,7 +18,7 @@ SystemSchedule::~SystemSchedule() {
 
 void SystemSchedule::Clear() {
 	for (auto sys : requestedSysVec)
-		syspool.recycle(sys);
+		syspool.Recycle(sys);
 	requestedSysVec.clear();
 	id2rw.clear();
 }

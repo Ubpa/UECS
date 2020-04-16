@@ -7,5 +7,5 @@ Ubpa_AddTarget_GDR(MODE "LIB"
 	SOURCES ${sources}
 	INTERFACE_INC ON
 	INC_DIRS "_deps"
-	PUBLIC_GLIBS "Ubpa::UTemplate_core"
+	PUBLIC_GLIBS Ubpa::UTemplate_core Ubpa::UBL_core
 )

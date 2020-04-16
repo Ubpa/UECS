@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Chunk.h"
-#include "Pool.h"
 #include "EntityBase.h"
 #include "CmptMngr.h"
 
 #include <UTemplate/TypeID.h>
+#include <UBL/Pool.h>
 
 #include <map>
 #include <set>
@@ -88,7 +88,7 @@ namespace Ubpa {
 		// no init
 		inline size_t RequestBuffer() {
 			if (num == chunks.size() * chunkCapacity)
-				chunks.push_back(chunkPool.request());
+				chunks.push_back(chunkPool.Request());
 			return num++;
 		}
 
