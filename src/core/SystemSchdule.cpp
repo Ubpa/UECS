@@ -1,10 +1,10 @@
-#include <UECS/detail/SystemSchedule.h>
+#include <UECS/SystemSchedule.h>
 
 using namespace Ubpa;
 using namespace std;
 
-System* SystemSchedule::RequestSystem() {
-	System* sys = syspool.Request();
+System* SystemSchedule::RequestSystem(std::string_view name) {
+	System* sys = syspool.Request(string(name));
 	requestedSysVec.push_back(sys);
 	return sys;
 }

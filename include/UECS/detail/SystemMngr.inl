@@ -32,17 +32,13 @@ namespace Ubpa{
 				flag = false;
 			}
 		}
-		if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>)
-			Regist(ScheduleType::OnUpdate, detail::SystemMngr_::GenUpdateSystem<Cmpt>::run());
+		if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>) {
+			staticScheduleFuncs.push_back([](SystemSchedule& schedule) {
+				schedule.Regist(&Cmpt::OnUpdate);
+			});
+		}
 		if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>)
 			dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
-	}
-
-	template<typename Func>
-	void SystemMngr::Regist(ScheduleType type, Func&& func) {
-		type2StaticScheduleFuncs[type].push_back([func = std::forward<Func>(func)](SystemSchedule* schedule) {
-			schedule->Regist(func);
-		});
 	}
 }
 

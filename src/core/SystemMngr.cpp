@@ -4,29 +4,20 @@ using namespace Ubpa;
 using namespace std;
 
 SystemMngr::SystemMngr(ArchetypeMngr* archetypeMngr)
+	: schedule(archetypeMngr)
 {
-	type2schedule[ScheduleType::OnUpdate] = new SystemSchedule{ archetypeMngr };
 }
 
-SystemMngr::~SystemMngr() {
-	for (const auto& [type, schedule] : type2schedule)
-		delete schedule;
-}
+void SystemMngr::GenTaskflow(tf::Taskflow& taskflow) {
+	assert(taskflow.empty());
 
-void SystemMngr::GenTaskflow(std::map<ScheduleType, tf::Taskflow>& type2tf) {
-	type2tf.clear();
-
-	for (const auto& [type, schedule] : type2schedule)
-		schedule->Clear();
+	schedule.Clear();
 
 	for (auto& func : dynamicScheduleFuncs)
-		func(type2schedule);
+		func(schedule);
 
-	for (const auto& [type, staticScheduleFuncs] : type2StaticScheduleFuncs) {
-		for(const auto& func : staticScheduleFuncs)
-			func(type2schedule[type]);
-	}
+	for (const auto& func : staticScheduleFuncs)
+		func(schedule);
 
-	for (const auto& [type, schedule] : type2schedule)
-		schedule->GenTaskflow(type2tf[type]);
+	schedule.GenTaskflow(taskflow);
 }

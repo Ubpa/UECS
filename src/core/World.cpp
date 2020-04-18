@@ -6,12 +6,9 @@ using namespace std;
 World::World() : sysMngr{&mngr}, mngr { &sysMngr, this } {}
 
 void World::Update(bool dump) {
-	map<SystemMngr::ScheduleType, tf::Taskflow> type2tf;
-	sysMngr.GenTaskflow(type2tf);
-	for (auto& [type, taskflow] : type2tf) {
-		if (dump)
-			taskflow.dump(std::cout);
-		executor.run(taskflow).wait();
-	}
+	tf::Taskflow taskflow;
+	if (dump)
+		taskflow.dump(std::cout);
+	executor.run(taskflow).wait();
 	mngr.RunCommand();
 }
