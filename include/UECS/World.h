@@ -25,9 +25,11 @@ namespace Ubpa {
 		// Commands, one-by-one
 		void Update(bool dump = false);
 
+		// if Sys's return type is bool, Each stop when return false
 		template<typename Sys>
 		void Each(Sys&& s);
 
+		// if Sys's return type is bool, Each stop when return false
 		template<typename Sys>
 		void Each(Sys&& s) const;
 

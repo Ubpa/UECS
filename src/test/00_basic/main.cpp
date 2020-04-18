@@ -16,11 +16,16 @@ int main() {
 
 	w.Each([deltaT](velocity* v, position* p) {
 		p->value += v->value * deltaT;
-		});
+	});
 
 	w.Each([](position* p) {
 		std::cout << p->value << std::endl;
-		});
+	});
+
+	w.Each([](position* p)->bool {
+		std::cout << "stop each" << std::endl;
+		return false;
+	});
 
 	return 0;
 }
