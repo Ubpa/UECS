@@ -28,6 +28,7 @@ namespace Ubpa {
 		void Release() noexcept;
 
 		// Attach, Detach, Release, World::CreateEntity
+		// Run after World::Update, one by one, then will be cleared
 		void AddCommand(const std::function<void()>& command);
 	};
 

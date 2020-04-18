@@ -34,11 +34,10 @@ struct B {
 int main() {
 	World w;
 	auto [e, b] = w.CreateEntity<B>();
-	b->num = 2;
+	b->num = 5;
 	b->entity = e;
-	for (size_t i = 0; i < 20; i++) {
+	for (size_t i = 0; i < 10; i++) {
 		w.Update();
-		w.RunCommand();
 	}
 	return 0;
 }

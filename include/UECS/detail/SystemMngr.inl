@@ -6,6 +6,9 @@
 
 namespace Ubpa::detail::SystemMngr_ {
 	template<typename T>
+	Concept(HaveOnRegist, &T::OnRegist);
+
+	template<typename T>
 	Concept(HaveOnUpdate, &T::OnUpdate);
 
 	template<typename T>
@@ -18,16 +21,21 @@ namespace Ubpa::detail::SystemMngr_ {
 namespace Ubpa{
 	template<typename Cmpt>
 	void SystemMngr::Regist() {
-		static bool isRegisted = false;
-		if (!isRegisted) {
-			if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>) {
-				Regist(ScheduleType::OnUpdate, detail::SystemMngr_::GenUpdateSystem<Cmpt>::run());
+		if (registedCmptID.find(TypeID<Cmpt>) != registedCmptID.end())
+			return;
+		registedCmptID.insert(TypeID<Cmpt>);
+
+		if constexpr (Require<detail::SystemMngr_::HaveOnRegist, Cmpt>) {
+			static bool flag = false;
+			if (!flag) {
+				Cmpt::OnRegist();
+				flag = false;
 			}
-			if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>) {
-				dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
-			}
-			isRegisted = true;
 		}
+		if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>)
+			Regist(ScheduleType::OnUpdate, detail::SystemMngr_::GenUpdateSystem<Cmpt>::run());
+		if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>)
+			dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
 	}
 
 	template<typename Func>
