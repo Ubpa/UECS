@@ -13,13 +13,24 @@ namespace Ubpa {
 		template<typename Cmpt>
 		void Regist();
 
-		void GenTaskflow(tf::Taskflow& taskflow);
+		void GenStartTaskflow(tf::Taskflow& taskflow);
+		void GenUpdateTaskflow(tf::Taskflow& taskflow);
+		void GenStopTaskflow(tf::Taskflow& taskflow);
 
 	private:
 		std::unordered_set<size_t> registedCmptID;
-		SystemSchedule schedule;
-		std::vector<std::function<void(SystemSchedule&)>> staticScheduleFuncs;
-		std::vector<std::function<void(SystemSchedule&)>> dynamicScheduleFuncs;
+
+		SystemSchedule startSchedule;
+		SystemSchedule updateSchedule;
+		SystemSchedule stopSchedule;
+
+		std::vector<std::function<void(SystemSchedule&)>> staticStartScheduleFuncs;
+		std::vector<std::function<void(SystemSchedule&)>> staticUpdateScheduleFuncs;
+		std::vector<std::function<void(SystemSchedule&)>> staticStopScheduleFuncs;
+
+		std::vector<std::function<void(SystemSchedule&)>> dynamicStartScheduleFuncs;
+		std::vector<std::function<void(SystemSchedule&)>> dynamicUpdateScheduleFuncs;
+		std::vector<std::function<void(SystemSchedule&)>> dynamicStopScheduleFuncs;
 	};
 }
 

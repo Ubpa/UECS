@@ -4,20 +4,50 @@ using namespace Ubpa;
 using namespace std;
 
 SystemMngr::SystemMngr(ArchetypeMngr* archetypeMngr)
-	: schedule(archetypeMngr)
+	: startSchedule(archetypeMngr),
+	updateSchedule(archetypeMngr),
+	stopSchedule(archetypeMngr)
 {
 }
 
-void SystemMngr::GenTaskflow(tf::Taskflow& taskflow) {
+void SystemMngr::GenStartTaskflow(tf::Taskflow& taskflow) {
 	assert(taskflow.empty());
 
-	schedule.Clear();
+	startSchedule.Clear();
 
-	for (auto& func : dynamicScheduleFuncs)
-		func(schedule);
+	for (const auto& func : dynamicStartScheduleFuncs)
+		func(startSchedule);
 
-	for (const auto& func : staticScheduleFuncs)
-		func(schedule);
+	for (const auto& func : staticStartScheduleFuncs)
+		func(startSchedule);
 
-	schedule.GenTaskflow(taskflow);
+	startSchedule.GenTaskflow(taskflow);
+}
+
+void SystemMngr::GenUpdateTaskflow(tf::Taskflow& taskflow) {
+	assert(taskflow.empty());
+
+	updateSchedule.Clear();
+
+	for (const auto& func : dynamicUpdateScheduleFuncs)
+		func(updateSchedule);
+
+	for (const auto& func : staticUpdateScheduleFuncs)
+		func(updateSchedule);
+
+	updateSchedule.GenTaskflow(taskflow);
+}
+
+void SystemMngr::GenStopTaskflow(tf::Taskflow& taskflow) {
+	assert(taskflow.empty());
+
+	stopSchedule.Clear();
+
+	for (const auto& func : dynamicStopScheduleFuncs)
+		func(stopSchedule);
+
+	for (const auto& func : staticStopScheduleFuncs)
+		func(stopSchedule);
+
+	stopSchedule.GenTaskflow(taskflow);
 }

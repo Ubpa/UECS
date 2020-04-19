@@ -9,13 +9,22 @@ namespace Ubpa::detail::SystemMngr_ {
 	Concept(HaveOnRegist, &T::OnRegist);
 
 	template<typename T>
+	Concept(HaveOnStart, &T::OnStart);
+
+	template<typename T>
 	Concept(HaveOnUpdate, &T::OnUpdate);
 
 	template<typename T>
-	Concept(HaveOnSchedule, &T::OnSchedule);
+	Concept(HaveOnStop, &T::OnStop);
 
-	template<typename Cmpt>
-	struct GenUpdateSystem;
+	template<typename T>
+	Concept(HaveOnStartSchedule, &T::OnStartSchedule);
+
+	template<typename T>
+	Concept(HaveOnUpdateSchedule, &T::OnUpdateSchedule);
+
+	template<typename T>
+	Concept(HaveOnStopSchedule, &T::OnStopSchedule);
 }
 
 namespace Ubpa{
@@ -32,40 +41,28 @@ namespace Ubpa{
 				flag = false;
 			}
 		}
+
+		if constexpr (Require<detail::SystemMngr_::HaveOnStart, Cmpt>) {
+			staticStartScheduleFuncs.push_back([](SystemSchedule& schedule) {
+				schedule.Regist(&Cmpt::OnStart);
+			});
+		}
 		if constexpr (Require<detail::SystemMngr_::HaveOnUpdate, Cmpt>) {
-			staticScheduleFuncs.push_back([](SystemSchedule& schedule) {
+			staticUpdateScheduleFuncs.push_back([](SystemSchedule& schedule) {
 				schedule.Regist(&Cmpt::OnUpdate);
 			});
 		}
-		if constexpr (Require<detail::SystemMngr_::HaveOnSchedule, Cmpt>)
-			dynamicScheduleFuncs.push_back(&Cmpt::OnSchedule);
+		if constexpr (Require<detail::SystemMngr_::HaveOnStop, Cmpt>) {
+			staticStopScheduleFuncs.push_back([](SystemSchedule& schedule) {
+				schedule.Regist(&Cmpt::OnStop);
+			});
+		}
+
+		if constexpr (Require<detail::SystemMngr_::HaveOnStartSchedule, Cmpt>)
+			dynamicStartScheduleFuncs.push_back(&Cmpt::OnStartSchedule);
+		if constexpr (Require<detail::SystemMngr_::HaveOnUpdateSchedule, Cmpt>)
+			dynamicUpdateScheduleFuncs.push_back(&Cmpt::OnUpdateSchedule);
+		if constexpr (Require<detail::SystemMngr_::HaveOnStopSchedule, Cmpt>)
+			dynamicStopScheduleFuncs.push_back(&Cmpt::OnStopSchedule);
 	}
-}
-
-namespace Ubpa::detail::SystemMngr_ {
-	template<typename Cmpt, typename ArgList>
-	struct GenUpdateSystemHelper;
-
-	template<typename Cmpt, typename... Cmpts>
-	struct GenUpdateSystemHelper<Cmpt, TypeList<Cmpts...>> {
-		static auto run() noexcept {
-			if constexpr (FuncTraits<decltype(&Cmpt::OnUpdate)>::is_const) {
-				return [](const Cmpt* cmpt, Cmpts... cmpts) {
-					cmpt->OnUpdate(cmpts...);
-				};
-			}
-			else {
-				return [](Cmpt* cmpt, Cmpts... cmpts) {
-					cmpt->OnUpdate(cmpts...);
-				};
-			}
-		}
-	};
-
-	template<typename Cmpt>
-	struct GenUpdateSystem {
-		static auto run() noexcept {
-			return GenUpdateSystemHelper<Cmpt, FuncTraits_ArgList<decltype(&Cmpt::OnUpdate)>>::run();
-		}
-	};
 }

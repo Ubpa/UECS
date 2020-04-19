@@ -25,6 +25,13 @@ namespace Ubpa {
 		template<typename Cmpt, typename Func>
 		SystemSchedule& Regist(Func Cmpt::* func);
 
+		// TODO: not parallel
+		/*template<typename Func>
+		SystemSchedule& RegistNotParallel(Func&& func, std::string_view name);
+
+		template<typename Cmpt, typename Func>
+		SystemSchedule& RegistNotParallel(Func Cmpt::* func);*/
+
 	private:
 		friend class SystemMngr;
 		void Clear();
