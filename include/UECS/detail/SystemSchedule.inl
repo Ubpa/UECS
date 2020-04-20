@@ -29,7 +29,8 @@ namespace Ubpa::detail::SystemSchedule_ {
 		static auto run(SystemSchedule* sysSchedule, Func&& func, std::string_view name) noexcept {
 			auto system = sysSchedule->RequestSystem(name);
 			sysSchedule->mngr->GenTaskflow(system, func);
-			(Regist<std::remove_pointer_t<Cmpts>>(sysSchedule->id2rw, system), ...);
+			if(!system->empty())
+				(Regist<std::remove_pointer_t<Cmpts>>(sysSchedule->id2rw, system), ...);
 		}
 
 		template<typename Cmpt>
