@@ -11,19 +11,19 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 namespace Ubpa {
 	template<typename... Cmpts>
 	inline Archetype* ArchetypeMngr::GetOrCreateArchetypeOf() {
-		auto id = Archetype::ID(TypeList<Cmpts...>{});
+		auto id = CmptIDSet(TypeList<Cmpts...>{});
 		auto target = id2a.find(id);
 		if (target == id2a.end()) {
 			auto archetype = new Archetype(this, TypeList<Cmpts...>{});
 			id2a[id] = archetype;
-			ids.insert(archetype->GetID());
+			ids.insert(archetype->ID());
 			return archetype;
 		}
 		else
 			return target->second;
 	}
 
-	inline Archetype* ArchetypeMngr::GetArchetypeOf(const Archetype::ID& archetypeID) {
+	Archetype* ArchetypeMngr::GetArchetypeOf(const CmptIDSet& archetypeID) {
 		auto target = id2a.find(archetypeID);
 		assert(target != id2a.end());
 		return target->second;
@@ -39,8 +39,6 @@ namespace Ubpa {
 		entity->archetype = archetype;
 		entity->idx = idx;
 		ai2e[{archetype,idx}] = entity;
-
-		// ((entity->RegistCmptFuncs(std::get<Find_v<CmptList, Cmpts>>(cmpts))),...);
 
 		using CmptList = TypeList<Cmpts...>;
 		return { entity, std::get<Find_v<CmptList, Cmpts>>(cmpts)... };
@@ -63,7 +61,7 @@ namespace Ubpa {
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;
 
-		auto& srcID = srcArchetype->GetID();
+		auto& srcID = srcArchetype->ID();
 		auto dstID = srcID;
 		dstID.Add<Cmpts...>();
 
@@ -72,7 +70,7 @@ namespace Ubpa {
 		auto target = id2a.find(dstID);
 		if (target == id2a.end()) {
 			dstArchetype = Archetype::Add<Cmpts...>(srcArchetype);
-			assert(dstID == dstArchetype->GetID());
+			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
 		}
@@ -121,7 +119,7 @@ namespace Ubpa {
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;
 
-		auto& srcID = srcArchetype->GetID();
+		auto& srcID = srcArchetype->ID();
 		auto dstID = srcID;
 		dstID.Remove<Cmpts...>();
 
@@ -130,7 +128,7 @@ namespace Ubpa {
 		auto target = id2a.find(dstID);
 		if (target == id2a.end()) {
 			dstArchetype = Archetype::Remove<Cmpts...>(srcArchetype);
-			assert(dstID == dstArchetype->GetID());
+			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
 		}

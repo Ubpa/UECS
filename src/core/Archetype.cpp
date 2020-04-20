@@ -8,29 +8,6 @@ Archetype::~Archetype() {
 		chunkPool.Recycle(c);
 }
 
-bool Archetype::ID::operator<(const ID& id) const noexcept {
-	auto l = begin(), r = id.begin();
-	while (l != end() && r != id.end()) {
-		if (*l < *r)
-			return true;
-		if (*l > * r)
-			return false;
-		++l;
-		++r;
-	}
-	return l == end() && r != id.end();
-}
-
-bool Archetype::ID::operator==(const ID& id) const noexcept {
-	if (size() != id.size())
-		return false;
-	for (auto l = begin(), r = id.begin(); l != end(); ++l, ++r) {
-		if (*l != *r)
-			return false;
-	}
-	return true;
-}
-
 tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
 	auto target = h2so.find(cmptHash);
 	if (target == h2so.end())
