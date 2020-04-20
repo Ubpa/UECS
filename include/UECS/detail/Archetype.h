@@ -53,31 +53,19 @@ namespace Ubpa {
 			friend class Archetype;
 		};
 
-		Archetype() = default;
-		// argument is for type deduction
+		// argument TypeList<Cmpts...> is for type deduction
 		template<typename... Cmpts>
 		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
 
-		// TODO: simplify
 		template<typename... Cmpts>
-		struct Add {
-			static Archetype* From(Archetype* srcArchetype) noexcept;
-		};
+		static Archetype* Add(Archetype* from) noexcept;
 		template<typename... Cmpts>
-		struct Remove {
-			static Archetype* From(Archetype* srcArchetype) noexcept;
-		};
-		template<typename... Cmpts>
-		friend struct Add;
-		template<typename... Cmpts>
-		friend struct Remove;
+		static Archetype* Remove(Archetype* from) noexcept;
 
 		~Archetype();
 
 		template<typename... Cmpts>
-		inline const std::tuple<std::vector<Cmpts*>...> Locate() {
-			return { LocateOne<Cmpts>()... };
-		}
+		const std::vector<std::tuple<Cmpts*...>> Locate();
 
 		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx);
 
@@ -87,7 +75,7 @@ namespace Ubpa {
 		std::vector<std::tuple<void*, size_t>> Components(size_t idx);
 
 		// no init
-		inline size_t RequestBuffer() {
+		size_t RequestBuffer() {
 			if (num == chunks.size() * chunkCapacity)
 				chunks.push_back(chunkPool.Request());
 			return num++;
@@ -113,10 +101,8 @@ namespace Ubpa {
 		inline bool IsContain() const noexcept;
 
 	private:
-		template<typename Cmpt>
-		const std::vector<Cmpt*> LocateOne();
+		Archetype() = default;
 
-	private:
 		friend class Entity;
 		friend class ArchetypeMngr;
 

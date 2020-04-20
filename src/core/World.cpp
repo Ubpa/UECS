@@ -28,8 +28,8 @@ void World::Update() {
 	updateSchedule.Clear();
 	updateTaskflow.clear();
 
-	SystemMngr::Instance().GenStartSchedule(updateSchedule);
-	startSchedule.GenTaskflow(updateTaskflow);
+	SystemMngr::Instance().GenUpdateSchedule(updateSchedule);
+	updateSchedule.GenTaskflow(updateTaskflow);
 
 	executor.run(updateTaskflow).wait();
 
@@ -40,8 +40,8 @@ void World::Stop() {
 	stopSchedule.Clear();
 	stopTaskflow.clear();
 
-	SystemMngr::Instance().GenStartSchedule(stopSchedule);
-	startSchedule.GenTaskflow(stopTaskflow);
+	SystemMngr::Instance().GenStopSchedule(stopSchedule);
+	stopSchedule.GenTaskflow(stopTaskflow);
 
 	executor.run(stopTaskflow).wait();
 
