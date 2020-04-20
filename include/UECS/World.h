@@ -38,18 +38,24 @@ namespace Ubpa {
 		std::string DumpStopTaskflow() const;
 
 		// if Sys's return type is bool, Each stop when return false
+		// run commands later
 		template<typename Sys>
 		void Each(Sys&& s);
 
 		// if Sys's return type is bool, Each stop when return false
+		// run commands later
 		template<typename Sys>
 		void Each(Sys&& s) const;
 
+		// run commands later
 		template<typename Sys>
 		void ParallelEach(Sys&& s);
 
+		// run commands later
 		template<typename Sys>
 		void ParallelEach(Sys&& s) const;
+
+		void AddCommand(const std::function<void()>& command);
 
 	private:
 		ArchetypeMngr mngr;

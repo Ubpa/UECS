@@ -45,12 +45,19 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::vector<Archetype*> ArchetypeMngr::GetArchetypeWith() {
-		std::vector<Archetype*> rst;
-		for (auto& p : id2a) {
-			if (p.second->IsContain<Cmpts...>())
-				rst.push_back(p.second);
+	const std::set<Archetype*>& ArchetypeMngr::GetArchetypeWith() {
+		constexpr size_t cmptsHash = TypeID<QuickSort_t<TypeList<Cmpts...>, TypeID_Less>>;
+		auto target = cmpts2as.find(cmptsHash);
+		if (target != cmpts2as.end())
+			return target->second;
+
+		std::set<Archetype*>& rst = cmpts2as[cmptsHash];
+		cmpts2ids.emplace(cmptsHash, CmptIDSet{ TypeList<Cmpts...>{} });
+		for (auto& [id, a] : id2a) {
+			if (id.IsContain<Cmpts...>())
+				rst.insert(a);
 		}
+
 		return rst;
 	}
 
@@ -73,6 +80,10 @@ namespace Ubpa {
 			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
+			for (auto& [cmptsHash, archetypes] : cmpts2as) {
+				if (dstArchetype->ID().IsContain(cmpts2ids[cmptsHash]))
+					archetypes.insert(dstArchetype);
+			}
 		}
 		else
 			dstArchetype = target->second;
@@ -95,10 +106,10 @@ namespace Ubpa {
 			auto srcMovedEntity = srcMovedEntityTarget->second;
 			ai2e.erase(srcMovedEntityTarget);
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
-			srcMovedEntity->idx = srcMovedIdx;
+			srcMovedEntity->idx = srcIdx;
 		}
 
-		ai2e[{dstArchetype, dstIdx}] = e;
+		ai2e.emplace(std::make_pair(std::make_tuple(dstArchetype, dstIdx), e));
 
 		e->archetype = dstArchetype;
 		e->idx = dstIdx;
@@ -131,6 +142,10 @@ namespace Ubpa {
 			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
+			for (auto& [cmptsHash, archetypes] : cmpts2as) {
+				if (dstArchetype->ID().IsContain(cmpts2ids[cmptsHash]))
+					archetypes.insert(dstArchetype);
+			}
 		}
 		else
 			dstArchetype = target->second;
@@ -144,8 +159,6 @@ namespace Ubpa {
 				assert(srcSize == dstSize);
 				CmptLifecycleMngr::Instance().MoveConstruct(cmptHash, dstCmpt, srcCmpt);
 			}
-			else
-				CmptLifecycleMngr::Instance().Destruct(cmptHash, srcCmpt);
 		}
 
 		// erase
@@ -155,7 +168,7 @@ namespace Ubpa {
 			auto srcMovedEntity = srcMovedEntityTarget->second;
 			ai2e.erase(srcMovedEntityTarget);
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
-			srcMovedEntity->idx = srcMovedIdx;
+			srcMovedEntity->idx = srcIdx;
 		}
 
 		ai2e[{dstArchetype, dstIdx}] = e;

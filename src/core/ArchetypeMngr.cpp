@@ -40,7 +40,7 @@ void ArchetypeMngr::AddCommand(const std::function<void()>& command) {
 	commandBuffer.push_back(command);
 }
 
-void ArchetypeMngr::RunCommand() {
+void ArchetypeMngr::RunCommands() {
 	lock_guard<mutex> guard(commandBufferMutex);
 	for (const auto& command : commandBuffer)
 		command();

@@ -63,6 +63,7 @@ namespace Ubpa::detail::World_ {
 					}
 				}
 			}
+			w->mngr.RunCommands();
 		}
 
 		template<typename Sys>
@@ -83,6 +84,7 @@ namespace Ubpa::detail::World_ {
 			tf::Taskflow taskflow;
 			w->mngr.GenTaskflow(&taskflow, std::forward<Sys>(s));
 			w->executor.run(taskflow).wait();
+			w->mngr.RunCommands();
 		}
 
 		template<typename Sys>
