@@ -1,13 +1,12 @@
 #pragma once
 
 #include <UTemplate/Typelist.h>
-#include <UTemplate/Func.h>
+#include <UTemplate/TypeID.h>
 #include <UTemplate/Concept.h>
 
-namespace Ubpa::detail::SystemMngr_ {
-	template<typename T>
-	Concept(HaveOnRegist, &T::OnRegist);
+#include <cassert>
 
+namespace Ubpa::detail::SystemMngr_ {
 	template<typename T>
 	Concept(HaveOnStart, &T::OnStart);
 
@@ -30,18 +29,6 @@ namespace Ubpa::detail::SystemMngr_ {
 namespace Ubpa{
 	template<typename Cmpt>
 	void SystemMngr::Regist() {
-		if (registedCmptID.find(TypeID<Cmpt>) != registedCmptID.end())
-			return;
-		registedCmptID.insert(TypeID<Cmpt>);
-
-		if constexpr (Require<detail::SystemMngr_::HaveOnRegist, Cmpt>) {
-			static bool flag = false;
-			if (!flag) {
-				Cmpt::OnRegist();
-				flag = false;
-			}
-		}
-
 		if constexpr (Require<detail::SystemMngr_::HaveOnStart, Cmpt>) {
 			staticStartScheduleFuncs.push_back([](SystemSchedule& schedule) {
 				schedule.Regist(&Cmpt::OnStart);

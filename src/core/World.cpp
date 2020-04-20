@@ -1,28 +1,50 @@
 #include <UECS/World.h>
 
+#include <UECS/detail/SystemMngr.h>
+
 using namespace Ubpa;
 using namespace std;
 
-World::World() : sysMngr{&mngr}, mngr { &sysMngr, this } {}
+World::World()
+	: mngr { this },
+	startSchedule{&mngr},
+	updateSchedule{ &mngr },
+	stopSchedule{ &mngr }
+{}
 
 void World::Start() {
+	startSchedule.Clear();
 	startTaskflow.clear();
-	sysMngr.GenStartTaskflow(startTaskflow);
+
+	SystemMngr::Instance().GenStartSchedule(startSchedule);
+	startSchedule.GenTaskflow(startTaskflow);
+
 	executor.run(startTaskflow).wait();
+	
 	mngr.RunCommand();
 }
 
 void World::Update() {
+	updateSchedule.Clear();
 	updateTaskflow.clear();
-	sysMngr.GenUpdateTaskflow(updateTaskflow);
+
+	SystemMngr::Instance().GenStartSchedule(updateSchedule);
+	startSchedule.GenTaskflow(updateTaskflow);
+
 	executor.run(updateTaskflow).wait();
+
 	mngr.RunCommand();
 }
 
 void World::Stop() {
+	stopSchedule.Clear();
 	stopTaskflow.clear();
-	sysMngr.GenStopTaskflow(stopTaskflow);
+
+	SystemMngr::Instance().GenStartSchedule(stopSchedule);
+	startSchedule.GenTaskflow(stopTaskflow);
+
 	executor.run(stopTaskflow).wait();
+
 	mngr.RunCommand();
 }
 

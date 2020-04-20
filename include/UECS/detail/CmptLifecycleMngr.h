@@ -7,10 +7,10 @@
 #include <functional>
 
 namespace Ubpa {
-	class CmptMngr {
+	class CmptLifecycleMngr {
 	public:
-		static CmptMngr& Instance() {
-			static CmptMngr instance;
+		static CmptLifecycleMngr& Instance() {
+			static CmptLifecycleMngr instance;
 			return instance;
 		}
 
@@ -19,34 +19,25 @@ namespace Ubpa {
 		}
 
 		void MoveConstruct(size_t id, void* dst, void* src) const {
-			moveconstructors.find(id)->second(dst, src);
+			move_constructors.find(id)->second(dst, src);
 		}
 
 		template<typename Cmpt>
-		bool Regist() {
-			static bool rst = InnerRegist<Cmpt>(); // regist once
-			return rst;
-		}
-
-	private:
-		template<typename Cmpt>
-		bool InnerRegist() {
+		void Regist() {
 			static_assert(std::is_move_constructible_v<Cmpt>);
 			static_assert(std::is_constructible_v<Cmpt>);
-			constexpr size_t id = TypeID<Cmpt>;
-			destructors[id] = [](void* cmpt) {
+			destructors[TypeID<Cmpt>] = [](void* cmpt) {
 				reinterpret_cast<Cmpt*>(cmpt)->~Cmpt();
 			};
-			moveconstructors[id] = [](void* dst, void* src) {
+			move_constructors[TypeID<Cmpt>] = [](void* dst, void* src) {
 				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
 			};
-			return true;
 		}
 
 	private:
 		std::map<size_t, std::function<void(void*)>> destructors;
-		std::map<size_t, std::function<void(void*, void*)>> moveconstructors; // dst <- src
+		std::map<size_t, std::function<void(void*, void*)>> move_constructors; // dst <- src
 
-		CmptMngr() = default;
+		CmptLifecycleMngr() = default;
 	};
 }

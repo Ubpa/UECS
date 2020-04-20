@@ -3,7 +3,6 @@
 #include "Archetype.h"
 #include "EntityBase.h"
 
-#include <UTemplate/Typelist.h>
 #include <UBL/Pool.h>
 
 #include <taskflow/taskflow.hpp>
@@ -15,7 +14,7 @@ namespace Ubpa {
 
 	class ArchetypeMngr {
 	public:
-		ArchetypeMngr(SystemMngr* sysmngr, World* w) : sysmngr{ sysmngr }, w{ w } {}
+		ArchetypeMngr(World* w) : w{ w } {}
 
 		~ArchetypeMngr();
 
@@ -48,13 +47,13 @@ namespace Ubpa {
 
 	private:
 		Pool<EntityBase> entityPool;
+
 		std::map<std::tuple<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
 
 		std::set<Archetype::ID> ids;
 		std::map<Archetype::ID, Archetype*> id2a; // id to archetype
 
 		Ubpa::World* w;
-		SystemMngr* sysmngr;
 		std::vector<std::function<void()>> commandBuffer;
 		std::mutex commandBufferMutex;
 	};

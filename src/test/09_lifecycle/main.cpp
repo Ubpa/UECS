@@ -26,19 +26,21 @@ struct MyCmpt {
 	void OnStop() { cout << "OnStop" << endl; }
 };
 
-struct MySystem {
-	static void OnStartSchedule(SystemSchedule& schedule) {
-		cout << "OnStartSchedule" << endl;
-	}
-	static void OnUpdateSchedule(SystemSchedule& schedule) {
-		cout << "OnUpdateSchedule" << endl;
-	}
-	static void OnStopSchedule(SystemSchedule& schedule) {
-		cout << "OnStopSchedule" << endl;
-	}
-};
+//struct MySystem {
+//	static void OnStartSchedule(SystemSchedule& schedule) {
+//		cout << "OnStartSchedule" << endl;
+//	}
+//	static void OnUpdateSchedule(SystemSchedule& schedule) {
+//		cout << "OnUpdateSchedule" << endl;
+//	}
+//	static void OnStopSchedule(SystemSchedule& schedule) {
+//		cout << "OnStopSchedule" << endl;
+//	}
+//};
 
 int main() {
+	CmptRegister::Instance().Regist<MyCmpt>();
+
 	World w;
 	w.CreateEntity<MyCmpt>();
 

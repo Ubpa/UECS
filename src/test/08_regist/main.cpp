@@ -39,6 +39,8 @@ struct Acceleration {
 };
 
 int main() {
+	CmptRegister::Instance().Regist<Position, Velocity, Acceleration>();
+
 	World w;
 	w.CreateEntity<Velocity, Position, Acceleration>();
 	w.Update();

@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # 设定项目
-project(UECS VERSION 0.5.4)
+project(UECS VERSION 0.5.5)
 message(STATUS "[Project] ${PROJECT_NAME}")
 
 # 在 Debug 模式下自动对 dll 和 lib 文件名后边加 d，但 exe 仍然需要手动设置
@@ -52,6 +52,10 @@ endif()
 
 # 修改默认的安装路径前缀
 Ubpa_InitInstallPrefix()
+
+# Ubpa_BuildTest
+Ubpa_InitTestSwitch()
+#set(Ubpa_BuildTest ON)
 
 Ubpa_AddDep(UTemplate 0.3.1)
 Ubpa_AddDep(UBL 0.1.0)

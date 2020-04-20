@@ -1,6 +1,8 @@
 #include <UECS/World.h>
 #include <iostream>
 
+using namespace Ubpa;
+
 struct velocity { float value{ 0.f }; };
 struct position { float value{ 0.f }; };
 
@@ -14,7 +16,8 @@ void Print(const Ubpa::World& w) {
 }
 
 int main() {
-	Ubpa::World w;
+	CmptRegister::Instance().Regist<velocity, position>();
+	World w;
 	
 	for (size_t i = 0; i < 10; i++) {
 		auto [entity, v, p] = w.CreateEntity<velocity, position>();

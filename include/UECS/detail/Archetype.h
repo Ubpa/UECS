@@ -2,10 +2,12 @@
 
 #include "Chunk.h"
 #include "EntityBase.h"
-#include "CmptMngr.h"
+#include "CmptLifecycleMngr.h"
 
-#include <UTemplate/TypeID.h>
 #include <UBL/Pool.h>
+
+#include <UTemplate/Typelist.h>
+#include <UTemplate/TypeID.h>
 
 #include <map>
 #include <set>
@@ -13,7 +15,6 @@
 namespace Ubpa {
 	class ArchetypeMngr;
 	class Entity;
-	class SystemMngr;
 
 	// TODO: clear up
 	class Archetype {
@@ -55,7 +56,7 @@ namespace Ubpa {
 		Archetype() = default;
 		// argument is for type deduction
 		template<typename... Cmpts>
-		Archetype(SystemMngr* sysmngr, ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
+		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
 
 		// TODO: simplify
 		template<typename... Cmpts>
@@ -120,14 +121,13 @@ namespace Ubpa {
 		friend class ArchetypeMngr;
 
 		ArchetypeMngr* mngr;
-		SystemMngr* sysmngr;
 		ID id;
 		std::map<size_t, std::tuple<size_t, size_t>> h2so; // hash to (size, offset)
 		size_t chunkCapacity;
 		std::vector<Chunk*> chunks;
 		size_t num{ 0 };
 
-		Pool<Chunk> chunkPool; // TODO: lock
+		Pool<Chunk> chunkPool;
 	};
 }
 

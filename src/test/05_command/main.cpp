@@ -32,6 +32,8 @@ struct B {
 };
 
 int main() {
+	CmptRegister::Instance().Regist<A, B>();
+
 	World w;
 	auto [e, b] = w.CreateEntity<B>();
 	b->num = 5;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SystemMngr.h"
+#include "../CmptRegister.h"
 
 namespace Ubpa {
 	template<typename Cmpt>
@@ -16,9 +16,9 @@ namespace Ubpa {
 	std::tuple<Cmpts *...> Entity::Attach() {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-		(CmptMngr::Instance().Regist<Cmpts>(), ...);
+		assert("[ERROR] hasn't registed <Cmpts>" &&
+			CmptRegister::Instance().template IsRegisted<Cmpts...>());
 		assert(IsAlive());
-		(archetype->sysmngr->Regist<Cmpts>(), ...);
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
 	}
 

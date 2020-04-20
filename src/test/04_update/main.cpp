@@ -40,6 +40,8 @@ struct Acceleration {
 };
 
 int main() {
+	CmptRegister::Instance().Regist<Position, Velocity, Acceleration>();
+
 	World w;
 	for (size_t i = 0; i < 10000; i++)
 		w.CreateEntity<Velocity, Position, Acceleration>();
