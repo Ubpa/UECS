@@ -105,11 +105,11 @@ namespace Ubpa {
 		e->archetype = dstArchetype;
 		e->idx = dstIdx;
 
-		if (srcArchetype->Size() == 0 && srcArchetype->CmptNum() != 0) {
+		/*if (srcArchetype->Size() == 0 && srcArchetype->CmptNum() != 0) {
 			ids.erase(srcArchetype->id);
 			id2a.erase(srcArchetype->id);
 			delete srcArchetype;
-		}
+		}*/
 
 		return { dstArchetype->At<Cmpts>(dstIdx)... };
 	}
@@ -165,11 +165,11 @@ namespace Ubpa {
 		e->archetype = dstArchetype;
 		e->idx = dstIdx;
 
-		if (srcArchetype->Size() == 0) {
+		/*if (srcArchetype->Size() == 0) {
 			ids.erase(srcArchetype->id);
 			id2a.erase(srcArchetype->id);
 			delete srcArchetype;
-		}
+		}*/
 	}
 
 	template<typename Sys>
@@ -182,7 +182,7 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 	template<typename... Cmpts>
 	struct GenTaskflow<TypeList<Cmpts * ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
-		using CmptList = TypeList<Cmpts...>;
+		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(tf::Taskflow* taskflow, ArchetypeMngr* mngr, Sys&& s) {
@@ -197,7 +197,7 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 					size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
 					taskflow->emplace([s, cmptsTuple=std::move(cmptsTupleVec[i]), J]() {
 						for (size_t j = 0; j < J; j++)
-							s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
+							s((std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTuple) + j)...);
 					});
 				}
 			}

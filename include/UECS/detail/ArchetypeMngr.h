@@ -25,11 +25,15 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		inline Archetype* GetOrCreateArchetypeOf();
 
+		// TODO: Query Cache
+		// query is static
 		template<typename... Cmpts>
 		const std::vector<Archetype*> GetArchetypeWith();
 
 		template<typename... Cmpts>
 		const std::tuple<EntityBase*, Cmpts*...> CreateEntity();
+
+		// TODO: CreateEntities
 
 		template<typename... Cmpts>
 		const std::tuple<Cmpts*...> EntityAttach(EntityBase* e);

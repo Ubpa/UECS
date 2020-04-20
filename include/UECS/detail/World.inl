@@ -41,26 +41,25 @@ namespace Ubpa::detail::World_ {
 	template<typename... Cmpts>
 	struct Each<TypeList<Cmpts * ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
-		using CmptList = TypeList<Cmpts...>;
+		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archetype : w->mngr.GetArchetypeWith<std::decay_t<Cmpts>...>()) {
-				auto cmptsVecTuple = archetype->Locate<std::decay_t<Cmpts>...>();
+			for (auto archetype : w->mngr.GetArchetypeWith<std::remove_const_t<Cmpts>...>()) {
+				auto cmptsTupleVec = archetype->Locate<std::remove_const_t<Cmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
 				size_t chunkCapacity = archetype->ChunkCapacity();
 
 				for (size_t i = 0; i < chunkNum; i++) {
-					auto cmptsTuple = std::make_tuple(std::get<Find_v<CmptList, Cmpts>>(cmptsVecTuple)[i]...);
 					size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
 					for (size_t j = 0; j < J; j++) {
 						if constexpr (std::is_same_v<FuncTraits_Ret<Sys>, bool>) {
-							if (!s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...))
+							if (!s((std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTupleVec[i]) + j)...))
 								return;
 						}
 						else
-							s((std::get<Find_v<CmptList, Cmpts>>(cmptsTuple) + j)...);
+							s((std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTupleVec[i]) + j)...);
 					}
 				}
 			}
@@ -77,7 +76,7 @@ namespace Ubpa::detail::World_ {
 	template<typename... Cmpts>
 	struct ParallelEach<TypeList<Cmpts * ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
-		using CmptList = TypeList<Cmpts...>;
+		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
