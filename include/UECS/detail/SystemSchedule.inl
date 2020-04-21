@@ -23,24 +23,25 @@ namespace Ubpa {
 }
 
 namespace Ubpa::detail::SystemSchedule_ {
-	template<typename... Cmpts>
-	struct Schedule<TypeList<Cmpts...>> {
+	template<typename... TagedCmpts>
+	struct Schedule<TypeList<TagedCmpts...>> {
 		template<typename Func>
 		static auto run(SystemSchedule* sysSchedule, Func&& func, std::string_view name) noexcept {
 			auto system = sysSchedule->RequestSystem(name);
 			sysSchedule->mngr->GenTaskflow(system, func);
 			if(!system->empty())
-				(Regist<std::remove_pointer_t<Cmpts>>(sysSchedule->id2rw, system), ...);
+				(Regist<TagedCmpts>(sysSchedule->id2rw, system), ...);
 		}
 
-		template<typename Cmpt>
+		template<typename TagedCmpt>
 		static void Regist(std::unordered_map<size_t, SystemSchedule::RWSystems>& id2rw, tf::Taskflow* system) {
-			if constexpr (std::is_const_v<Cmpt>) {
-				id2rw[Ubpa::TypeID<std::remove_const_t<Cmpt>>].readers.push_back(system);
-			}
-			else {
+			using Cmpt = CmptTag::RemoveTag_t<TagedCmpt>;
+			if constexpr (CmptTag::IsLastFrame_v<TagedCmpt>)
+				id2rw[Ubpa::TypeID<Cmpt>].pre_readers.push_back(system);
+			else if constexpr (CmptTag::IsWrite_v<TagedCmpt>)
 				id2rw[Ubpa::TypeID<Cmpt>].writers.push_back(system);
-			}
+			else
+				id2rw[Ubpa::TypeID<Cmpt>].post_readers.push_back(system);
 		}
 	};
 }

@@ -30,38 +30,50 @@ bool SystemSchedule::GenTaskflow(tf::Taskflow& taskflow) const {
 	unordered_map<System*, tf::Task> sys2task;
 
 	for (auto& [ID, rw] : id2rw) {
-		tf::Task backWriterTask;
-		tf::Task preTask;
+		vector<tf::Task> writerTasks;
 		for (size_t i = 0; i < rw.writers.size(); i++) {
-			size_t idx = rw.writers.size() - i - 1;
-			size_t preIdx = idx + 1;
-			tf::Task writerTask;
-			auto writerTarget = sys2task.find(rw.writers[idx]);
-			if (writerTarget == sys2task.end()) {
-				writerTask = taskflow.composed_of(*rw.writers[idx]);
-				sys2task[rw.writers[idx]] = writerTask;
+			tf::Task task;
+
+			auto target = sys2task.find(rw.writers[i]);
+			if (target == sys2task.end()) {
+				task = taskflow.composed_of(*rw.writers[i]);
+				sys2task[rw.writers[i]] = task;
 			}
 			else
-				writerTask = writerTarget->second;
-			if (!preTask.empty())
-				writerTask.precede(preTask);
-			else
-				backWriterTask = writerTask;
-			preTask = writerTask;
+				task = target->second;
+
+			if (!writerTasks.empty())
+				task.succeed(writerTasks.back());
+			
+			writerTasks.push_back(task);
 		}
 
-		for (auto reader : rw.readers) {
-			tf::Task readerTask;
-			auto readerTarget = sys2task.find(reader);
-			if (readerTarget == sys2task.end()) {
-				readerTask = taskflow.composed_of(*reader);
-				sys2task[reader] = readerTask;
+		for (auto pre_reader : rw.pre_readers) {
+			tf::Task task;
+			auto target = sys2task.find(pre_reader);
+			if (target == sys2task.end()) {
+				task = taskflow.composed_of(*pre_reader);
+				sys2task[pre_reader] = task;
 			}
 			else
-				readerTask = readerTarget->second;
+				task = target->second;
 
-			if (!backWriterTask.empty())
-				readerTask.succeed(backWriterTask);
+			if (!writerTasks.empty())
+				task.precede(writerTasks.front());
+		}
+
+		for (auto post_reader : rw.post_readers) {
+			tf::Task task;
+			auto target = sys2task.find(post_reader);
+			if (target == sys2task.end()) {
+				task = taskflow.composed_of(*post_reader);
+				sys2task[post_reader] = task;
+			}
+			else
+				task = target->second;
+
+			if (!writerTasks.empty())
+				task.succeed(writerTasks.back());
 		}
 	}
 
@@ -73,9 +85,13 @@ bool SystemSchedule::IsDAG() const noexcept {
 	for (const auto& [ID, rw] : id2rw) {
 		for (const auto& writer : rw.writers) {
 			auto& children = graph[writer];
-			for (auto reader : rw.readers) {
-				if (reader != writer)
-					children.push_back(reader);
+			for (auto post_reader : rw.post_readers) {
+				if (post_reader != writer)
+					children.push_back(post_reader);
+			}
+			for (auto pre_reader : rw.pre_readers) {
+				if (pre_reader != writer)
+					graph[pre_reader].push_back(writer);
 			}
 		}
 	}

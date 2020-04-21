@@ -24,9 +24,7 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		inline Archetype* GetOrCreateArchetypeOf();
-
-		// TODO: Query Cache
-		// query is static
+		
 		template<typename... Cmpts>
 		const std::set<Archetype*>& GetArchetypeWith();
 
@@ -56,6 +54,8 @@ namespace Ubpa {
 
 		std::set<CmptIDSet> ids;
 		std::map<CmptIDSet, Archetype*> id2a; // id to archetype
+
+		// Query Cache
 		// TypeID<Typelist<Cmpts...>> to archetype set
 		// Typelist<Cmpts...> is sorted
 		std::unordered_map<size_t, std::set<Archetype*>> cmpts2as;
