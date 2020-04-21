@@ -8,9 +8,9 @@ namespace Ubpa {
 		class LastFrame {
 		public:
 			LastFrame(const Cmpt* cmpt) : cmpt{ cmpt } {}
-			Cmpt* get() const noexcept { return cmpt; }
-			operator Cmpt* () const noexcept { return cmpt; }
-			Cmpt* operator->() const noexcept { return cmpt; }
+			const Cmpt* get() const noexcept { return cmpt; }
+			operator const Cmpt* () const noexcept { return cmpt; }
+			const Cmpt* operator->() const noexcept { return cmpt; }
 		private:
 			const Cmpt* cmpt;
 		};

@@ -81,17 +81,16 @@ bool SystemSchedule::GenTaskflow(tf::Taskflow& taskflow) const {
 }
 
 bool SystemSchedule::IsDAG() const noexcept {
-	std::map<System*, std::vector<System*>> graph;
+	std::map<System*, std::set<System*>> graph;
 	for (const auto& [ID, rw] : id2rw) {
 		for (const auto& writer : rw.writers) {
-			auto& children = graph[writer];
 			for (auto post_reader : rw.post_readers) {
 				if (post_reader != writer)
-					children.push_back(post_reader);
+					graph[writer].insert(post_reader);
 			}
 			for (auto pre_reader : rw.pre_readers) {
 				if (pre_reader != writer)
-					graph[pre_reader].push_back(writer);
+					graph[pre_reader].insert(writer);
 			}
 		}
 	}
@@ -100,20 +99,24 @@ bool SystemSchedule::IsDAG() const noexcept {
 	for (const auto& [parent, children] : graph) {
 		if (visited.find(parent) != visited.end())
 			continue;
-		std::deque<System*> sysQueue;
-		sysQueue.push_back(parent);
+		std::set<System*> sysSet;
+		sysSet.insert(parent);
 		std::set<System*> curVisited;
-		while (!sysQueue.empty()) {
-			auto curSys = sysQueue.front();
-			sysQueue.pop_front();
+		while (!sysSet.empty()) {
+			auto curTarget = sysSet.begin();
+			auto curSys = *curTarget;
+			sysSet.erase(curTarget);
 			if (curVisited.find(curSys) != curVisited.end())
 				return false;
 			if (visited.find(curSys) != visited.end())
 				continue;
 			curVisited.insert(curSys);
 			visited.insert(curSys);
-			for (const auto& child : graph[curSys])
-				sysQueue.push_back(child);
+			auto target = graph.find(curSys);
+			if (target != graph.end()) {
+				for (const auto& child : target->second)
+					sysSet.insert(child);
+			}
 		}
 	}
 	return true;
