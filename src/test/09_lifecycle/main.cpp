@@ -9,18 +9,18 @@ struct MyCmpt {
 	static void OnRegist() { cout << "OnRegist" << endl; }
 
 	// before first update
-	static void OnStartSchedule(SystemSchedule& schedule) {
+	static void OnStartSchedule(SystemSchedule<SysType::OnStart>& schedule) {
 		cout << "OnStartSchedule" << endl;
 	}
 	void OnStart() { cout << "OnStart" << endl; }
 
-	static void OnUpdateSchedule(SystemSchedule& schedule) {
+	static void OnUpdateSchedule(SystemSchedule<SysType::OnUpdate>& schedule) {
 		cout << "OnUpdateSchedule" << endl;
 	}
 	void OnUpdate() { cout << "OnUpdate" << endl; }
 
 	// after last update
-	static void OnStopSchedule(SystemSchedule& schedule) {
+	static void OnStopSchedule(SystemSchedule<SysType::OnStop>& schedule) {
 		cout << "OnStopSchedule" << endl;
 	}
 	void OnStop() { cout << "OnStop" << endl; }

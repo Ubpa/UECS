@@ -3,8 +3,10 @@
 #include <type_traits>
 
 namespace Ubpa::CmptTag {
-	template<typename TagedCmpt>
-	struct RemoveTag;
+	template<typename T>
+	struct RemoveTag {
+		using type = T;
+	};
 
 	template<typename Cmpt>
 	struct RemoveTag<const Cmpt*> {
@@ -41,4 +43,14 @@ namespace Ubpa::CmptTag {
 
 	template<typename Cmpt>
 	struct IsNewest<const Cmpt*> : std::true_type {};
+
+	template<typename TagedCmpt>
+	struct IsBefore : std::false_type {};
+	template<typename... Cmpts>
+	struct IsBefore<Before<Cmpts...>> : std::true_type {};
+
+	template<typename TagedCmpt>
+	struct IsAfter : std::false_type {};
+	template<typename... Cmpts>
+	struct IsAfter<After<Cmpts...>> : std::true_type {};
 }
