@@ -11,22 +11,74 @@ namespace Ubpa::detail::SystemSchedule_ {
 
 namespace Ubpa {
 	template<SysType type>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::Before(const std::string& name) {
+		befores->push_back(name);
+		return *this;
+	}
+
+	template<SysType type>
+	// use nameof::nameof_type<Func Cmpt::*>()
+	template<typename Cmpt, typename Func>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::Before(Func Cmpt::*) {
+		return Before(std::string(nameof::nameof_type<Func Cmpt::*>()));
+	}
+
+	template<SysType type>
+	template<typename Cmpt>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::Before() {
+		return Before(GetSys<Cmpt, type>());
+	}
+
+	template<SysType type>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::After(const std::string& name) {
+		afters->push_back(name);
+		return *this;
+	}
+
+	template<SysType type>
+	// use nameof::nameof_type<Func Cmpt::*>()
+	template<typename Cmpt, typename Func>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::After(Func Cmpt::*) {
+		return After(std::string(nameof::nameof_type<Func Cmpt::*>()));
+	}
+
+	template<SysType type>
+	template<typename Cmpt>
+	typename SystemSchedule<type>::Config& SystemSchedule<type>::Config::After() {
+		return After(GetSys<Cmpt, type>());
+	}
+
+	template<SysType type>
 	template<typename Func>
-	SystemSchedule<type>& SystemSchedule<type>::Regist(Func&& func, std::string_view name) {
-		detail::SystemSchedule_::Schedule<type, FuncTraits_ArgList<std::remove_reference_t<Func>>>::run(this, std::forward<Func>(func), name);
+	SystemSchedule<type>& SystemSchedule<type>::Regist(Func&& func, std::string_view name, const Config& config) {
+		std::string sname(name);
+		for (const auto& before : config.befores)
+			sysOrderMap[sname].insert(before);
+		for (const auto& after : config.afters)
+			sysOrderMap[after].insert(sname);
+
+		detail::SystemSchedule_::Schedule<type, FuncTraits_ArgList<std::remove_reference_t<Func>>>::run(this, std::forward<Func>(func), sname);
 		return *this;
 	}
 
 	template<SysType type>
 	template<typename Cmpt, typename Func>
-	SystemSchedule<type>& SystemSchedule<type>::Regist(Func Cmpt::* func) {
-		Regist(detail::SystemSchedule_::GenSystem<Func Cmpt::*>::run(func), nameof::nameof_type<Func Cmpt::*>());
+	SystemSchedule<type>& SystemSchedule<type>::Regist(Func Cmpt::* func, std::string_view name, const Config& config) {
+		Regist(detail::SystemSchedule_::GenSystem<Func Cmpt::*>::run(func), name, config);
 		return *this;
 	}
 
 	template<SysType type>
-	template<typename Cmpt, typename>
+	template<typename Cmpt, typename Func>
+	SystemSchedule<type>& SystemSchedule<type>::Regist(Func Cmpt::* func, const Config& config) {
+		Regist(func, nameof::nameof_type<Func Cmpt::*>(), config);
+		return *this;
+	}
+
+	template<SysType type>
+	template<typename Cmpt>
 	SystemSchedule<type>& SystemSchedule<type>::Regist() {
+		static_assert(HaveSys<Cmpt, type>, "<Cmpt> have no corresponding System (OnStart/OnUpdate/OnStop)");
 		Regist(GetSys<Cmpt, type>());
 		return *this;
 	}
@@ -34,10 +86,9 @@ namespace Ubpa {
 	// ==============================================================================================
 
 	template<SysType type>
-	System* SystemSchedule<type>::RequestSystem(std::string_view name) {
-		std::string sname(name);
-		System* sys = syspool.Request(sname);
-		systems[sname] = sys;
+	System* SystemSchedule<type>::RequestSystem(const std::string& name) {
+		System* sys = syspool.Request(name);
+		systems[name] = sys;
 		return sys;
 	}
 
@@ -169,23 +220,20 @@ namespace Ubpa {
 		for (const auto& [parent, children] : graph) {
 			if (visited.find(parent) != visited.end())
 				continue;
-			std::set<System*> sysSet;
-			sysSet.insert(parent);
-			std::set<System*> curVisited;
-			while (!sysSet.empty()) {
-				auto curTarget = sysSet.begin();
-				auto curSys = *curTarget;
-				sysSet.erase(curTarget);
-				if (curVisited.find(curSys) != curVisited.end())
-					return false;
-				if (visited.find(curSys) != visited.end())
-					continue;
-				curVisited.insert(curSys);
+			std::stack<System*> sysStack;
+			sysStack.push(parent);
+			while (!sysStack.empty()) {
+				auto curSys = sysStack.top();
+				sysStack.pop();
 				visited.insert(curSys);
 				auto target = graph.find(curSys);
 				if (target != graph.end()) {
-					for (const auto& child : target->second)
-						sysSet.insert(child);
+					for (const auto& child : target->second) {
+						if (child == parent)
+							return false;
+						if (visited.find(curSys) == visited.end())
+							sysStack.push(child);
+					}
 				}
 			}
 		}
@@ -197,7 +245,7 @@ namespace Ubpa::detail::SystemSchedule_ {
 	template<SysType type, typename... TagedCmpts>
 	struct Schedule<type, TypeList<TagedCmpts...>> {
 		template<typename Func>
-		static auto run(SystemSchedule<type>* sysSchedule, Func&& func, std::string_view name) noexcept {
+		static auto run(SystemSchedule<type>* sysSchedule, Func&& func, const std::string& name) noexcept {
 			auto system = sysSchedule->RequestSystem(name);
 			sysSchedule->mngr->GenTaskflow(system, func);
 			if(!system->empty())
