@@ -57,7 +57,7 @@ Ubpa_InitInstallPrefix()
 Ubpa_InitTestSwitch()
 #set(Ubpa_BuildTest ON)
 
-Ubpa_AddDep(UBL 0.1.3)
+Ubpa_AddDep(UBL 0.1.4)
 
 Ubpa_AddSubDirsRec(include)
 Ubpa_AddSubDirsRec(src)

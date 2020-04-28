@@ -8,6 +8,16 @@ namespace Ubpa {
 	// [ Concept Usage ]
 	// Requare<Concept, Cmpt>
 
+	// enum
+	enum class SysType {
+		OnStart,
+		OnUpdate,
+		OnStop
+	};
+
+	template<SysType>
+	class SystemSchedule;
+
 	template<typename Cmpt>
 	Concept(HaveOnStart, &Cmpt::OnStart);
 
@@ -18,20 +28,13 @@ namespace Ubpa {
 	Concept(HaveOnStop, &Cmpt::OnStop);
 
 	template<typename Cmpt>
-	Concept(HaveOnStartSchedule, &Cmpt::OnStartSchedule);
+	Concept(HaveOnStartSchedule, MemFuncOf<void(SystemSchedule<SysType::OnStart>&)>::run(&Cmpt::OnSchedule));
 
 	template<typename Cmpt>
-	Concept(HaveOnUpdateSchedule, &Cmpt::OnUpdateSchedule);
+	Concept(HaveOnUpdateSchedule, MemFuncOf<void(SystemSchedule<SysType::OnUpdate>&)>::run(&Cmpt::OnSchedule));
 
 	template<typename Cmpt>
-	Concept(HaveOnStopSchedule, &Cmpt::OnStopSchedule);
-
-	// enum
-	enum class SysType {
-		OnStart,
-		OnUpdate,
-		OnStop
-	};
+	Concept(HaveOnStopSchedule, MemFuncOf<void(SystemSchedule<SysType::OnStop>&)>::run(&Cmpt::OnSchedule));
 
 	template<typename Cmpt, SysType type>
 	constexpr bool HaveSys = type == SysType::OnStart && Require<HaveOnStart, Cmpt>
@@ -45,7 +48,13 @@ namespace Ubpa {
 
 	template<typename Cmpt, SysType type,
 		typename = std::enable_if_t<HaveSys<Cmpt, type>>>
-		constexpr auto GetSys() noexcept;
+	constexpr auto GetSys() noexcept;
+
+	template<SysType type>
+	using ScheduleType = void(*)(SystemSchedule<type>&);
+	template<typename Cmpt, SysType type,
+		typename = std::enable_if_t<HaveSchedule<Cmpt, type>>>
+	constexpr ScheduleType<type> GetSchedule() noexcept;
 
 	template<typename Cmpt, SysType type,
 		typename = std::enable_if_t<HaveSys<Cmpt, type>>>

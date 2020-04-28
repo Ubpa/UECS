@@ -22,10 +22,10 @@ namespace Ubpa{
 		}
 
 		if constexpr (Require<HaveOnStartSchedule, Cmpt>)
-			dynamicStartScheduleFuncs.push_back(&Cmpt::OnStartSchedule);
+			dynamicStartScheduleFuncs.push_back(GetSchedule<Cmpt, SysType::OnStart>());
 		if constexpr (Require<HaveOnUpdateSchedule, Cmpt>)
-			dynamicUpdateScheduleFuncs.push_back(&Cmpt::OnUpdateSchedule);
+			dynamicUpdateScheduleFuncs.push_back(GetSchedule<Cmpt, SysType::OnUpdate>());
 		if constexpr (Require<HaveOnStopSchedule, Cmpt>)
-			dynamicStopScheduleFuncs.push_back(&Cmpt::OnStopSchedule);
+			dynamicStopScheduleFuncs.push_back(GetSchedule<Cmpt, SysType::OnStop>());
 	}
 }

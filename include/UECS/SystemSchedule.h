@@ -24,6 +24,7 @@ namespace Ubpa {
 		template<typename Func>
 		SystemSchedule& Regist(Func&& func, std::string_view name);
 
+		// use nameof::nameof_type<Func Cmpt::*>()
 		template<typename Cmpt, typename Func>
 		SystemSchedule& Regist(Func Cmpt::* func);
 
