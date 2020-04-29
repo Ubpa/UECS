@@ -1,6 +1,6 @@
 #include <UECS/World.h>
 
-#include <UECS/detail/SystemMngr.h>
+#include <UECS/detail/CmptSysMngr.h>
 
 using namespace Ubpa;
 using namespace std;
@@ -16,7 +16,7 @@ void World::Start() {
 	startSchedule.Clear();
 	startTaskflow.clear();
 
-	SystemMngr::Instance().GenSchedule(startSchedule);
+	CmptSysMngr::Instance().GenSchedule(startSchedule, *this);
 	startSchedule.GenTaskflow(startTaskflow);
 
 	executor.run(startTaskflow).wait();
@@ -28,7 +28,7 @@ void World::Update() {
 	updateSchedule.Clear();
 	updateTaskflow.clear();
 
-	SystemMngr::Instance().GenSchedule(updateSchedule);
+	CmptSysMngr::Instance().GenSchedule(updateSchedule, *this);
 	updateSchedule.GenTaskflow(updateTaskflow);
 
 	executor.run(updateTaskflow).wait();
@@ -40,7 +40,7 @@ void World::Stop() {
 	stopSchedule.Clear();
 	stopTaskflow.clear();
 
-	SystemMngr::Instance().GenSchedule(stopSchedule);
+	CmptSysMngr::Instance().GenSchedule(stopSchedule, *this);
 	stopSchedule.GenTaskflow(stopTaskflow);
 
 	executor.run(stopTaskflow).wait();

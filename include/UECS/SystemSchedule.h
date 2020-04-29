@@ -2,14 +2,14 @@
 
 #include "detail/ArchetypeMngr.h"
 
-#include <UBL/Pool.h>
-
-#include <taskflow/taskflow.hpp>
-
 #include "SystemTraits.h"
+
+#include <UBL/Pool.h>
 
 #include <UDP/Basic/xSTL/xMap.h>
 #include <UDP/Basic/Read.h>
+
+#include <taskflow/taskflow.hpp>
 
 namespace Ubpa::detail::SystemSchedule_ {
 	template<SysType type, typename ArgList>
@@ -17,77 +17,60 @@ namespace Ubpa::detail::SystemSchedule_ {
 }
 
 namespace Ubpa {
-	using System = tf::Taskflow;
+	using Job = tf::Taskflow;
 
 	template<SysType type>
 	class SystemSchedule {
 	public:
-		class Config {
-		public:
-			Read<Config, std::vector<std::string>> befores;
-			Read<Config, std::vector<std::string>> afters;
-
-			Config& Before(const std::string& name);
-
-			// use nameof::nameof_type<Func Cmpt::*>()
-			template<typename Cmpt, typename Func>
-			Config& Before(Func Cmpt::* func);
-
-			template<typename Cmpt>
-			Config& Before();
-
-			Config& After(const std::string& name);
-
-			// use nameof::nameof_type<Func Cmpt::*>()
-			template<typename Cmpt, typename Func>
-			Config& After(Func Cmpt::* func);
-
-			template<typename Cmpt>
-			Config& After();
-		};
-
-
 		template<typename Func>
-		SystemSchedule& Regist(Func&& func, std::string_view name, const Config& config = Config{});
+		SystemSchedule& Register(const std::string& name, Func&& func);
 
 		template<typename Cmpt, typename Func>
-		SystemSchedule& Regist(Func Cmpt::* func, std::string_view name, const Config& config = Config{});
+		SystemSchedule& Register(const std::string& name, Func Cmpt::* func);
 
 		// use nameof::nameof_type<Func Cmpt::*>()
 		template<typename Cmpt, typename Func>
-		SystemSchedule& Regist(Func Cmpt::* func, const Config& config = Config{});
+		SystemSchedule& Register(Func Cmpt::* func);
+
+		SystemSchedule& Order(std::string_view first, const std::string& second);
+		template<typename CmptFirst, typename CmptSecond>
+		SystemSchedule& Order();
+		template<typename Cmpt>
+		SystemSchedule& Before(std::string_view name);
+		template<typename Cmpt>
+		SystemSchedule& After(const std::string& name);
 
 		// TODO: regist not parallel
 
 	private:
 		friend class World;
-		friend class SystemMngr;
+		friend class CmptSysMngr;
 
 		SystemSchedule(ArchetypeMngr* mngr);
 		~SystemSchedule();
 
 		template<typename Cmpt>
-		SystemSchedule& Regist();
+		SystemSchedule& Register();
 
 		void Clear();
 
 		bool GenTaskflow(tf::Taskflow& taskflow) const;
 
-		struct RWSystems {
-			std::vector<System*> pre_readers;
-			std::set<System*> writers;
-			std::vector<System*> post_readers;
+		struct RW_Jobs {
+			std::vector<Job*> pre_readers;
+			std::set<Job*> writers;
+			std::vector<Job*> post_readers;
 		};
 
-		System* RequestSystem(const std::string& name);
+		Job* RequestJob(const std::string& name);
 
 		bool IsDAG() const noexcept;
 
 		ArchetypeMngr* const mngr;
-		std::unordered_map<size_t, RWSystems> id2rw;
-		Pool<System> syspool;
+		std::unordered_map<size_t, RW_Jobs> id2rw;
+		Pool<Job> jobPool;
 
-		xMap<std::string, System*> systems;
+		xMap<std::string, Job*> jobs;
 		xMap<std::string, std::set<std::string>> sysOrderMap; // to children
 
 		template<SysType type, typename ArgList>

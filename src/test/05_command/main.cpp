@@ -32,7 +32,7 @@ struct B {
 };
 
 int main() {
-	CmptRegister::Instance().Regist<A, B>();
+	CmptRegistrar::Instance().Register<A, B>();
 
 	World w;
 	auto [e, b] = w.CreateEntity<B>();

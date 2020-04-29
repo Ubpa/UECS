@@ -25,7 +25,7 @@ struct C {
 };
 
 int main() {
-	CmptRegister::Instance().Regist<A, B, C>();
+	CmptRegistrar::Instance().Register<A, B, C>();
 
 	World w;
 	w.CreateEntity<A, B, C>();

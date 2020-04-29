@@ -16,7 +16,7 @@ void Print(const Ubpa::World& w) {
 }
 
 int main() {
-	CmptRegister::Instance().Regist<velocity, position>();
+	CmptRegistrar::Instance().Register<velocity, position>();
 	World w;
 	
 	for (size_t i = 0; i < 10; i++) {

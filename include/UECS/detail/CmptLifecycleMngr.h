@@ -23,7 +23,7 @@ namespace Ubpa {
 		}
 
 		template<typename Cmpt>
-		void Regist() {
+		void Register() {
 			static_assert(std::is_move_constructible_v<Cmpt>);
 			static_assert(std::is_constructible_v<Cmpt>);
 			destructors[TypeID<Cmpt>] = [](void* cmpt) {

@@ -1,37 +1,22 @@
 #pragma once
 
-#include "SystemSchedule.inl"
+#include "../SystemSchedule.h"
 
-#include <functional>
-
-namespace Ubpa {
-	class ArchetypeMngr;
-
+namespace Ubpa{
 	class SystemMngr {
 	public:
-		static SystemMngr& Instance() {
-			static SystemMngr instance;
-			return instance;
-		}
-
-		template<typename Cmpt>
-		void Regist();
-
-		void GenSchedule(SystemSchedule<SysType::OnStart>& schedule);
-		void GenSchedule(SystemSchedule<SysType::OnUpdate>& schedule);
-		void GenSchedule(SystemSchedule<SysType::OnStop>& schedule);
+		template<typename System>
+		void Register();
+		template<typename System>
+		bool IsRegistered() const;
+		template<typename System>
+		void Deregister() noexcept;
 
 	private:
-		std::vector<std::function<void(SystemSchedule<SysType::OnStart>&)>> staticStartScheduleFuncs;
-		std::vector<std::function<void(SystemSchedule<SysType::OnUpdate>&)>> staticUpdateScheduleFuncs;
-		std::vector<std::function<void(SystemSchedule<SysType::OnStop>&)>> staticStopScheduleFuncs;
-
-		std::vector<std::function<void(SystemSchedule<SysType::OnStart>&)>> dynamicStartScheduleFuncs;
-		std::vector<std::function<void(SystemSchedule<SysType::OnUpdate>&)>> dynamicUpdateScheduleFuncs;
-		std::vector<std::function<void(SystemSchedule<SysType::OnStop>&)>> dynamicStopScheduleFuncs;
-
-	private:
-		SystemMngr() = default;
+		friend class CmptSysMngr;
+		std::map<size_t, ScheduleFunc<SysType::OnStart>*> n2start;
+		std::map<size_t, ScheduleFunc<SysType::OnUpdate>*> n2update;
+		std::map<size_t, ScheduleFunc<SysType::OnStop>*> n2stop;
 	};
 }
 

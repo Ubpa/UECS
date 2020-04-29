@@ -3,28 +3,28 @@
 #include <unordered_set>
 
 namespace Ubpa {
-	class CmptRegister {
+	class CmptRegistrar {
 	public:
-		static CmptRegister& Instance() noexcept {
-			static CmptRegister instance;
+		static CmptRegistrar& Instance() noexcept {
+			static CmptRegistrar instance;
 			return instance;
 		}
 
 		template<typename... Cmpts>
-		void Regist();
+		void Register();
 
 		template<typename... Cmpts>
-		bool IsRegisted() const noexcept;
+		bool IsRegistered() const noexcept;
 
 	private:
 		template<typename Cmpt>
-		void RegistOne();
+		void RegisterOne();
 
 		template<typename Cmpt>
-		bool IsRegistedOne() const noexcept;
+		bool IsRegisteredOne() const noexcept;
 
 		std::unordered_set<size_t> registedCmpts;
 	};
 }
 
-#include "detail/CmptRegister.inl"
+#include "detail/CmptRegistrar.inl"

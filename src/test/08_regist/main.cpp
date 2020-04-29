@@ -7,7 +7,7 @@ using namespace Ubpa;
 
 struct Position {
 	float x;
-	static void OnRegist() {
+	static void OnRegister() {
 		cout << "regist Position" << endl;
 	}
 
@@ -19,7 +19,7 @@ struct Position {
 struct Velocity {
 	float x;
 
-	static void OnRegist() {
+	static void OnRegister() {
 		cout << "regist Velocity" << endl;
 	}
 
@@ -39,7 +39,7 @@ struct Acceleration {
 };
 
 int main() {
-	CmptRegister::Instance().Regist<Position, Velocity, Acceleration>();
+	CmptRegistrar::Instance().Register<Position, Velocity, Acceleration>();
 
 	World w;
 	w.CreateEntity<Velocity, Position, Acceleration>();

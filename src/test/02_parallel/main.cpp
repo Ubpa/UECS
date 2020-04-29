@@ -12,7 +12,7 @@ struct velocity { float v{ 0.f }; float pad[31]{}; };
 struct position { float x{ 0.f }; float pad[31]{}; };
 
 int main() {
-	CmptRegister::Instance().Regist<velocity, position>();
+	CmptRegistrar::Instance().Register<velocity, position>();
 
 	constexpr size_t N = 1<<22;
 	constexpr size_t M = 100;

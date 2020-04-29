@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "SystemSchedule.h"
+#include "detail/SystemMngr.h"
 
 namespace Ubpa::detail::World_ {
 	template<typename Args>
@@ -11,7 +12,7 @@ namespace Ubpa::detail::World_ {
 }
 
 namespace Ubpa {
-	class World {
+	class World : public SystemMngr {
 	public:
 		World();
 

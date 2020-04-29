@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../CmptRegister.h"
+#include "../CmptRegistrar.h"
 
 #include <UTemplate/Func.h>
 
@@ -28,10 +28,10 @@ namespace Ubpa {
 	template<typename... Cmpts>
 	std::tuple<Entity*, Cmpts*...> World::CreateEntity() {
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-		(CmptLifecycleMngr::Instance().Regist<Cmpts>(),...);
+		(CmptLifecycleMngr::Instance().Register<Cmpts>(),...);
 		auto rst = mngr.CreateEntity<Cmpts...>();
 		assert("[ERROR] hasn't registed <Cmpts>"
-			&& CmptRegister::Instance().template IsRegisted<Cmpts...>());
+			&& CmptRegistrar::Instance().template IsRegistered<Cmpts...>());
 		return {reinterpret_cast<Entity*>(std::get<0>(rst)),
 			std::get<1 + Find_v<TypeList<Cmpts...>, Cmpts>>(rst)...};
 	}

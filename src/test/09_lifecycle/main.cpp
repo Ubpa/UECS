@@ -6,7 +6,7 @@ using namespace std;
 using namespace Ubpa;
 
 struct MyCmpt {
-	static void OnRegist() { cout << "OnRegist" << endl; }
+	static void OnRegister() { cout << "OnRegister" << endl; }
 
 	// before first update
 	static void OnStartSchedule(SystemSchedule<SysType::OnStart>& schedule) {
@@ -39,7 +39,7 @@ struct MyCmpt {
 //};
 
 int main() {
-	CmptRegister::Instance().Regist<MyCmpt>();
+	CmptRegistrar::Instance().Register<MyCmpt>();
 
 	World w;
 	w.CreateEntity<MyCmpt>();

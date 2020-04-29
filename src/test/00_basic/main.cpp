@@ -5,7 +5,7 @@ struct velocity { float value{ 0.f }; };
 struct position { float value{ 0.f }; };
 
 int main() {
-	Ubpa::CmptRegister::Instance().Regist<velocity, position>();
+	Ubpa::CmptRegistrar::Instance().Register<velocity, position>();
 
 	Ubpa::World w;
 	
