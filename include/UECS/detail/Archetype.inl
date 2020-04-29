@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CmptLifecycleMngr.h"
+
 #include <cassert>
 
 namespace Ubpa {
@@ -8,8 +10,6 @@ namespace Ubpa {
 		: mngr(mngr), id(TypeList<Cmpts...>{})
 	{
 		using CmptList = TypeList<Cmpts...>;
-
-		constexpr size_t N = sizeof...(Cmpts);
 
 		constexpr auto info = Chunk::StaticInfo<Cmpts...>();
 		chunkCapacity = info.capacity;

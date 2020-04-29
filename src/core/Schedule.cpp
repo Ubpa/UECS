@@ -1,4 +1,4 @@
-#include <UECS/Schedule.h>
+#include <UECS/detail/Schedule.h>
 
 using namespace Ubpa;
 using namespace std;

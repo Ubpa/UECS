@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../SystemTraits.h"
+#include "SystemTraits.h"
 
 #include <UTemplate/Func.h>
 
@@ -28,17 +28,10 @@ namespace Ubpa {
 	}
 
 	template<SysType type>
-	template<typename Cmpt, typename Func>
-	ScheduleRegistrar<type>& ScheduleRegistrar<type>::Register(Func Cmpt::* func) {
-		Register(std::string(nameof::nameof_type<Func Cmpt::*>()), func);
-		return *this;
-	}
-
-	template<SysType type>
 	template<typename Cmpt>
 	ScheduleRegistrar<type>& ScheduleRegistrar<type>::Register() {
 		static_assert(HaveCmptSys<Cmpt, type>, "<Cmpt> have no corresponding System (OnStart/OnUpdate/OnStop)");
-		Register(GetCmptSys<Cmpt, type>());
+		Register(std::string(DefaultSysName<Cmpt, type>()), GetCmptSys<Cmpt, type>());
 		return *this;
 	}
 

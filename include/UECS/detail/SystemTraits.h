@@ -64,4 +64,4 @@ namespace Ubpa {
 	constexpr std::string_view DefaultSysName() noexcept;
 }
 
-#include "detail/SystemTraits.inl"
+#include "SystemTraits.inl"

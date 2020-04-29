@@ -4,7 +4,7 @@
 
 #include <UDP/Basic/xSTL/xMap.h>
 
-#include "detail/Job.h"
+#include "Job.h"
 
 namespace Ubpa {
 	struct Schedule {

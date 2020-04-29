@@ -18,7 +18,7 @@ namespace Ubpa {
 
 		~ArchetypeMngr();
 
-		inline World* World() const noexcept { return w; }
+		World* World() const noexcept { return w; }
 
 		inline Archetype* GetArchetypeOf(const CmptIDSet& archetypeID);
 

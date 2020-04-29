@@ -1,5 +1,4 @@
 #include <UECS/World.h>
-#include <UECS/SystemTraits.h>
 
 #include <iostream>
 
@@ -30,8 +29,8 @@ struct alignas(8) Velocity {
 
 	static void OnSchedule(ScheduleRegistrar<SysType::OnUpdate>& registrar) {
 		registrar
-			.Register(MemFuncOf<void(Position*)const>::run(&Velocity::Update))
-			.Register(MemFuncOf<void()const>::run(&Velocity::Update));
+			.Register("Update1", MemFuncOf<void(Position*)const>::run(&Velocity::Update))
+			.Register("Update2", MemFuncOf<void()const>::run(&Velocity::Update));
 	}
 };
 

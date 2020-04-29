@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Chunk.h"
-#include "CmptLifecycleMngr.h"
 #include "CmptIDSet.h"
 
 #include <UBL/Pool.h>

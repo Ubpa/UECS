@@ -16,8 +16,6 @@ namespace Ubpa {
 	}
 }
 
-// =========================================================================================
-
 namespace Ubpa::detail::Chunk_ {
 	template<typename... Cmpts>
 	struct StaticInfo {

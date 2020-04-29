@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Schedule.h"
+#include "Schedule.h"
 
 namespace Ubpa{
 	class SystemMngr {

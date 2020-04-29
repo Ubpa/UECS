@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../SystemTraits.h"
+#include "SystemTraits.h"
 
 namespace Ubpa{
 	template<typename Cmpt>
