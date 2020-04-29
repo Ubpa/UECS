@@ -29,11 +29,6 @@ namespace Ubpa {
 		static_assert(HaveSchedule<System, type>,
 			"<System> has no corresponding schedule function: OnSchedule(SystemShcedule<SysType::...>&)");
 
-		if constexpr (type == SysType::OnStart)
-			return MemFuncOf<void(SystemSchedule<SysType::OnStart>&)>::run(&System::OnSchedule);
-		else if constexpr (type == SysType::OnUpdate)
-			return MemFuncOf<void(SystemSchedule<SysType::OnUpdate>&)>::run(&System::OnSchedule);
-		else // if constexpr (type == SysType::Stop)
-			return MemFuncOf<void(SystemSchedule<SysType::OnStop>&)>::run(&System::OnSchedule);
+		return MemFuncOf<ScheduleFunc<type>>::run(&System::OnSchedule);
 	}
 }

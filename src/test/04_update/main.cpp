@@ -28,8 +28,8 @@ struct alignas(8) Velocity {
 	void Update() const {
 	}
 
-	static void OnSchedule(SystemSchedule<SysType::OnUpdate>& schedule) {
-		schedule
+	static void OnSchedule(ScheduleRegistrar<SysType::OnUpdate>& registrar) {
+		registrar
 			.Register(MemFuncOf<void(Position*)const>::run(&Velocity::Update))
 			.Register(MemFuncOf<void()const>::run(&Velocity::Update));
 	}

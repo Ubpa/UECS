@@ -7,57 +7,58 @@ using namespace std;
 
 World::World()
 	: mngr { this },
-	startSchedule{&mngr},
-	updateSchedule{ &mngr },
-	stopSchedule{ &mngr }
-{}
+	startRegistrar{ &mngr },
+	updateRegistrar{ &mngr },
+	stopRegistrar{ &mngr }
+{
+}
 
 void World::Start() {
-	startSchedule.Clear();
-	startTaskflow.clear();
+	startRegistrar.schedule.Clear();
+	startJobGraph.clear();
 
-	CmptSysMngr::Instance().GenSchedule(startSchedule, *this);
-	startSchedule.GenTaskflow(startTaskflow);
+	CmptSysMngr::Instance().GenSchedule(startRegistrar, *this);
+	startRegistrar.schedule.GenJobGraph(startJobGraph);
 
-	executor.run(startTaskflow).wait();
+	executor.run(startJobGraph).wait();
 	
 	mngr.RunCommands();
 }
 
 void World::Update() {
-	updateSchedule.Clear();
-	updateTaskflow.clear();
+	updateRegistrar.schedule.Clear();
+	updateJobGraph.clear();
 
-	CmptSysMngr::Instance().GenSchedule(updateSchedule, *this);
-	updateSchedule.GenTaskflow(updateTaskflow);
+	CmptSysMngr::Instance().GenSchedule(updateRegistrar, *this);
+	updateRegistrar.schedule.GenJobGraph(updateJobGraph);
 
-	executor.run(updateTaskflow).wait();
+	executor.run(updateJobGraph).wait();
 
 	mngr.RunCommands();
 }
 
 void World::Stop() {
-	stopSchedule.Clear();
-	stopTaskflow.clear();
+	stopRegistrar.schedule.Clear();
+	stopJobGraph.clear();
 
-	CmptSysMngr::Instance().GenSchedule(stopSchedule, *this);
-	stopSchedule.GenTaskflow(stopTaskflow);
+	CmptSysMngr::Instance().GenSchedule(stopRegistrar, *this);
+	stopRegistrar.schedule.GenJobGraph(stopJobGraph);
 
-	executor.run(stopTaskflow).wait();
+	executor.run(stopJobGraph).wait();
 
 	mngr.RunCommands();
 }
 
 string World::DumpStartTaskflow() const {
-	return startTaskflow.dump();
+	return startJobGraph.dump();
 }
 
 string World::DumpUpdateTaskflow() const {
-	return updateTaskflow.dump();
+	return updateJobGraph.dump();
 }
 
 string World::DumpStopTaskflow() const {
-	return stopTaskflow.dump();
+	return stopJobGraph.dump();
 }
 
 void World::AddCommand(const std::function<void()>& command) {

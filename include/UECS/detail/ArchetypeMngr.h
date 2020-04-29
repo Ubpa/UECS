@@ -3,9 +3,9 @@
 #include "Archetype.h"
 #include "EntityBase.h"
 
-#include <UBL/Pool.h>
+#include "Job.h"
 
-#include <taskflow/taskflow.hpp>
+#include <UBL/Pool.h>
 
 #include <mutex>
 
@@ -42,12 +42,14 @@ namespace Ubpa {
 		void Release(EntityBase* e);
 
 		template<typename Sys>
-		void GenTaskflow(tf::Taskflow* taskflow, Sys&& sys);
+		void GenJob(Job* job, Sys&& sys);
 
 		void AddCommand(const std::function<void()>& command);
 		void RunCommands();
 
 	private:
+		Ubpa::World* w;
+
 		Pool<EntityBase> entityPool;
 
 		std::map<std::tuple<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
@@ -63,7 +65,6 @@ namespace Ubpa {
 		// Typelist<Cmpts...> is sorted
 		std::unordered_map<size_t, CmptIDSet> cmpts2ids;
 
-		Ubpa::World* w;
 		std::vector<std::function<void()>> commandBuffer;
 		std::mutex commandBufferMutex;
 	};

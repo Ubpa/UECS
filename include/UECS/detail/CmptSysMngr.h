@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SystemSchedule.inl"
+#include "../ScheduleRegistrar.h"
 #include "SystemMngr.h"
 
 #include <functional>
@@ -18,9 +18,9 @@ namespace Ubpa {
 		template<typename Cmpt>
 		void Register();
 
-		void GenSchedule(SystemSchedule<SysType::OnStart>& schedule, const SystemMngr& sysMngr);
-		void GenSchedule(SystemSchedule<SysType::OnUpdate>& schedule, const SystemMngr& sysMngr);
-		void GenSchedule(SystemSchedule<SysType::OnStop>& schedule, const SystemMngr& sysMngr);
+		void GenSchedule(ScheduleRegistrar<SysType::OnStart>& registrar, const SystemMngr& sysMngr);
+		void GenSchedule(ScheduleRegistrar<SysType::OnUpdate>& registrar, const SystemMngr& sysMngr);
+		void GenSchedule(ScheduleRegistrar<SysType::OnStop>& registrar, const SystemMngr& sysMngr);
 
 	private:
 		std::vector<std::function<ScheduleFunc<SysType::OnStart>>> staticStartScheduleFuncs;

@@ -6,18 +6,18 @@ namespace Ubpa{
 	template<typename Cmpt>
 	void CmptSysMngr::Register() {
 		if constexpr (Require<HaveOnStart, Cmpt>) {
-			staticStartScheduleFuncs.push_back([](SystemSchedule<SysType::OnStart>& schedule) {
-				schedule.Register<Cmpt>();
+			staticStartScheduleFuncs.push_back([](ScheduleRegistrar<SysType::OnStart>& registrar) {
+				registrar.Register<Cmpt>();
 			});
 		}
 		if constexpr (Require<HaveOnUpdate, Cmpt>) {
-			staticUpdateScheduleFuncs.push_back([](SystemSchedule<SysType::OnUpdate>& schedule) {
-				schedule.Register<Cmpt>();
+			staticUpdateScheduleFuncs.push_back([](ScheduleRegistrar<SysType::OnUpdate>& registrar) {
+				registrar.Register<Cmpt>();
 			});
 		}
 		if constexpr (Require<HaveOnStop, Cmpt>) {
-			staticStopScheduleFuncs.push_back([](SystemSchedule<SysType::OnStop>& schedule) {
-				schedule.Register<Cmpt>();
+			staticStopScheduleFuncs.push_back([](ScheduleRegistrar<SysType::OnStop>& registrar) {
+				registrar.Register<Cmpt>();
 			});
 		}
 

@@ -14,7 +14,7 @@ struct Velocity {
 };
 
 struct MoveSystem {
-	static void OnSchedule(SystemSchedule<SysType::OnUpdate>& schedule) {
+	static void OnSchedule(ScheduleRegistrar<SysType::OnUpdate>& schedule) {
 		schedule.Register("Move", [](Position* p, const Velocity* v) {
 			p->x += v->x;
 			p->y += v->y;

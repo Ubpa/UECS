@@ -9,34 +9,22 @@ struct MyCmpt {
 	static void OnRegister() { cout << "OnRegister" << endl; }
 
 	// before first update
-	static void OnStartSchedule(SystemSchedule<SysType::OnStart>& schedule) {
-		cout << "OnStartSchedule" << endl;
+	static void OnSchedule(ScheduleRegistrar<SysType::OnStart>& registrar) {
+		cout << "OnSchedule OnStart" << endl;
 	}
 	void OnStart() { cout << "OnStart" << endl; }
 
-	static void OnUpdateSchedule(SystemSchedule<SysType::OnUpdate>& schedule) {
-		cout << "OnUpdateSchedule" << endl;
+	static void OnSchedule(ScheduleRegistrar<SysType::OnUpdate>& registrar) {
+		cout << "OnSchedule OnUpdate" << endl;
 	}
 	void OnUpdate() { cout << "OnUpdate" << endl; }
 
 	// after last update
-	static void OnStopSchedule(SystemSchedule<SysType::OnStop>& schedule) {
-		cout << "OnStopSchedule" << endl;
+	static void OnSchedule(ScheduleRegistrar<SysType::OnStop>& registrar) {
+		cout << "OnSchedule OnStop" << endl;
 	}
 	void OnStop() { cout << "OnStop" << endl; }
 };
-
-//struct MySystem {
-//	static void OnStartSchedule(SystemSchedule& schedule) {
-//		cout << "OnStartSchedule" << endl;
-//	}
-//	static void OnUpdateSchedule(SystemSchedule& schedule) {
-//		cout << "OnUpdateSchedule" << endl;
-//	}
-//	static void OnStopSchedule(SystemSchedule& schedule) {
-//		cout << "OnStopSchedule" << endl;
-//	}
-//};
 
 int main() {
 	CmptRegistrar::Instance().Register<MyCmpt>();

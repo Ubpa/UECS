@@ -82,7 +82,7 @@ namespace Ubpa::detail::World_ {
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
 			tf::Taskflow taskflow;
-			w->mngr.GenTaskflow(&taskflow, std::forward<Sys>(s));
+			w->mngr.GenJob(&taskflow, std::forward<Sys>(s));
 			w->executor.run(taskflow).wait();
 			w->mngr.RunCommands();
 		}

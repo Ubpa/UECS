@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Entity.h"
-#include "SystemSchedule.h"
+#include "ScheduleRegistrar.h"
 #include "detail/SystemMngr.h"
 
 namespace Ubpa::detail::World_ {
@@ -61,15 +61,15 @@ namespace Ubpa {
 	private:
 		ArchetypeMngr mngr;
 
-		SystemSchedule<SysType::OnStart> startSchedule;
-		SystemSchedule<SysType::OnUpdate> updateSchedule;
-		SystemSchedule<SysType::OnStop> stopSchedule;
+		ScheduleRegistrar<SysType::OnStart> startRegistrar;
+		ScheduleRegistrar<SysType::OnUpdate> updateRegistrar;
+		ScheduleRegistrar<SysType::OnStop> stopRegistrar;
 
-		tf::Taskflow startTaskflow;
-		tf::Taskflow updateTaskflow;
-		tf::Taskflow stopTaskflow;
+		Job startJobGraph;
+		Job updateJobGraph;
+		Job stopJobGraph;
 
-		tf::Executor executor;
+		JobExecutor executor;
 
 		template<typename ArgList>
 		friend struct detail::World_::Each;
