@@ -4,7 +4,6 @@
 #include <array>
 #include <tuple>
 #include <vector>
-#include <cassert>
 
 namespace Ubpa {
 	using byte = uint8_t;

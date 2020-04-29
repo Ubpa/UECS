@@ -14,9 +14,9 @@ namespace Ubpa{
 
 	private:
 		friend class CmptSysMngr;
-		std::map<size_t, ScheduleFunc<SysType::OnStart>*> n2start;
-		std::map<size_t, ScheduleFunc<SysType::OnUpdate>*> n2update;
-		std::map<size_t, ScheduleFunc<SysType::OnStop>*> n2stop;
+		std::unordered_map<size_t, ScheduleFunc<SysType::OnStart>*> n2start;
+		std::unordered_map<size_t, ScheduleFunc<SysType::OnUpdate>*> n2update;
+		std::unordered_map<size_t, ScheduleFunc<SysType::OnStop>*> n2stop;
 	};
 }
 

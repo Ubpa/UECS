@@ -1,15 +1,16 @@
 #pragma	once
 
-#include <set>
 #include <UTemplate/TypeID.h>
 #include <UTemplate/TemplateList.h>
+
+#include <set>
 
 namespace Ubpa {
 	class CmptIDSet : std::set<size_t> {
 	public:
 		CmptIDSet() = default;
 		template<typename... Cmpts>
-		CmptIDSet(TypeList<Cmpts...>) noexcept { Add<Cmpts...>(); }
+		CmptIDSet(TypeList<Cmpts...>) noexcept : std::set<size_t>{ TypeID<Cmpts>... }{}
 
 		template<typename... Cmpts>
 		void Add() noexcept { (insert(TypeID<Cmpts>), ...); }
@@ -40,6 +41,7 @@ namespace Ubpa {
 
 		using std::set<size_t>::begin;
 		using std::set<size_t>::end;
+		using std::set<size_t>::size;
 
 		friend bool operator<(const CmptIDSet& x, const CmptIDSet& y) noexcept {
 			return static_cast<const std::set<size_t>&>(x) < static_cast<const std::set<size_t>&>(y);
@@ -47,8 +49,5 @@ namespace Ubpa {
 		friend bool operator==(const CmptIDSet& x, const CmptIDSet& y) noexcept {
 			return static_cast<const std::set<size_t>&>(x) == static_cast<const std::set<size_t>&>(y);
 		}
-
-	private:
-		friend class Archetype;
 	};
 }

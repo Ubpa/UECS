@@ -1,7 +1,5 @@
 #include <UECS/detail/ArchetypeMngr.h>
 
-#include <mutex>
-
 using namespace Ubpa;
 using namespace std;
 

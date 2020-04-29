@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Chunk.h"
-#include "EntityBase.h"
 #include "CmptLifecycleMngr.h"
 #include "CmptIDSet.h"
 
@@ -15,8 +14,6 @@
 
 namespace Ubpa {
 	class ArchetypeMngr;
-	class Entity;
-
 	class Archetype {
 	public:
 		// argument TypeList<Cmpts...> is for type deduction

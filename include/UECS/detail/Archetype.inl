@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 namespace Ubpa {
 	template<typename... Cmpts>
 	Archetype::Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept
