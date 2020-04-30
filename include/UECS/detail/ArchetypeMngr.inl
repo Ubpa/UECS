@@ -18,7 +18,12 @@ namespace Ubpa {
 		if (target == id2a.end()) {
 			auto archetype = new Archetype(this, TypeList<Cmpts...>{});
 			id2a[id] = archetype;
-			ids.insert(archetype->ID());
+			ids.insert(id);
+			for (auto& [queryHash, archetypes] : queryCache) {
+				const auto& query = id2query.find(queryHash)->second;
+				if (id.IsContain(query.cmptIDs) && id.IsNotContain(query.notCmptIDs))
+					archetypes.insert(archetype);
+			}
 			return archetype;
 		}
 		else
@@ -46,17 +51,19 @@ namespace Ubpa {
 		return { entity, std::get<Find_v<CmptList, Cmpts>>(cmpts)... };
 	}
 
-	template<typename... Cmpts>
-	const std::set<Archetype*>& ArchetypeMngr::GetArchetypeWith() {
-		constexpr size_t cmptsHash = TypeID<QuickSort_t<TypeList<Cmpts...>, TypeID_Less>>;
-		auto target = cmpts2as.find(cmptsHash);
-		if (target != cmpts2as.end())
+	template<typename NotCmptList, typename CmptList>
+	const std::set<Archetype*>& ArchetypeMngr::QueryArchetypes() {
+		using SortedCmptList = QuickSort_t<CmptList, TypeID_Less>;
+		using SortedNotCmptList = QuickSort_t<NotCmptList, TypeID_Less>;
+		constexpr size_t queryHash = TypeID<TypeList<SortedNotCmptList, SortedCmptList>>;
+		auto target = queryCache.find(queryHash);
+		if (target != queryCache.end())
 			return target->second;
 
-		std::set<Archetype*>& rst = cmpts2as[cmptsHash];
-		cmpts2ids.emplace(cmptsHash, CmptIDSet{ TypeList<Cmpts...>{} });
+		std::set<Archetype*>& rst = queryCache[queryHash];
+		id2query.emplace(queryHash, Query{ TypeListToIDVec(SortedCmptList{}), TypeListToIDVec(SortedNotCmptList{}) });
 		for (auto& [id, a] : id2a) {
-			if (id.IsContain<Cmpts...>())
+			if (id.IsContain(CmptList{}) && id.IsNotContain(SortedNotCmptList{}))
 				rst.insert(a);
 		}
 
@@ -82,8 +89,9 @@ namespace Ubpa {
 			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
-			for (auto& [cmptsHash, archetypes] : cmpts2as) {
-				if (dstArchetype->ID().IsContain(cmpts2ids[cmptsHash]))
+			for (auto& [queryHash, archetypes] : queryCache) {
+				const auto& query = id2query.find(queryHash)->second;
+				if (dstID.IsContain(query.cmptIDs) && dstID.IsNotContain(query.notCmptIDs))
 					archetypes.insert(dstArchetype);
 			}
 		}
@@ -144,8 +152,9 @@ namespace Ubpa {
 			assert(dstID == dstArchetype->ID());
 			id2a[dstID] = dstArchetype;
 			ids.insert(dstID);
-			for (auto& [cmptsHash, archetypes] : cmpts2as) {
-				if (dstArchetype->ID().IsContain(cmpts2ids[cmptsHash]))
+			for (auto& [queryHash, archetypes] : queryCache) {
+				const auto& query = id2query.find(queryHash)->second;
+				if (dstID.IsContain(query.cmptIDs) && dstID.IsNotContain(query.notCmptIDs))
 					archetypes.insert(dstArchetype);
 			}
 		}
@@ -188,22 +197,28 @@ namespace Ubpa {
 	template<typename Sys>
 	void ArchetypeMngr::GenJob(Job* job, Sys&& sys) {
 		using ArgList = FuncTraits_ArgList<std::decay_t<Sys>>;
-		using OrderList = CmptTag::GetOrderList_t<ArgList>;
-		using TaggedCmptList = CmptTag::RemoveOrders_t<ArgList>;
-		return detail::ArchetypeMngr_::GenJob<ArgList, OrderList, TaggedCmptList>::run(job, this, std::forward<Sys>(sys));
+		using TaggedCmptList = CmptTag::GetTimePointList_t<ArgList>;
+		using OtherArgList = CmptTag::RemoveTimePoint_t<ArgList>;
+		return detail::ArchetypeMngr_::GenJob<ArgList, TaggedCmptList, OtherArgList>::run(job, this, std::forward<Sys>(sys));
+	}
+
+	template<typename... Cmpts>
+	std::vector<size_t> ArchetypeMngr::TypeListToIDVec(TypeList<Cmpts...>) {
+		return { TypeID<Cmpts>... };
 	}
 }
 
 namespace Ubpa::detail::ArchetypeMngr_ {
-	template<typename... Args, typename... Orders, typename... TagedCmpts>
-	struct GenJob<TypeList<Args...>, TypeList<Orders...>, TypeList<TagedCmpts...>> {
+	template<typename... Args, typename... TagedCmpts, typename... OtherArgs>
+	struct GenJob<TypeList<Args...>, TypeList<TagedCmpts...>, TypeList<OtherArgs...>> {
 		static_assert(sizeof...(TagedCmpts) > 0);
 		using CmptList = TypeList<CmptTag::RemoveTag_t<TagedCmpts>...>;
+		using NotCmptList = CmptTag::GetAllNotList_t<TypeList<Args...>>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(Job* job, ArchetypeMngr* mngr, Sys&& s) {
 			assert(job->empty());
-			for (auto archetype : mngr->GetArchetypeWith<CmptTag::RemoveTag_t<TagedCmpts>...>()) {
+			for (Archetype* archetype : mngr->QueryArchetypes<NotCmptList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<CmptTag::RemoveTag_t<TagedCmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
@@ -216,7 +231,7 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 							s(std::get<Args>(
 								std::make_tuple(
 									static_cast<TagedCmpts>((std::get<Find_v<CmptList, CmptTag::RemoveTag_t<TagedCmpts>>>(cmptsTuple) + j))...,
-									Orders{}...
+									OtherArgs{}...
 								))...);
 						}
 					});

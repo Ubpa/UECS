@@ -25,8 +25,8 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		inline Archetype* GetOrCreateArchetypeOf();
 		
-		template<typename... Cmpts>
-		const std::set<Archetype*>& GetArchetypeWith();
+		template<typename NotCmptList, typename CmptList>
+		const std::set<Archetype*>& QueryArchetypes();
 
 		template<typename... Cmpts>
 		const std::tuple<EntityBase*, Cmpts*...> CreateEntity();
@@ -48,6 +48,9 @@ namespace Ubpa {
 		void RunCommands();
 
 	private:
+		template<typename... Cmpts>
+		static std::vector<size_t> TypeListToIDVec(TypeList<Cmpts...>);
+
 		Ubpa::World* w;
 
 		Pool<EntityBase> entityPool;
@@ -58,12 +61,18 @@ namespace Ubpa {
 		std::map<CmptIDSet, Archetype*> id2a; // id to archetype
 
 		// Query Cache
-		// TypeID<Typelist<Cmpts...>> to archetype set
-		// Typelist<Cmpts...> is sorted
-		std::unordered_map<size_t, std::set<Archetype*>> cmpts2as;
+		// TypeID<Typelist<Cmpts...>, TypeList<NotCmpts...>> to archetype set
+		// Typelist<Cmpts...> and TypeList<NotCmpts...> are **sorted**
+		std::unordered_map<size_t, std::set<Archetype*>> queryCache;
 		// TypeID<Typelist<Cmpts...>> to Cmpt ID set
 		// Typelist<Cmpts...> is sorted
-		std::unordered_map<size_t, CmptIDSet> cmpts2ids;
+		struct Query {
+			Query(const std::vector<size_t>& notCmptIDs, const std::vector<size_t>& cmptIDs)
+				: notCmptIDs{ notCmptIDs }, cmptIDs{ cmptIDs } {}
+			std::vector<size_t> notCmptIDs; // sorted
+			std::vector<size_t> cmptIDs; // sorted
+		};
+		std::unordered_map<size_t, Query> id2query;
 
 		std::vector<std::function<void()>> commandBuffer;
 		std::mutex commandBufferMutex;

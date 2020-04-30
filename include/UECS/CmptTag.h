@@ -44,6 +44,21 @@ namespace Ubpa {
 		template<typename TagedCmpt>
 		static constexpr bool IsNewest_v = IsNewest<TagedCmpt>::value;
 
+		template<typename TagedCmpt>
+		struct IsTimePoint;
+		template<typename TagedCmpt>
+		static constexpr bool IsTimePoint_v = IsTimePoint<TagedCmpt>::value;
+
+		template<typename ArgList>
+		struct GetTimePointList : Filter<ArgList, IsTimePoint> {};
+		template<typename ArgList>
+		using GetTimePointList_t = typename GetTimePointList<ArgList>::type;
+
+		template<typename ArgList>
+		struct RemoveTimePoint : Filter<ArgList, Negate<IsTimePoint>::template Ttype> {};
+		template<typename ArgList>
+		using RemoveTimePoint_t = typename RemoveTimePoint<ArgList>::type;
+
 		// ======================================================================
 
 		template<typename... Cmpts>
@@ -68,14 +83,24 @@ namespace Ubpa {
 		struct IsOrder : IValue<bool, IsBefore_v<TagedCmpt> || IsAfter_v<TagedCmpt>> {};
 
 		template<typename ArgList>
-		struct RemoveOrders : Filter<ArgList, Negate<IsOrder>::template Ttype> {};
-		template<typename ArgList>
-		using RemoveOrders_t = typename RemoveOrders<ArgList>::type;
-
-		template<typename ArgList>
 		struct GetOrderList : Filter<ArgList, IsOrder> {};
 		template<typename ArgList>
 		using GetOrderList_t = typename GetOrderList<ArgList>::type;
+
+		// ======================================================================
+
+		template<typename... Cmpts>
+		struct Not {
+			using CmptList = TypeList<Cmpts...>;
+		};
+		template<typename T>
+		struct IsNot;
+		template<typename T>
+		static constexpr bool IsNot_v = IsNot<T>::value;
+		template<typename ArgList>
+		struct GetAllNotList; // TypeList<NotCmpts...>, sorted
+		template<typename ArgList>
+		using GetAllNotList_t = typename GetAllNotList<ArgList>::type;
 	}
 }
 

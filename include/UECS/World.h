@@ -5,9 +5,9 @@
 #include "detail/SystemMngr.h"
 
 namespace Ubpa::detail::World_ {
-	template<typename Args>
+	template<typename ArgList, typename CmptList, typename OtherArgList>
 	struct Each;
-	template<typename Args>
+	template<typename CmptList>
 	struct ParallelEach;
 }
 
@@ -71,9 +71,9 @@ namespace Ubpa {
 
 		JobExecutor executor;
 
-		template<typename ArgList>
+		template<typename ArgList, typename CmptList, typename OtherArgList>
 		friend struct detail::World_::Each;
-		template<typename ArgList>
+		template<typename CmptList>
 		friend struct detail::World_::ParallelEach;
 	};
 }

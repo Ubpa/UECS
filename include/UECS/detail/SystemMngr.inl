@@ -2,7 +2,7 @@
 
 namespace Ubpa {
 	template<typename System>
-	void SystemMngr::Register() {
+	void SystemMngr::RegisterOne() {
 		static_assert(HaveAnySchedule<System>,
 			"<System> has no any schdedule fuction");
 
@@ -12,6 +12,11 @@ namespace Ubpa {
 			n2update.emplace(TypeID<System>, GetSchedule<System, SysType::OnUpdate>());
 		if constexpr (Require<HaveOnStopSchedule, System>)
 			n2stop.emplace(TypeID<System>, GetSchedule<System, SysType::OnStop>());
+	}
+
+	template<typename... Systems>
+	void SystemMngr::Register() {
+		(RegisterOne<Systems>(), ...);
 	}
 
 	template<typename System>

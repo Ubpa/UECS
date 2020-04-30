@@ -7,22 +7,32 @@
 namespace Ubpa {
 	template<typename Sys>
 	void World::Each(Sys&& s) {
-		detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+		using ArgList = FuncTraits_ArgList<Sys>;
+		using TagedCmptList = CmptTag::GetTimePointList_t<ArgList>;
+		using OtherArgList = CmptTag::RemoveTimePoint_t<ArgList>;
+		detail::World_::Each<ArgList, TagedCmptList, OtherArgList>::run(this, std::forward<Sys>(s));
 	}
 
 	template<typename Sys>
 	void World::Each(Sys&& s) const {
-		detail::World_::Each<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+		using ArgList = FuncTraits_ArgList<Sys>;
+		using TagedCmptList = CmptTag::GetTimePointList_t<ArgList>;
+		using OtherArgList = CmptTag::RemoveTimePoint_t<ArgList>;
+		detail::World_::Each<ArgList, TagedCmptList, OtherArgList>::run(this, std::forward<Sys>(s));
 	}
 
 	template<typename Sys>
 	void World::ParallelEach(Sys&& s) {
-		detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+		using ArgList = FuncTraits_ArgList<Sys>;
+		using TagedCmptList = CmptTag::GetTimePointList_t<ArgList>;
+		detail::World_::ParallelEach<TagedCmptList>::run(this, std::forward<Sys>(s));
 	}
 
 	template<typename Sys>
 	void World::ParallelEach(Sys&& s) const {
-		detail::World_::ParallelEach<typename FuncTraits<Sys>::ArgList>::run(this, std::forward<Sys>(s));
+		using ArgList = FuncTraits_ArgList<Sys>;
+		using TagedCmptList = CmptTag::GetTimePointList_t<ArgList>;
+		detail::World_::ParallelEach<TagedCmptList>::run(this, std::forward<Sys>(s));
 	}
 
 	template<typename... Cmpts>
@@ -38,14 +48,15 @@ namespace Ubpa {
 }
 
 namespace Ubpa::detail::World_ {
-	template<typename... Cmpts>
-	struct Each<TypeList<Cmpts * ...>> {
+	template<typename... Args, typename... Cmpts, typename... OtherArgs>
+	struct Each<TypeList<Args...>, TypeList<Cmpts * ...>, TypeList<OtherArgs...>> {
 		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
+		using NotCmptList = CmptTag::GetAllNotList_t<TypeList<Args...>>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (auto archetype : w->mngr.GetArchetypeWith<std::remove_const_t<Cmpts>...>()) {
+			for (Archetype* archetype : w->mngr.QueryArchetypes<NotCmptList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<std::remove_const_t<Cmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
@@ -54,12 +65,13 @@ namespace Ubpa::detail::World_ {
 				for (size_t i = 0; i < chunkNum; i++) {
 					size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
 					for (size_t j = 0; j < J; j++) {
+						auto unsortedArgTuple = std::make_tuple( static_cast<Cmpts*>(std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTupleVec[i]) + j)..., OtherArgs{}... );
 						if constexpr (std::is_same_v<FuncTraits_Ret<Sys>, bool>) {
-							if (!s((std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTupleVec[i]) + j)...))
+							if (!s(std::get<Args>(unsortedArgTuple)...))
 								return;
 						}
 						else
-							s((std::get<Find_v<CmptList, std::remove_const_t<Cmpts>>>(cmptsTupleVec[i]) + j)...);
+							s(std::get<Args>(unsortedArgTuple)...);
 					}
 				}
 			}
@@ -75,15 +87,18 @@ namespace Ubpa::detail::World_ {
 	};
 
 	template<typename... Cmpts>
-	struct ParallelEach<TypeList<Cmpts * ...>> {
+	struct ParallelEach<TypeList<Cmpts* ...>> {
 		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			tf::Taskflow taskflow;
-			w->mngr.GenJob(&taskflow, std::forward<Sys>(s));
-			w->executor.run(taskflow).wait();
+			Job job;
+			w->mngr.GenJob(&job, std::forward<Sys>(s));
+			if (job.empty())
+				return;
+
+			w->executor.run(job).wait();
 			w->mngr.RunCommands();
 		}
 
