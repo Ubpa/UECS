@@ -25,7 +25,7 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		inline Archetype* GetOrCreateArchetypeOf();
 		
-		template<typename NoneCmptList, typename CmptList>
+		template<typename AllList, typename AnyList, typename NoneList, typename LocateList>
 		const std::set<Archetype*>& QueryArchetypes();
 
 		template<typename... Cmpts>
@@ -61,19 +61,29 @@ namespace Ubpa {
 		std::map<CmptIDSet, Archetype*> id2a; // id to archetype
 
 		// Query Cache
-		// TypeID<Typelist<Cmpts...>, TypeList<NoneCmpts...>> to archetype set
-		// Typelist<Cmpts...> and TypeList<NoneCmpts...> are **sorted**
+		// TypeID<AllList, AnyList, NoneList, LocateList> to archetype set
+		// AllList, AnyList, NoneList, LocateList are **sorted**
 		std::unordered_map<size_t, std::set<Archetype*>> queryCache;
-		// TypeID<Typelist<Cmpts...>> to Cmpt ID set
-		// Typelist<Cmpts...> is sorted
 		struct Query {
-			Query(const std::vector<size_t>& notCmptIDs, const std::vector<size_t>& cmptIDs)
-				: notCmptIDs{ notCmptIDs }, cmptIDs{ cmptIDs } {}
-			std::vector<size_t> notCmptIDs; // sorted
-			std::vector<size_t> cmptIDs; // sorted
+			Query(const std::vector<size_t>& allCmptIDs,
+				const std::vector<size_t>& anyCmptIDs,
+				const std::vector<size_t>& noneCmptIDs,
+				const std::vector<size_t>& locateCmptIDs)
+				: allCmptIDs{ allCmptIDs },
+				anyCmptIDs{ anyCmptIDs },
+				noneCmptIDs{ noneCmptIDs },
+				locateCmptIDs { locateCmptIDs }
+			{
+			}
+
+			std::vector<size_t> allCmptIDs; // sorted
+			std::vector<size_t> anyCmptIDs; // sorted
+			std::vector<size_t> noneCmptIDs; // sorted
+			std::vector<size_t> locateCmptIDs; // sorted
 		};
 		std::unordered_map<size_t, Query> id2query;
 
+		// command
 		std::vector<std::function<void()>> commandBuffer;
 		std::mutex commandBufferMutex;
 	};

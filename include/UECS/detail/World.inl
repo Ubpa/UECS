@@ -52,11 +52,13 @@ namespace Ubpa::detail::World_ {
 	struct Each<TypeList<Args...>, TypeList<Cmpts * ...>, TypeList<OtherArgs...>> {
 		static_assert(sizeof...(Cmpts) > 0);
 		using CmptList = TypeList<std::remove_const_t<Cmpts>...>;
-		using NoneCmptList = CmptTag::GetAllNoneList_t<TypeList<Args...>>;
+		using AllList = CmptTag::ConcatedAllList_t<TypeList<Args...>>;
+		using AnyList = CmptTag::ConcatedAnyList_t<TypeList<Args...>>;
+		using NoneList = CmptTag::ConcatedNoneList_t<TypeList<Args...>>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(World* w, Sys&& s) {
-			for (Archetype* archetype : w->mngr.QueryArchetypes<NoneCmptList, CmptList>()) {
+			for (Archetype* archetype : w->mngr.QueryArchetypes<AllList, AnyList, NoneList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<std::remove_const_t<Cmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();

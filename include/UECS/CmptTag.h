@@ -81,6 +81,8 @@ namespace Ubpa {
 
 		template<typename TagedCmpt>
 		struct IsOrder : IValue<bool, IsBefore_v<TagedCmpt> || IsAfter_v<TagedCmpt>> {};
+		template<typename TagedCmpt>
+		static constexpr bool IsOrder_v = IsOrder<TagedCmpt>::value;
 
 		template<typename ArgList>
 		struct GetOrderList : Filter<ArgList, IsOrder> {};
@@ -88,6 +90,32 @@ namespace Ubpa {
 		using GetOrderList_t = typename GetOrderList<ArgList>::type;
 
 		// ======================================================================
+
+		template<typename... Cmpts>
+		struct All {
+			using CmptList = TypeList<Cmpts...>;
+		};
+		template<typename T>
+		struct IsAll;
+		template<typename T>
+		static constexpr bool IsAll_v = IsAll<T>::value;
+		template<typename ArgList>
+		struct ConcatedAllList; // TypeList<AllCmpts...>
+		template<typename ArgList>
+		using ConcatedAllList_t = typename ConcatedAllList<ArgList>::type;
+
+		template<typename... Cmpts>
+		struct Any {
+			using CmptList = TypeList<Cmpts...>;
+		};
+		template<typename T>
+		struct IsAny;
+		template<typename T>
+		static constexpr bool IsAny_v = IsAny<T>::value;
+		template<typename ArgList>
+		struct ConcatedAnyList; // TypeList<AnyCmpts...>
+		template<typename ArgList>
+		using ConcatedAnyList_t = typename ConcatedAnyList<ArgList>::type;
 
 		template<typename... Cmpts>
 		struct None {
@@ -98,9 +126,14 @@ namespace Ubpa {
 		template<typename T>
 		static constexpr bool IsNone_v = IsNone<T>::value;
 		template<typename ArgList>
-		struct GetAllNoneList; // TypeList<NoneCmpts...>, sorted
+		struct ConcatedNoneList; // TypeList<NoneCmpts...>
 		template<typename ArgList>
-		using GetAllNoneList_t = typename GetAllNoneList<ArgList>::type;
+		using ConcatedNoneList_t = typename ConcatedNoneList<ArgList>::type;
+
+		template<typename T>
+		struct IsQuery : IValue<bool, IsAll_v<T> || IsAny_v<T> || IsNone_v<T>> {};
+		template<typename T>
+		static constexpr bool IsQuery_v = IsQuery<T>::value;
 	}
 }
 
