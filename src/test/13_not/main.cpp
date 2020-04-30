@@ -19,7 +19,7 @@ struct Acceleration {
 
 struct MoveSystem_VP {
 	static void OnSchedule(ScheduleRegistrar<SysType::OnUpdate>& schedule) {
-		schedule.Register("MoveSystem_VP", [](CmptTag::Not<Acceleration>, Position* p, const Velocity* v) {
+		schedule.Register("MoveSystem_VP", [](CmptTag::None<Acceleration>, Position* p, const Velocity* v) {
 			p->x += v->x;
 			p->y += v->y;
 			cout << "MoveSystem_VP" << endl;

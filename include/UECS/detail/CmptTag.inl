@@ -26,16 +26,16 @@ namespace Ubpa::CmptTag {
 	template<typename TagedCmpt> struct IsAfter : std::false_type {};
 	template<typename... Cmpts> struct IsAfter<After<Cmpts...>> : std::true_type {};
 
-	template<typename T> struct IsNot : std::false_type {};
-	template<typename... Cmpts> struct IsNot<Not<Cmpts...>> : std::true_type {};
+	template<typename T> struct IsNone : std::false_type {};
+	template<typename... Cmpts> struct IsNone<None<Cmpts...>> : std::true_type {};
 
 	namespace detail::CmptTag_ {
 		template<typename I, typename X>
-		struct AccNot : IType<I> {};
-		template<typename I, typename... NotCmpts>
-		struct AccNot<I, Not<NotCmpts...>> : Concat<I, TypeList<NotCmpts...>> {};
+		struct AccNone : IType<I> {};
+		template<typename I, typename... NoneCmpts>
+		struct AccNone<I, None<NoneCmpts...>> : Concat<I, TypeList<NoneCmpts...>> {};
 	}
 
 	template<typename ArgList>
-	struct GetAllNotList : Accumulate<ArgList, detail::CmptTag_::AccNot, TypeList<>> {};
+	struct GetAllNoneList : Accumulate<ArgList, detail::CmptTag_::AccNone, TypeList<>> {};
 }

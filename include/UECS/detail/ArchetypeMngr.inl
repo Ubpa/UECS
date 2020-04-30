@@ -51,19 +51,19 @@ namespace Ubpa {
 		return { entity, std::get<Find_v<CmptList, Cmpts>>(cmpts)... };
 	}
 
-	template<typename NotCmptList, typename CmptList>
+	template<typename NoneCmptList, typename CmptList>
 	const std::set<Archetype*>& ArchetypeMngr::QueryArchetypes() {
 		using SortedCmptList = QuickSort_t<CmptList, TypeID_Less>;
-		using SortedNotCmptList = QuickSort_t<NotCmptList, TypeID_Less>;
-		constexpr size_t queryHash = TypeID<TypeList<SortedNotCmptList, SortedCmptList>>;
+		using SortedNoneCmptList = QuickSort_t<NoneCmptList, TypeID_Less>;
+		constexpr size_t queryHash = TypeID<TypeList<SortedNoneCmptList, SortedCmptList>>;
 		auto target = queryCache.find(queryHash);
 		if (target != queryCache.end())
 			return target->second;
 
 		std::set<Archetype*>& rst = queryCache[queryHash];
-		id2query.emplace(queryHash, Query{ TypeListToIDVec(SortedCmptList{}), TypeListToIDVec(SortedNotCmptList{}) });
+		id2query.emplace(queryHash, Query{ TypeListToIDVec(SortedCmptList{}), TypeListToIDVec(SortedNoneCmptList{}) });
 		for (auto& [id, a] : id2a) {
-			if (id.IsContain(CmptList{}) && id.IsNotContain(SortedNotCmptList{}))
+			if (id.IsContain(CmptList{}) && id.IsNotContain(SortedNoneCmptList{}))
 				rst.insert(a);
 		}
 
@@ -213,12 +213,12 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 	struct GenJob<TypeList<Args...>, TypeList<TagedCmpts...>, TypeList<OtherArgs...>> {
 		static_assert(sizeof...(TagedCmpts) > 0);
 		using CmptList = TypeList<CmptTag::RemoveTag_t<TagedCmpts>...>;
-		using NotCmptList = CmptTag::GetAllNotList_t<TypeList<Args...>>;
+		using NoneCmptList = CmptTag::GetAllNoneList_t<TypeList<Args...>>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
 		static void run(Job* job, ArchetypeMngr* mngr, Sys&& s) {
 			assert(job->empty());
-			for (Archetype* archetype : mngr->QueryArchetypes<NotCmptList, CmptList>()) {
+			for (Archetype* archetype : mngr->QueryArchetypes<NoneCmptList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<CmptTag::RemoveTag_t<TagedCmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();
