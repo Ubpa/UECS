@@ -24,7 +24,7 @@ namespace Ubpa {
 				if (id.IsContain(query.allCmptIDs)
 					&& id.IsContainAny(query.anyCmptIDs)
 					&& id.IsNotContain(query.noneCmptIDs)
-					&& id.IsNotContain(query.locateCmptIDs))
+					&& id.IsContain(query.locateCmptIDs))
 				{
 					archetypes.insert(archetype);
 				}
@@ -114,7 +114,7 @@ namespace Ubpa {
 				if (dstID.IsContain(query.allCmptIDs)
 					&& dstID.IsContainAny(query.anyCmptIDs)
 					&& dstID.IsNotContain(query.noneCmptIDs)
-					&& dstID.IsNotContain(query.locateCmptIDs))
+					&& dstID.IsContain(query.locateCmptIDs))
 				{
 					archetypes.insert(dstArchetype);
 				}
@@ -182,7 +182,7 @@ namespace Ubpa {
 				if (dstID.IsContain(query.allCmptIDs)
 					&& dstID.IsContainAny(query.anyCmptIDs)
 					&& dstID.IsNotContain(query.noneCmptIDs)
-					&& dstID.IsNotContain(query.locateCmptIDs))
+					&& dstID.IsContain(query.locateCmptIDs))
 				{
 					archetypes.insert(dstArchetype);
 				}
