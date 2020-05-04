@@ -3,7 +3,7 @@
 using namespace Ubpa;
 using namespace std;
 
-const vector<tuple<void*, size_t>> Entity::Components() const {
+vector<CmptPtr> Entity::Components() const {
 	return archetype->Components(idx);
 }
 

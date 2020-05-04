@@ -12,7 +12,8 @@ namespace Ubpa {
 
 		Ubpa::World* World() const noexcept;
 
-		const std::vector<std::tuple<void*, size_t>> Components() const;
+		// ptr, id
+		std::vector<CmptPtr> Components() const;
 
 		template<typename... Cmpts>
 		std::tuple<Cmpts *...> Attach();

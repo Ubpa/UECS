@@ -30,8 +30,8 @@ namespace Ubpa {
 			return IsContain<Cmpts...>();
 		}
 
-		bool IsContain(size_t cmptHash) const {
-			return find(cmptHash) != end();
+		bool IsContain(size_t cmptID) const {
+			return find(cmptID) != end();
 		}
 
 		template<typename IDContainer>
@@ -82,8 +82,8 @@ namespace Ubpa {
 			return IsNotContain<Cmpts...>();
 		}
 
-		bool IsNotContain(size_t cmptHash) const {
-			return find(cmptHash) == end();
+		bool IsNotContain(size_t cmptID) const {
+			return find(cmptID) == end();
 		}
 
 		template<typename IDContainer>

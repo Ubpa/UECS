@@ -20,7 +20,8 @@ if(NOT UCMake_FOUND)
   message(STATUS "UCMake 0.5.0 build done")
 endif()
 
-Ubpa_AddDep(UBL 0.1.6)
+Ubpa_AddDep(UContainer 0.0.1)
+Ubpa_AddDep(UDP 0.4.3)
 
 Ubpa_AddSubDirsRec(include)
 Ubpa_AddSubDirsRec(src)

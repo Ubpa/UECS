@@ -1,22 +1,42 @@
 #include <UECS/detail/Archetype.h>
 
+#include <cstdlib>
+
 using namespace std;
 using namespace Ubpa;
 
 Archetype::~Archetype() {
-	for (auto c : chunks)
-		chunkPool.Recycle(c);
+	for (auto chunk : chunks) {
+#ifdef WIN32
+		_aligned_free(chunk);
+#else
+		free(chunk);
+#endif // WIN32
+	}
 }
 
-tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) const {
-	auto target = h2so.find(cmptHash);
-	if (target == h2so.end())
-		return { nullptr,static_cast<size_t>(-1) };
+size_t Archetype::RequestBuffer() {
+	if (num == chunks.size() * chunkCapacity) {
+#ifdef WIN32
+		auto chunk = reinterpret_cast<Chunk*>(_aligned_malloc(sizeof(Chunk), std::alignment_of_v<Chunk>));
+#else
+		auto chunk = reinterpret_cast<Chunk*>(aligned_alloc(sizeof(Chunk), std::alignment_of_v<Chunk>));
+#endif // WIN32
+		chunks.push_back(chunk);
+	}
+	return num++;
+}
+
+void* Archetype::At(size_t cmptID, size_t idx) const {
+	auto target = id2so.find(cmptID);
+	if (target == id2so.end())
+		return nullptr;
 
 	auto [size, offset] = target->second;
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
-	return { buffer + offset + idxInChunk * size, size };
+
+	return buffer + offset + idxInChunk * size;
 }
 
 size_t Archetype::Erase(size_t idx) {
@@ -32,12 +52,12 @@ size_t Archetype::Erase(size_t idx) {
 		size_t srcIdxInChunk = movedIdx % chunkCapacity;
 		byte* srcBuffer = chunks[movedIdx / chunkCapacity]->Data();
 
-		for (auto [h, so] : h2so) {
+		for (auto [id, so] : id2so) {
 			auto [size, offset] = so;
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
-			CmptLifecycleMngr::Instance().Destruct(h, dst);
-			CmptLifecycleMngr::Instance().MoveConstruct(h, dst, src);
+			CmptLifecycleMngr::Instance().Destruct(id, dst);
+			CmptLifecycleMngr::Instance().MoveConstruct(id, dst, src);
 		}
 	}
 	else
@@ -46,18 +66,23 @@ size_t Archetype::Erase(size_t idx) {
 	num--;
 
 	if (chunks.size() * chunkCapacity - num >= chunkCapacity) {
-		Chunk* back = chunks.back();
-		chunkPool.Recycle(back);
+		Chunk* chunk = chunks.back();
+#ifdef WIN32
+		_aligned_free(chunk);
+#else
+		free(chunk);
+#endif // WIN32
+		chunks.pop_back();
 	}
 
 	return movedIdx;
 }
 
-vector<tuple<void*, size_t>> Archetype::Components(size_t idx) const {
-	vector<tuple<void*, size_t>> rst;
+vector<CmptPtr> Archetype::Components(size_t idx) const {
+	vector<CmptPtr> rst;
 
-	for (const auto& [h, so] : h2so)
-		rst.push_back(At(h, idx));
+	for (const auto& [id, so] : id2so)
+		rst.emplace_back(id, At(id, idx));
 
 	return rst;
 }

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "../CmptPtr.h"
+
 #include "Chunk.h"
 #include "CmptIDSet.h"
-
-#include <UBL/Pool.h>
 
 #include <UTemplate/Typelist.h>
 #include <UTemplate/TypeID.h>
@@ -29,19 +29,15 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		const std::vector<std::tuple<Cmpts*...>> Locate() const;
 
-		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx) const;
+		void* At(size_t cmptID, size_t idx) const;
 
 		template<typename Cmpt>
 		Cmpt* At(size_t idx) const;
 
-		std::vector<std::tuple<void*, size_t>> Components(size_t idx) const;
+		std::vector<CmptPtr> Components(size_t idx) const;
 
 		// no init
-		size_t RequestBuffer() {
-			if (num == chunks.size() * chunkCapacity)
-				chunks.push_back(chunkPool.Request());
-			return num++;
-		}
+		size_t RequestBuffer();
 
 		// init cmpts
 		template<typename... Cmpts>
@@ -52,12 +48,12 @@ namespace Ubpa {
 		// else return static_cast<size_t>(-1)
 		size_t Erase(size_t idx);
 
-		inline size_t Size() const noexcept { return num; }
-		inline size_t ChunkNum() const noexcept { return chunks.size(); }
-		inline size_t ChunkCapacity() const noexcept { return chunkCapacity; }
-		inline const CmptIDSet& ID() const noexcept { return id; }
-		inline ArchetypeMngr* GetArchetypeMngr() const noexcept { return mngr; }
-		inline size_t CmptNum() const noexcept { return id.size(); }
+		size_t Size() const noexcept { return num; }
+		size_t ChunkNum() const noexcept { return chunks.size(); }
+		size_t ChunkCapacity() const noexcept { return chunkCapacity; }
+		const CmptIDSet& ID() const noexcept { return id; }
+		ArchetypeMngr* GetArchetypeMngr() const noexcept { return mngr; }
+		size_t CmptNum() const noexcept { return id.size(); }
 
 		template<typename... Cmpts>
 		inline bool IsContain() const noexcept;
@@ -70,12 +66,10 @@ namespace Ubpa {
 
 		ArchetypeMngr* mngr{ nullptr };
 		CmptIDSet id;
-		std::map<size_t, std::tuple<size_t, size_t>> h2so; // hash to (size, offset)
+		std::map<size_t, std::tuple<size_t, size_t>> id2so; // component id to (size, offset)
 		size_t chunkCapacity;
 		std::vector<Chunk*> chunks;
-		size_t num{ 0 };
-
-		Pool<Chunk> chunkPool;
+		size_t num{ 0 }; // number of entities
 	};
 }
 
