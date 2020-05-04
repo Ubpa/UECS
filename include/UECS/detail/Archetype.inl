@@ -69,7 +69,7 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt>
-	Cmpt* Archetype::At(size_t idx) {
+	Cmpt* Archetype::At(size_t idx) const {
 		auto [ptr, s] = At(TypeID<Cmpt>, idx);
 		assert(ptr == nullptr || sizeof(Cmpt) == s);
 		return reinterpret_cast<Cmpt*>(ptr);
@@ -89,7 +89,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::vector<std::tuple<Cmpts*...>> Archetype::Locate() {
+	const std::vector<std::tuple<Cmpts*...>> Archetype::Locate() const {
 		using CmptList = TypeList<Cmpts...>;
 		auto targets = std::make_tuple(h2so.find(TypeID<Cmpts>)...);
 		assert(((std::get<Find_v<CmptList, Cmpts>>(targets) != h2so.end())&&...));

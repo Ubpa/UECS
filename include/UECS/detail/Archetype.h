@@ -27,14 +27,14 @@ namespace Ubpa {
 		~Archetype();
 
 		template<typename... Cmpts>
-		const std::vector<std::tuple<Cmpts*...>> Locate();
+		const std::vector<std::tuple<Cmpts*...>> Locate() const;
 
-		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx);
+		std::tuple<void*, size_t> At(size_t cmptHash, size_t idx) const;
 
 		template<typename Cmpt>
-		Cmpt* At(size_t idx);
+		Cmpt* At(size_t idx) const;
 
-		std::vector<std::tuple<void*, size_t>> Components(size_t idx);
+		std::vector<std::tuple<void*, size_t>> Components(size_t idx) const;
 
 		// no init
 		size_t RequestBuffer() {

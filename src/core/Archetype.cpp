@@ -8,7 +8,7 @@ Archetype::~Archetype() {
 		chunkPool.Recycle(c);
 }
 
-tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) {
+tuple<void*, size_t> Archetype::At(size_t cmptHash, size_t idx) const {
 	auto target = h2so.find(cmptHash);
 	if (target == h2so.end())
 		return { nullptr,static_cast<size_t>(-1) };
@@ -53,7 +53,7 @@ size_t Archetype::Erase(size_t idx) {
 	return movedIdx;
 }
 
-vector<tuple<void*, size_t>> Archetype::Components(size_t idx) {
+vector<tuple<void*, size_t>> Archetype::Components(size_t idx) const {
 	vector<tuple<void*, size_t>> rst;
 
 	for (const auto& [h, so] : h2so)

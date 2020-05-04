@@ -35,12 +35,6 @@ namespace Ubpa {
 			return target->second;
 	}
 
-	Archetype* ArchetypeMngr::GetArchetypeOf(const CmptIDSet& archetypeID) {
-		auto target = id2a.find(archetypeID);
-		assert(target != id2a.end());
-		return target->second;
-	}
-
 	template<typename... Cmpts>
 	const std::tuple<EntityBase*, Cmpts*...> ArchetypeMngr::CreateEntity() {
 		auto entity = entityPool.Request();
@@ -57,7 +51,7 @@ namespace Ubpa {
 	}
 
 	template<typename AllList, typename AnyList, typename NoneList, typename LocateList>
-	const std::set<Archetype*>& ArchetypeMngr::QueryArchetypes() {
+	const std::set<Archetype*>& ArchetypeMngr::QueryArchetypes() const {
 		using SortedAllList = QuickSort_t<AllList, TypeID_Less>;
 		using SortedAnyList = QuickSort_t<AnyList, TypeID_Less>;
 		using SortedNoneList = QuickSort_t<NoneList, TypeID_Less>;
@@ -69,6 +63,7 @@ namespace Ubpa {
 		if (target != queryCache.end())
 			return target->second;
 
+		// id2query and queryCache are **mutable**
 		std::set<Archetype*>& rst = queryCache[queryHash];
 		id2query.emplace(queryHash, Query{
 			TypeListToIDVec(SortedAllList{}),
@@ -78,10 +73,7 @@ namespace Ubpa {
 		});
 
 		for (auto& [id, a] : id2a) {
-			if (id.IsContain(SortedAllList{})
-				&& id.IsContainAny(SortedAnyList{})
-				&& id.IsNotContain(SortedNoneList{})
-				&& id.IsContain(SortedLocateList{}))
+			if (id.IsMatch<AllList, AnyList, NoneList, LocateList>())
 			{
 				rst.insert(a);
 			}
@@ -225,7 +217,7 @@ namespace Ubpa {
 	}
 
 	template<typename Sys>
-	void ArchetypeMngr::GenJob(Job* job, Sys&& sys) {
+	void ArchetypeMngr::GenJob(Job* job, Sys&& sys) const {
 		using ArgList = FuncTraits_ArgList<std::decay_t<Sys>>;
 		using TaggedCmptList = CmptTag::GetTimePointList_t<ArgList>;
 		using OtherArgList = CmptTag::RemoveTimePoint_t<ArgList>;
@@ -248,9 +240,9 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 		using NoneList = CmptTag::ConcatedNoneList_t<TypeList<Args...>>;
 		static_assert(IsSet_v<CmptList>, "Componnents must be different");
 		template<typename Sys>
-		static void run(Job* job, ArchetypeMngr* mngr, Sys&& s) {
+		static void run(Job* job, const ArchetypeMngr* mngr, Sys&& s) {
 			assert(job->empty());
-			for (Archetype* archetype : mngr->QueryArchetypes<AllList, AnyList, NoneList, CmptList>()) {
+			for (const Archetype* archetype : mngr->QueryArchetypes<AllList, AnyList, NoneList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<CmptTag::RemoveTag_t<TagedCmpts>...>();
 				size_t num = archetype->Size();
 				size_t chunkNum = archetype->ChunkNum();

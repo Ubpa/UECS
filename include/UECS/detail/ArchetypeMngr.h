@@ -20,13 +20,13 @@ namespace Ubpa {
 
 		World* World() const noexcept { return w; }
 
-		inline Archetype* GetArchetypeOf(const CmptIDSet& archetypeID);
+		inline Archetype* GetArchetypeOf(const CmptIDSet& archetypeID) const;
 
 		template<typename... Cmpts>
 		inline Archetype* GetOrCreateArchetypeOf();
 		
 		template<typename AllList, typename AnyList, typename NoneList, typename LocateList>
-		const std::set<Archetype*>& QueryArchetypes();
+		const std::set<Archetype*>& QueryArchetypes() const;
 
 		template<typename... Cmpts>
 		const std::tuple<EntityBase*, Cmpts*...> CreateEntity();
@@ -42,7 +42,7 @@ namespace Ubpa {
 		void Release(EntityBase* e);
 
 		template<typename Sys>
-		void GenJob(Job* job, Sys&& sys);
+		void GenJob(Job* job, Sys&& sys) const;
 
 		void AddCommand(const std::function<void()>& command);
 		void RunCommands();
@@ -63,7 +63,7 @@ namespace Ubpa {
 		// Query Cache
 		// TypeID<AllList, AnyList, NoneList, LocateList> to archetype set
 		// AllList, AnyList, NoneList, LocateList are **sorted**
-		std::unordered_map<size_t, std::set<Archetype*>> queryCache;
+		mutable std::unordered_map<size_t, std::set<Archetype*>> queryCache;
 		struct Query {
 			Query(const std::vector<size_t>& allCmptIDs,
 				const std::vector<size_t>& anyCmptIDs,
@@ -81,7 +81,7 @@ namespace Ubpa {
 			std::vector<size_t> noneCmptIDs; // sorted
 			std::vector<size_t> locateCmptIDs; // sorted
 		};
-		std::unordered_map<size_t, Query> id2query;
+		mutable std::unordered_map<size_t, Query> id2query;
 
 		// command
 		std::vector<std::function<void()>> commandBuffer;

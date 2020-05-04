@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(UECS VERSION 0.6.1)
+project(UECS VERSION 0.6.2)
 message(STATUS "[Project] ${PROJECT_NAME}")
 
 include(FetchContent)
@@ -20,7 +20,7 @@ if(NOT UCMake_FOUND)
   message(STATUS "UCMake 0.5.0 build done")
 endif()
 
-Ubpa_AddDep(UBL 0.1.5)
+Ubpa_AddDep(UBL 0.1.6)
 
 Ubpa_AddSubDirsRec(include)
 Ubpa_AddSubDirsRec(src)

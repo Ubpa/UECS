@@ -8,6 +8,12 @@ ArchetypeMngr::~ArchetypeMngr() {
 		delete p.second;
 }
 
+Archetype* ArchetypeMngr::GetArchetypeOf(const CmptIDSet& archetypeID) const {
+	auto target = id2a.find(archetypeID);
+	assert(target != id2a.end());
+	return target->second;
+}
+
 void ArchetypeMngr::Release(EntityBase* e) {
 	auto archetype = e->archetype;
 	auto idx = e->idx;

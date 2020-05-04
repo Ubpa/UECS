@@ -4,13 +4,6 @@
 #include "ScheduleRegistrar.h"
 #include "detail/SystemMngr.h"
 
-namespace Ubpa::detail::World_ {
-	template<typename ArgList, typename CmptList, typename OtherArgList>
-	struct Each;
-	template<typename CmptList>
-	struct ParallelEach;
-}
-
 namespace Ubpa {
 	class World : public SystemMngr {
 	public:
@@ -44,7 +37,7 @@ namespace Ubpa {
 		void Each(Sys&& s);
 
 		// if Sys's return type is bool, Each stop when return false
-		// run commands later
+		// **not** run commands
 		template<typename Sys>
 		void Each(Sys&& s) const;
 
@@ -52,7 +45,7 @@ namespace Ubpa {
 		template<typename Sys>
 		void ParallelEach(Sys&& s);
 
-		// run commands later
+		// **not** run commands
 		template<typename Sys>
 		void ParallelEach(Sys&& s) const;
 
@@ -69,12 +62,7 @@ namespace Ubpa {
 		Job updateJobGraph;
 		Job stopJobGraph;
 
-		JobExecutor executor;
-
-		template<typename ArgList, typename CmptList, typename OtherArgList>
-		friend struct detail::World_::Each;
-		template<typename CmptList>
-		friend struct detail::World_::ParallelEach;
+		mutable JobExecutor executor;
 	};
 }
 
