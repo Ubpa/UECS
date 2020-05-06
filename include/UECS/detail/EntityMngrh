@@ -12,11 +12,11 @@
 namespace Ubpa {
 	class World;
 
-	class ArchetypeMngr {
+	class EntityMngr {
 	public:
-		ArchetypeMngr(World* w) : w{ w } {}
+		EntityMngr(World* w) : w{ w } {}
 
-		~ArchetypeMngr();
+		~EntityMngr();
 
 		World* World() const noexcept { return w; }
 
@@ -95,4 +95,4 @@ namespace Ubpa {
 	};
 }
 
-#include "ArchetypeMngr.inl"
+#include "EntityMngr.inl"

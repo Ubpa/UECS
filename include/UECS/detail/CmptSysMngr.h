@@ -6,7 +6,7 @@
 #include <functional>
 
 namespace Ubpa {
-	class ArchetypeMngr;
+	class EntityMngr;
 
 	class CmptSysMngr {
 	public:

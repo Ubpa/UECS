@@ -6,10 +6,10 @@ using namespace Ubpa;
 using namespace std;
 
 World::World()
-	: mngr { this },
-	startRegistrar{ &mngr },
-	updateRegistrar{ &mngr },
-	stopRegistrar{ &mngr }
+	: entityMngr { this },
+	startRegistrar{ &entityMngr },
+	updateRegistrar{ &entityMngr },
+	stopRegistrar{ &entityMngr }
 {
 }
 
@@ -22,7 +22,7 @@ void World::Start() {
 
 	executor.run(startJobGraph).wait();
 	
-	mngr.RunCommands();
+	entityMngr.RunCommands();
 }
 
 void World::Update() {
@@ -34,7 +34,7 @@ void World::Update() {
 
 	executor.run(updateJobGraph).wait();
 
-	mngr.RunCommands();
+	entityMngr.RunCommands();
 }
 
 void World::Stop() {
@@ -46,7 +46,7 @@ void World::Stop() {
 
 	executor.run(stopJobGraph).wait();
 
-	mngr.RunCommands();
+	entityMngr.RunCommands();
 }
 
 string World::DumpStartTaskflow() const {
@@ -62,5 +62,5 @@ string World::DumpStopTaskflow() const {
 }
 
 void World::AddCommand(const std::function<void()>& command) {
-	mngr.AddCommand(command);
+	entityMngr.AddCommand(command);
 }

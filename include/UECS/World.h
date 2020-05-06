@@ -52,7 +52,7 @@ namespace Ubpa {
 		void AddCommand(const std::function<void()>& command);
 
 	private:
-		ArchetypeMngr mngr;
+		EntityMngr entityMngr;
 
 		ScheduleRegistrar<SysType::OnStart> startRegistrar;
 		ScheduleRegistrar<SysType::OnUpdate> updateRegistrar;

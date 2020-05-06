@@ -11,12 +11,12 @@
 #include <map>
 
 namespace Ubpa {
-	class ArchetypeMngr;
+	class EntityMngr;
 	class Archetype {
 	public:
 		// argument TypeList<Cmpts...> is for type deduction
 		template<typename... Cmpts>
-		Archetype(ArchetypeMngr* mngr, TypeList<Cmpts...>) noexcept;
+		Archetype(EntityMngr* mngr, TypeList<Cmpts...>) noexcept;
 
 		template<typename... Cmpts>
 		static Archetype* Add(Archetype* from) noexcept;
@@ -51,7 +51,7 @@ namespace Ubpa {
 		size_t ChunkNum() const noexcept { return chunks.size(); }
 		size_t ChunkCapacity() const noexcept { return chunkCapacity; }
 		const CmptIDSet& ID() const noexcept { return id; }
-		ArchetypeMngr* GetArchetypeMngr() const noexcept { return mngr; }
+		EntityMngr* GetEntityMngr() const noexcept { return mngr; }
 		size_t CmptNum() const noexcept { return id.size(); }
 
 		template<typename... Cmpts>
@@ -61,9 +61,9 @@ namespace Ubpa {
 		Archetype() = default;
 
 		friend class Entity;
-		friend class ArchetypeMngr;
+		friend class EntityMngr;
 
-		ArchetypeMngr* mngr{ nullptr };
+		EntityMngr* mngr{ nullptr };
 		CmptIDSet id;
 		std::map<size_t, std::tuple<size_t, size_t>> id2so; // component id to (size, offset)
 		size_t chunkCapacity;

@@ -1,20 +1,20 @@
-#include <UECS/detail/ArchetypeMngr.h>
+#include <UECS/EntityMngr.h>
 
 using namespace Ubpa;
 using namespace std;
 
-ArchetypeMngr::~ArchetypeMngr() {
+EntityMngr::~EntityMngr() {
 	for (auto p : id2a)
 		delete p.second;
 }
 
-Archetype* ArchetypeMngr::GetArchetypeOf(const CmptIDSet& archetypeID) const {
+Archetype* EntityMngr::GetArchetypeOf(const CmptIDSet& archetypeID) const {
 	auto target = id2a.find(archetypeID);
 	assert(target != id2a.end());
 	return target->second;
 }
 
-void ArchetypeMngr::Release(EntityBase* e) {
+void EntityMngr::Release(EntityBase* e) {
 	auto archetype = e->archetype;
 	auto idx = e->idx;
 	entityPool.Recycle(e);
@@ -39,12 +39,12 @@ void ArchetypeMngr::Release(EntityBase* e) {
 	idx = static_cast<size_t>(-1);
 }
 
-void ArchetypeMngr::AddCommand(const std::function<void()>& command) {
+void EntityMngr::AddCommand(const std::function<void()>& command) {
 	lock_guard<mutex> guard(commandBufferMutex);
 	commandBuffer.push_back(command);
 }
 
-void ArchetypeMngr::RunCommands() {
+void EntityMngr::RunCommands() {
 	lock_guard<mutex> guard(commandBufferMutex);
 	for (const auto& command : commandBuffer)
 		command();

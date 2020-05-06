@@ -69,7 +69,7 @@ namespace Ubpa::detail::ScheduleRegistrar_ {
 	template<SysType type, typename... Args>
 	struct ScheduleAdd<type, TypeList<Args...>> {
 		template<typename Sys>
-		static auto run(ArchetypeMngr* mngr, Schedule& schedule, Sys&& sys, const std::string& name) noexcept {
+		static auto run(EntityMngr* mngr, Schedule& schedule, Sys&& sys, const std::string& name) noexcept {
 			auto job = schedule.RequestJob(name);
 			mngr->GenJob(job, sys);
 			if (!job->empty())

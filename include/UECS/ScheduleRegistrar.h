@@ -1,7 +1,8 @@
 #pragma once
 
+#include "EntityMngr.h"
+
 #include "detail/Schedule.h"
-#include "detail/ArchetypeMngr.h"
 #include "detail/SystemTraits.h"
 
 namespace Ubpa {
@@ -27,8 +28,8 @@ namespace Ubpa {
 	private:
 		friend class World;
 
-		ScheduleRegistrar(ArchetypeMngr* mngr) noexcept : mngr{ mngr } {}
-		ArchetypeMngr* mngr;
+		ScheduleRegistrar(EntityMngr* mngr) noexcept : mngr{ mngr } {}
+		EntityMngr* mngr;
 		Schedule schedule;
 
 		friend class CmptSysMngr;

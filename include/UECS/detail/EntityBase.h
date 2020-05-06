@@ -13,6 +13,6 @@ namespace Ubpa {
 		}
 
 	private:
-		friend class ArchetypeMngr;
+		friend class EntityMngr;
 	};
 }

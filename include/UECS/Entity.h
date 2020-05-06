@@ -1,6 +1,6 @@
 #pragma once
 
-#include "detail/ArchetypeMngr.h"
+#include "EntityMngr.h"
 
 namespace Ubpa {
 	class Entity final : private EntityBase {
