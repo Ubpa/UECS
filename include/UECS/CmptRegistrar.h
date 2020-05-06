@@ -23,7 +23,7 @@ namespace Ubpa {
 		template<typename Cmpt>
 		bool IsRegisteredOne() const noexcept;
 
-		std::unordered_set<size_t> registedCmpts;
+		std::unordered_set<size_t> registeredCmpts;
 	};
 }
 

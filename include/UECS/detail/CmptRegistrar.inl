@@ -3,8 +3,6 @@
 #include "CmptLifecycleMngr.h"
 #include "CmptSysMngr.h"
 
-#include <UDP/Reflection/Reflection.h>
-
 #include <UTemplate/Concept.h>
 
 namespace Ubpa::detail::CmptRegistrar_ {
@@ -25,7 +23,7 @@ namespace Ubpa {
 
 	template<typename Cmpt>
 	bool CmptRegistrar::IsRegisteredOne() const noexcept {
-		return registedCmpts.find(TypeID<Cmpt>) != registedCmpts.end();
+		return registeredCmpts.find(TypeID<Cmpt>) != registeredCmpts.end();
 	}
 
 	template<typename Cmpt>
@@ -38,8 +36,7 @@ namespace Ubpa {
 
 		CmptSysMngr::Instance().Register<Cmpt>();
 		CmptLifecycleMngr::Instance().Register<Cmpt>();
-		Reflection<Cmpt>::Init();
 		
-		registedCmpts.insert(TypeID<Cmpt>);
+		registeredCmpts.insert(TypeID<Cmpt>);
 	}
 }

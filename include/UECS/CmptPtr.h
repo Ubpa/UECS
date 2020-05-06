@@ -1,13 +1,12 @@
 #pragma once
 
-#include <UDP/Basic/Read.h>
 #include <UTemplate/TypeID.h>
 
 #include <cassert>
 
 namespace Ubpa {
 	struct CmptPtr {
-		Read<CmptPtr, size_t> id;
+		const size_t id;
 
 		CmptPtr(size_t id, void* p) :id{ id }, p{ p }{}
 		template<typename Cmpt>
@@ -28,6 +27,6 @@ namespace Ubpa {
 		const void* Ptr() const noexcept { return p; }
 
 	private:
-		void* p;
+		void* const p;
 	};
 }

@@ -21,7 +21,7 @@ if(NOT UCMake_FOUND)
 endif()
 
 Ubpa_AddDep(UContainer 0.0.1)
-Ubpa_AddDep(UDP 0.4.3)
+Ubpa_AddDep(UTemplate 0.4.0)
 
 Ubpa_AddSubDirsRec(include)
 Ubpa_AddSubDirsRec(src)
