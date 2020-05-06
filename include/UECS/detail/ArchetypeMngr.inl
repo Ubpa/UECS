@@ -120,9 +120,10 @@ namespace Ubpa {
 		
 		(new(dstArchetype->At<Cmpts>(dstIdx))Cmpts, ...);
 		for (auto cmptID : srcID) {
-			void* srcCmpt = srcArchetype->At(cmptID, srcIdx);
-			void* dstCmpt = dstArchetype->At(cmptID, dstIdx);
-			CmptLifecycleMngr::Instance().MoveConstruct(cmptID, dstCmpt, srcCmpt);
+			auto [srcCmpt, srcSize] = srcArchetype->At(cmptID, srcIdx);
+			auto [dstCmpt, dstSize] = dstArchetype->At(cmptID, dstIdx);
+			assert(srcSize == dstSize);
+			RuntimeCmptTraits::Instance().MoveConstruct(cmptID, srcSize, dstCmpt, srcCmpt);
 		}
 
 		// erase
@@ -185,10 +186,11 @@ namespace Ubpa {
 		// move src to dst
 		size_t dstIdx = dstArchetype->RequestBuffer();
 		for (auto cmptID : srcID) {
-			void* srcCmpt = srcArchetype->At(cmptID, srcIdx);
 			if (dstID.IsContain(cmptID)) {
-				void* dstCmpt = dstArchetype->At(cmptID, dstIdx);
-				CmptLifecycleMngr::Instance().MoveConstruct(cmptID, dstCmpt, srcCmpt);
+				auto [srcCmpt, srcSize] = srcArchetype->At(cmptID, srcIdx);
+				auto [dstCmpt, dstSize] = dstArchetype->At(cmptID, dstIdx);
+				assert(srcSize == dstSize);
+				RuntimeCmptTraits::Instance().MoveConstruct(cmptID, srcSize, dstCmpt, srcCmpt);
 			}
 		}
 

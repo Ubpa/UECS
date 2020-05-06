@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CmptLifecycleMngr.h"
+#include "RuntimeCmptTraits.h"
 
 #include <cassert>
 
@@ -70,8 +70,9 @@ namespace Ubpa {
 
 	template<typename Cmpt>
 	Cmpt* Archetype::At(size_t idx) const {
-		void* ptr = At(TypeID<Cmpt>, idx);
+		auto [ptr, size] = At(TypeID<Cmpt>, idx);
 		assert(ptr != nullptr);
+		assert(size == sizeof(Cmpt));
 		return reinterpret_cast<Cmpt*>(ptr);
 	}
 

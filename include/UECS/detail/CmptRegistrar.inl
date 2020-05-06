@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CmptLifecycleMngr.h"
+#include "RuntimeCmptTraits.h"
 #include "CmptSysMngr.h"
 
 #include <UTemplate/Concept.h>
@@ -35,7 +35,7 @@ namespace Ubpa {
 			Cmpt::OnRegister();
 
 		CmptSysMngr::Instance().Register<Cmpt>();
-		CmptLifecycleMngr::Instance().Register<Cmpt>();
+		RuntimeCmptTraits::Instance().Register<Cmpt>();
 		
 		registeredCmpts.insert(TypeID<Cmpt>);
 	}
