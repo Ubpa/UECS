@@ -33,7 +33,7 @@ int main() {
 	CmptRegistrar::Instance().Register<velocity, position>();
 
 	World w;
-	set<Entity*> entities;
+	set<EntityPtr> entities;
 
 	auto [e] = w.CreateEntity<>();
 	e->Attach<velocity>();

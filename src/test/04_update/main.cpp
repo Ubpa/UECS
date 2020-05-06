@@ -13,7 +13,7 @@ struct alignas(8) Position {
 };
 
 struct alignas(8) EntityHandle {
-	Entity* e;
+	EntityPtr e{ nullptr };
 };
 
 struct alignas(8) Velocity {

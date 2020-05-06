@@ -8,9 +8,9 @@ Ubpa Entity-Component-System
 - 调度表 `Schedule`：储存了所有的任务，以及任务之间的约束关系，完成所有声明后可组装出一个大任务
 - 调度表注册器 `ScheduleRegistrar`：用户通过它来注册该帧的系统
 
-## TODO
+## TODOs
 
-- [ ] EntityBase -> Entity
+- [x] EntityData: version
 - [ ] EntityQuery
 - [ ] Query Entity
 - [ ] SystemMngr += ScheduleRegistrar

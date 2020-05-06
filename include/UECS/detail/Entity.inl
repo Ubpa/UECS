@@ -5,7 +5,6 @@
 namespace Ubpa {
 	template<typename Cmpt>
 	Cmpt* Entity::Get() {
-		assert(IsAlive());
 		return archetype->At<Cmpt>(idx);
 	}
 
@@ -16,7 +15,6 @@ namespace Ubpa {
 	std::tuple<Cmpts *...> Entity::Attach() {
 		assert("Entity::Attach: <Cmpts> are unregistered" &&
 			CmptRegistrar::Instance().template IsRegistered<Cmpts...>());
-		assert(IsAlive());
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
 	}
 
@@ -24,13 +22,11 @@ namespace Ubpa {
 	Cmpt* Entity::AssignAttach(Args... args) {
 		assert("Entity::AssignAttach: <Cmpt> is unregistered" &&
 			CmptRegistrar::Instance().template IsRegistered<Cmpt>());
-		assert(IsAlive());
 		return archetype->mngr->EntityAssignAttach<Cmpt>(this, std::forward<Args>(args)...);
 	}
 
 	template<typename Cmpt>
 	inline Cmpt* Entity::GetOrAttach() {
-		assert(IsAlive());
 		Cmpt* cmpt = archetype->At<Cmpt>(idx);
 		if (!cmpt)
 			std::tie(cmpt) = Attach<Cmpt>();
@@ -41,7 +37,6 @@ namespace Ubpa {
 	void Entity::Detach() {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-		assert(IsAlive());
 		return archetype->mngr->EntityDetach<Cmpts...>(this);
 	}
 }

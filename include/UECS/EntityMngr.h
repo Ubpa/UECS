@@ -1,7 +1,7 @@
 #pragma once
 
 #include "detail/Archetype.h"
-#include "detail/EntityBase.h"
+#include "detail/EntityData.h"
 
 #include "detail/Job.h"
 
@@ -29,20 +29,20 @@ namespace Ubpa {
 		const std::set<Archetype*>& QueryArchetypes() const;
 
 		template<typename... Cmpts>
-		const std::tuple<EntityBase*, Cmpts*...> CreateEntity();
+		const std::tuple<EntityData*, Cmpts*...> CreateEntity();
 
 		// TODO: CreateEntities
 
 		template<typename... Cmpts>
-		const std::tuple<Cmpts*...> EntityAttach(EntityBase* e);
+		const std::tuple<Cmpts*...> EntityAttach(EntityData* e);
 
 		template<typename Cmpt, typename... Args>
-		Cmpt* EntityAssignAttach(EntityBase* e, Args... args);
+		Cmpt* EntityAssignAttach(EntityData* e, Args... args);
 
 		template<typename... Cmpts>
-		void EntityDetach(EntityBase* e);
+		void EntityDetach(EntityData* e);
 
-		void Release(EntityBase* e);
+		void Release(EntityData* e);
 
 		template<typename Sys>
 		void GenJob(Job* job, Sys&& sys) const;
@@ -52,16 +52,16 @@ namespace Ubpa {
 
 	private:
 		template<typename... Cmpts>
-		const std::tuple<Cmpts*...> EntityAttachWithoutInit(EntityBase* e);
+		const std::tuple<Cmpts*...> EntityAttachWithoutInit(EntityData* e);
 
 		template<typename... Cmpts>
 		static std::vector<size_t> TypeListToIDVec(TypeList<Cmpts...>);
 
 		Ubpa::World* w;
 
-		Pool<EntityBase> entityPool;
+		Pool<EntityData> entityPool;
 
-		std::map<std::tuple<Archetype*, size_t>, EntityBase*> ai2e; // (archetype, idx) -> entity
+		std::map<std::tuple<Archetype*, size_t>, EntityData*> ai2e; // (archetype, idx) -> entity
 
 		std::set<CmptIDSet> ids;
 		std::map<CmptIDSet, Archetype*> id2a; // id to archetype

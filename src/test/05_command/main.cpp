@@ -13,7 +13,8 @@ struct A {
 };
 
 struct B {
-	Entity* entity{ nullptr };
+	B(EntityPtr e, size_t n) : entity{ e }, num{ n }{}
+	EntityPtr entity;
 	size_t num{ 0 };
 
 	void OnUpdate() {
@@ -35,9 +36,8 @@ int main() {
 	CmptRegistrar::Instance().Register<A, B>();
 
 	World w;
-	auto [e, b] = w.CreateEntity<B>();
-	b->num = 5;
-	b->entity = e;
+	auto [e] = w.CreateEntity<>();
+	e->AssignAttach<B>(e, static_cast<size_t>(5));
 	for (size_t i = 0; i < 10; i++) {
 		w.Update();
 	}

@@ -39,7 +39,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<EntityBase*, Cmpts*...> EntityMngr::CreateEntity() {
+	const std::tuple<EntityData*, Cmpts*...> EntityMngr::CreateEntity() {
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		auto [idx, cmpts] = archetype->CreateEntity<Cmpts...>();
 
@@ -83,7 +83,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> EntityMngr::EntityAttachWithoutInit(EntityBase* e) {
+	const std::tuple<Cmpts*...> EntityMngr::EntityAttachWithoutInit(EntityData* e) {
 		static_assert(sizeof...(Cmpts) > 0, "EntityMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "EntityMngr::EntityAttach: <Cmpts> must be different");
 		assert((e->archetype->id.IsNotContain<Cmpts>() &&...));
@@ -152,7 +152,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> EntityMngr::EntityAttach(EntityBase* e) {
+	const std::tuple<Cmpts*...> EntityMngr::EntityAttach(EntityData* e) {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"EntityMngr::EntityAttach: <Cmpts> isn't constructible");
 
@@ -162,7 +162,7 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt, typename... Args>
-	Cmpt* EntityMngr::EntityAssignAttach(EntityBase* e, Args... args) {
+	Cmpt* EntityMngr::EntityAssignAttach(EntityData* e, Args... args) {
 		static_assert(std::is_constructible_v<Cmpt, Args...>,
 			"EntityMngr::EntityAssignAttach: <Cmpt> isn't constructible with <Args...>");
 		auto [cmpt] = EntityAttachWithoutInit<Cmpt>(e);
@@ -170,7 +170,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	void EntityMngr::EntityDetach(EntityBase* e) {
+	void EntityMngr::EntityDetach(EntityData* e) {
 		static_assert(sizeof...(Cmpts) > 0, "EntityMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "EntityMngr::EntityAttach: <Cmpts> must be different");
 

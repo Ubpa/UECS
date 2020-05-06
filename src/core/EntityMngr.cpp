@@ -14,7 +14,7 @@ Archetype* EntityMngr::GetArchetypeOf(const CmptIDSet& archetypeID) const {
 	return target->second;
 }
 
-void EntityMngr::Release(EntityBase* e) {
+void EntityMngr::Release(EntityData* e) {
 	auto archetype = e->archetype;
 	auto idx = e->idx;
 	entityPool.Recycle(e);
@@ -23,17 +23,17 @@ void EntityMngr::Release(EntityBase* e) {
 
 	if (movedEntityIdx != static_cast<size_t>(-1)) {
 		auto target = ai2e.find({ archetype, movedEntityIdx });
-		EntityBase* movedEntity = target->second;
+		EntityData* movedEntity = target->second;
 		ai2e.erase(target);
 		movedEntity->idx = idx;
 		ai2e[{archetype, idx}] = movedEntity;
 	}
 
-	if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
+	/*if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
 		ids.erase(archetype->id);
 		id2a.erase(archetype->id);
 		delete archetype;
-	}
+	}*/
 
 	archetype = nullptr;
 	idx = static_cast<size_t>(-1);

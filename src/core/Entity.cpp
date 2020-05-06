@@ -8,12 +8,7 @@ vector<CmptPtr> Entity::Components() const {
 }
 
 void Entity::Release() noexcept {
-	assert(IsAlive());
 	archetype->mngr->Release(this);
-}
-
-bool Entity::IsAlive() const noexcept {
-	return archetype != nullptr;
 }
 
 void Entity::AddCommand(const std::function<void()>& command) {
@@ -21,6 +16,5 @@ void Entity::AddCommand(const std::function<void()>& command) {
 }
 
 Ubpa::World* Entity::World() const noexcept {
-	assert(IsAlive());
 	return archetype->mngr->World();
 }

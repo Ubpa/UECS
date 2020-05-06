@@ -10,7 +10,7 @@ namespace Ubpa {
 		World();
 
 		template<typename... Cmpts>
-		std::tuple<Entity*, Cmpts*...> CreateEntity();
+		std::tuple<EntityPtr, Cmpts*...> CreateEntity();
 
 		// static OnStartSchedule
 		// parallel OnStart
