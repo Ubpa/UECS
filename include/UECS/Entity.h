@@ -18,6 +18,9 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		std::tuple<Cmpts *...> Attach();
 
+		template<typename Cmpt, typename... Args>
+		Cmpt* AssignAttach(Args... args);
+
 		template<typename Cmpt>
 		inline Cmpt* GetOrAttach();
 

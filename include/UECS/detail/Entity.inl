@@ -14,12 +14,18 @@ namespace Ubpa {
 
 	template<typename... Cmpts>
 	std::tuple<Cmpts *...> Entity::Attach() {
-		static_assert(sizeof...(Cmpts) > 0);
-		static_assert(IsSet_v<TypeList<Cmpts...>>, "Componnents must be different");
-		assert("[ERROR] hasn't registered <Cmpts>" &&
+		assert("Entity::Attach: <Cmpts> are unregistered" &&
 			CmptRegistrar::Instance().template IsRegistered<Cmpts...>());
 		assert(IsAlive());
 		return archetype->mngr->EntityAttach<Cmpts...>(this);
+	}
+
+	template<typename Cmpt, typename... Args>
+	Cmpt* Entity::AssignAttach(Args... args) {
+		assert("Entity::AssignAttach: <Cmpt> is unregistered" &&
+			CmptRegistrar::Instance().template IsRegistered<Cmpt>());
+		assert(IsAlive());
+		return archetype->mngr->EntityAssignAttach<Cmpt>(this, std::forward<Args>(args)...);
 	}
 
 	template<typename Cmpt>

@@ -13,6 +13,11 @@ namespace Ubpa::detail::ArchetypeMngr_ {
 namespace Ubpa {
 	template<typename... Cmpts>
 	inline Archetype* ArchetypeMngr::GetOrCreateArchetypeOf() {
+		static_assert((std::is_constructible_v<Cmpts> &&...),
+			"ArchetypeMngr::GetOrCreateArchetypeOf: <Cmpts> isn't constructible");
+		static_assert(IsSet_v<TypeList<Cmpts...>>,
+			"ArchetypeMngr::GetOrCreateArchetypeOf: <Cmpts> must be different");
+
 		auto id = CmptIDSet(TypeList<Cmpts...>{});
 		auto target = id2a.find(id);
 		if (target == id2a.end()) {
@@ -37,13 +42,13 @@ namespace Ubpa {
 
 	template<typename... Cmpts>
 	const std::tuple<EntityBase*, Cmpts*...> ArchetypeMngr::CreateEntity() {
-		auto entity = entityPool.Request();
+		static_assert((std::is_constructible_v<Cmpts> &&...), "ArchetypeMngr::CreateEntity: <Cmpts> isn't constructible");
+		static_assert(IsSet_v<TypeList<Cmpts...>>, "ArchetypeMngr::CreateEntity: <Cmpts> must be different");
 
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		auto [idx, cmpts] = archetype->CreateEntity<Cmpts...>();
 
-		entity->archetype = archetype;
-		entity->idx = idx;
+		auto entity = entityPool.Request(archetype, idx);
 		ai2e[{archetype,idx}] = entity;
 
 		using CmptList = TypeList<Cmpts...>;
@@ -83,8 +88,10 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> ArchetypeMngr::EntityAttach(EntityBase* e) {
-		assert(!e->archetype->id.IsContain<Cmpts...>());
+	const std::tuple<Cmpts*...> ArchetypeMngr::EntityAttachWithoutInit(EntityBase* e) {
+		static_assert(sizeof...(Cmpts) > 0, "ArchetypeMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
+		static_assert(IsSet_v<TypeList<Cmpts...>>, "ArchetypeMngr::EntityAttach: <Cmpts> must be different");
+		assert((e->archetype->id.IsNotContain<Cmpts>() &&...));
 
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;
@@ -117,8 +124,7 @@ namespace Ubpa {
 
 		// move src to dst
 		size_t dstIdx = dstArchetype->RequestBuffer();
-		
-		(new(dstArchetype->At<Cmpts>(dstIdx))Cmpts, ...);
+
 		for (auto cmptID : srcID) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(cmptID, srcIdx);
 			auto [dstCmpt, dstSize] = dstArchetype->At(cmptID, dstIdx);
@@ -151,8 +157,29 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
+	const std::tuple<Cmpts*...> ArchetypeMngr::EntityAttach(EntityBase* e) {
+		static_assert((std::is_constructible_v<Cmpts> &&...),
+			"ArchetypeMngr::EntityAttach: <Cmpts> isn't constructible");
+
+		auto cmpts = EntityAttachWithoutInit<Cmpts...>(e);
+
+		return { new(std::get<Cmpts*>(cmpts))Cmpts... };
+	}
+
+	template<typename Cmpt, typename... Args>
+	Cmpt* ArchetypeMngr::EntityAssignAttach(EntityBase* e, Args... args) {
+		static_assert(std::is_constructible_v<Cmpt, Args...>,
+			"ArchetypeMngr::EntityAssignAttach: <Cmpt> isn't constructible with <Args...>");
+		auto [cmpt] = EntityAttachWithoutInit<Cmpt>(e);
+		return new(cmpt)Cmpt{ std::forward<Args>(args)... };
+	}
+
+	template<typename... Cmpts>
 	void ArchetypeMngr::EntityDetach(EntityBase* e) {
-		assert(e->archetype->id.IsContain<Cmpts...>());
+		static_assert(sizeof...(Cmpts) > 0, "ArchetypeMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
+		static_assert(IsSet_v<TypeList<Cmpts...>>, "ArchetypeMngr::EntityAttach: <Cmpts> must be different");
+
+		assert((e->archetype->id.IsContain<Cmpts>() &&...));
 
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;

@@ -36,6 +36,9 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		const std::tuple<Cmpts*...> EntityAttach(EntityBase* e);
 
+		template<typename Cmpt, typename... Args>
+		Cmpt* EntityAssignAttach(EntityBase* e, Args... args);
+
 		template<typename... Cmpts>
 		void EntityDetach(EntityBase* e);
 
@@ -48,6 +51,9 @@ namespace Ubpa {
 		void RunCommands();
 
 	private:
+		template<typename... Cmpts>
+		const std::tuple<Cmpts*...> EntityAttachWithoutInit(EntityBase* e);
+
 		template<typename... Cmpts>
 		static std::vector<size_t> TypeListToIDVec(TypeList<Cmpts...>);
 
