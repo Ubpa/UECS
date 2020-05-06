@@ -1,9 +1,8 @@
 #pragma once
 
-#include "detail/Archetype.h"
-#include "detail/EntityData.h"
-
-#include "detail/Job.h"
+#include "Archetype.h"
+#include "EntityData.h"
+#include "Job.h"
 
 #include <UContainer/Pool.h>
 
@@ -95,4 +94,4 @@ namespace Ubpa {
 	};
 }
 
-#include "detail/EntityMngr.inl"
+#include "EntityMngr.inl"

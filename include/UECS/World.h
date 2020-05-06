@@ -2,7 +2,7 @@
 
 #include "Entity.h"
 #include "ScheduleRegistrar.h"
-#include "detail/SystemMngr.h"
+#include "SystemMngr.h"
 
 namespace Ubpa {
 	class World : public SystemMngr {
@@ -27,10 +27,6 @@ namespace Ubpa {
 		// Commands, one-by-one
 		void Stop();
 
-		std::string DumpStartTaskflow() const;
-		std::string DumpUpdateTaskflow() const;
-		std::string DumpStopTaskflow() const;
-
 		// if Sys's return type is bool, Each stop when return false
 		// run commands later
 		template<typename Sys>
@@ -53,16 +49,6 @@ namespace Ubpa {
 
 	private:
 		EntityMngr entityMngr;
-
-		ScheduleRegistrar<SysType::OnStart> startRegistrar;
-		ScheduleRegistrar<SysType::OnUpdate> updateRegistrar;
-		ScheduleRegistrar<SysType::OnStop> stopRegistrar;
-
-		Job startJobGraph;
-		Job updateJobGraph;
-		Job stopJobGraph;
-
-		mutable JobExecutor executor;
 	};
 }
 

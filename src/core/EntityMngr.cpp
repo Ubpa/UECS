@@ -1,4 +1,4 @@
-#include <UECS/EntityMngr.h>
+#include <UECS/detail/EntityMngr.h>
 
 using namespace Ubpa;
 using namespace std;
