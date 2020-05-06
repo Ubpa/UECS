@@ -1,5 +1,7 @@
 #pragma	once
 
+#include "Util.h"
+
 #include <UTemplate/TypeID.h>
 #include <UTemplate/TemplateList.h>
 
@@ -12,6 +14,18 @@ namespace Ubpa {
 		CmptIDSet() = default;
 		template<typename... Cmpts>
 		CmptIDSet(TypeList<Cmpts...>) : std::set<size_t>{ TypeID<Cmpts>... }{}
+
+		template<typename... Cmpts>
+		static constexpr size_t Hash() {
+			return Hash(QuickSort_t<TypeList<Cmpts...>, TypeID_Less>{});
+		}
+
+		size_t Hash() const {
+			size_t rst = TypeID<CmptIDSet>;
+			for (size_t id : *this)
+				rst = hash_combine(rst, id);
+			return rst;
+		}
 
 		template<typename... Cmpts>
 		void Add() { (insert(TypeID<Cmpts>), ...); }
@@ -119,5 +133,14 @@ namespace Ubpa {
 		friend bool operator==(const CmptIDSet& x, const CmptIDSet& y) {
 			return static_cast<const std::set<size_t>&>(x) == static_cast<const std::set<size_t>&>(y);
 		}
+
+	private:
+		template<typename... Cmpts>
+		static constexpr size_t Hash(TypeList<Cmpts...>) {
+			size_t seed = TypeID<CmptIDSet>;
+			((seed = hash_combine(seed, TypeID<Cmpts>)), ...);
+			return seed;
+		}
+
 	};
 }

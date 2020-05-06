@@ -11,6 +11,7 @@ Ubpa Entity-Component-System
 ## TODO
 
 - [x] EntityData: version
+- [x] CmptIDSet hash
 - [ ] EntityQuery
 - [ ] Query Entity
 - [x] SystemMngr += ScheduleRegistrar
