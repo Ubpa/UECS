@@ -24,7 +24,7 @@ void EntityMngr::Release(EntityData* e) {
 	}
 
 	/*if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
-		h2a.erase(archetype->id);
+		h2a.erase(archetype->cmptTypeSet);
 		delete archetype;
 	}*/
 

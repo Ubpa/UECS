@@ -1,43 +1,47 @@
 #pragma once
 
-#include <UTemplate/TypeID.h>
+#include "CmptType.h"
 
 #include <cassert>
 
 namespace Ubpa {
 	class CmptPtr {
 	public:
-		CmptPtr(size_t id, void* p) :id{ id }, p{ p }{}
+		CmptPtr(CmptType type, void* p) :type{ type }, p{ p }{}
 		template<typename Cmpt>
-		CmptPtr(Cmpt* p) : id{ TypeID<Cmpt> }, p{ p }{}
+		CmptPtr(Cmpt* p) : type{ CmptType::Of<Cmpt>() }, p{ p }{}
 
 		template<typename Cmpt>
 		Cmpt* As() const noexcept {
-			assert(id == TypeID<Cmpt>);
+			assert(type.HashCode() == TypeID<Cmpt>);
 			return reinterpret_cast<Cmpt*>(p);
 		}
-		size_t ID() const noexcept { return id; }
+		CmptType& Type() noexcept { return type; }
+		CmptType Type() const noexcept { return type; }
+		void*& Ptr() noexcept { return p; }
 		void* Ptr() const noexcept { return p; }
 	private:
-		size_t id;
+		CmptType type;
 		void* p;
 	};
 
 	class CmptCPtr {
 	public:
-		CmptCPtr(size_t id, const void* p) :id{ id }, p{ p }{}
+		CmptCPtr(CmptType type, const void* p) :type{ type }, p{ p }{}
 		template<typename Cmpt>
-		CmptCPtr(const Cmpt* p) : id{ TypeID<Cmpt> }, p{ p }{}
+		CmptCPtr(const Cmpt* p) : type{ CmptType::Of<Cmpt>() }, p{ p }{}
 
 		template<typename Cmpt>
 		const Cmpt* As() const noexcept {
-			assert(id == TypeID<Cmpt>);
-			return reinterpret_cast<const Cmpt*>(p);
+			assert(type.HashCode() == TypeID<Cmpt>);
+			return reinterpret_cast<Cmpt*>(p);
 		}
-		size_t ID() const noexcept { return id; }
+		CmptType& Type() noexcept { return type; }
+		CmptType Type() const noexcept { return type; }
+		const void*& Ptr() noexcept { return p; }
 		const void* Ptr() const noexcept { return p; }
 	private:
-		size_t id;
+		CmptType type;
 		const void* p;
 	};
 }

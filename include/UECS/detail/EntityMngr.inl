@@ -16,20 +16,20 @@ namespace Ubpa {
 		static_assert(IsSet_v<TypeList<Cmpts...>>,
 			"EntityMngr::GetOrCreateArchetypeOf: <Cmpts> must be different");
 
-		auto id = CmptIDSet(TypeList<Cmpts...>{});
-		constexpr size_t idHash = CmptIDSet::Hash<Cmpts...>();
-		auto target = h2a.find(idHash);
+		auto types = CmptTypeSet(TypeList<Cmpts...>{});
+		constexpr size_t typesHashCode = CmptTypeSet::HashCodeOf<Cmpts...>();
+		auto target = h2a.find(typesHashCode);
 		if(target != h2a.end())
 			return target->second;
 
 		auto archetype = new Archetype(this, TypeList<Cmpts...>{});
-		h2a[idHash] = archetype;
-		for (auto& [queryHash, archetypes] : queryCache) {
-			const auto& query = id2query.find(queryHash)->second;
-			if (id.IsContain(query.allCmptIDs)
-				&& id.IsContainAny(query.anyCmptIDs)
-				&& id.IsNotContain(query.noneCmptIDs)
-				&& id.IsContain(query.locateCmptIDs))
+		h2a[typesHashCode] = archetype;
+		for (auto& [queryHashCode, archetypes] : queryCache) {
+			const auto& query = queryHashmap.find(queryHashCode)->second;
+			if (types.IsContain(query.allCmptTypes)
+				&& types.IsContainAny(query.anyCmptTypes)
+				&& types.IsNotContain(query.noneCmptTypes)
+				&& types.IsContain(query.locateCmptTypes))
 			{
 				archetypes.insert(archetype);
 			}
@@ -62,17 +62,17 @@ namespace Ubpa {
 		if (target != queryCache.end())
 			return target->second;
 
-		// id2query and queryCache are **mutable**
+		// queryHashmap and queryCache are **mutable**
 		std::set<Archetype*>& rst = queryCache[queryHash];
-		id2query.emplace(queryHash, Query{
-			TypeListToIDVec(SortedAllList{}),
-			TypeListToIDVec(SortedAnyList{}),
-			TypeListToIDVec(SortedNoneList{}),
-			TypeListToIDVec(SortedLocateList{})
+		queryHashmap.emplace(queryHash, Query{
+			TypeListToTypeVec(SortedAllList{}),
+			TypeListToTypeVec(SortedAnyList{}),
+			TypeListToTypeVec(SortedNoneList{}),
+			TypeListToTypeVec(SortedLocateList{})
 		});
 
 		for (const auto& [h, a] : h2a) {
-			if (a->ID().IsMatch<AllList, AnyList, NoneList, LocateList>())
+			if (a->GetCmptTypeSet().IsMatch<AllList, AnyList, NoneList, LocateList>())
 			{
 				rst.insert(a);
 			}
@@ -85,29 +85,29 @@ namespace Ubpa {
 	const std::tuple<Cmpts*...> EntityMngr::EntityAttachWithoutInit(EntityData* e) {
 		static_assert(sizeof...(Cmpts) > 0, "EntityMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "EntityMngr::EntityAttach: <Cmpts> must be different");
-		assert((e->archetype->id.IsNotContain<Cmpts>() &&...));
+		assert((e->archetype->cmptTypeSet.IsNotContain<Cmpts>() &&...));
 
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;
 
-		auto& srcID = srcArchetype->ID();
-		auto dstID = srcID;
-		dstID.Add<Cmpts...>();
-		size_t dstIDHash = dstID.Hash();
+		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+		auto dstCmptTypeSet = srcCmptTypeSet;
+		dstCmptTypeSet.Add<Cmpts...>();
+		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
 
 		// get dstArchetype
 		Archetype* dstArchetype;
-		auto target = h2a.find(dstIDHash);
+		auto target = h2a.find(dstCmptTypeSetHashCode);
 		if (target == h2a.end()) {
 			dstArchetype = Archetype::Add<Cmpts...>(srcArchetype);
-			assert(dstID == dstArchetype->ID());
-			h2a[dstIDHash] = dstArchetype;
+			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
+			h2a[dstCmptTypeSetHashCode] = dstArchetype;
 			for (auto& [queryHash, archetypes] : queryCache) {
-				const auto& query = id2query.find(queryHash)->second;
-				if (dstID.IsContain(query.allCmptIDs)
-					&& dstID.IsContainAny(query.anyCmptIDs)
-					&& dstID.IsNotContain(query.noneCmptIDs)
-					&& dstID.IsContain(query.locateCmptIDs))
+				const auto& query = queryHashmap.find(queryHash)->second;
+				if (dstCmptTypeSet.IsContain(query.allCmptTypes)
+					&& dstCmptTypeSet.IsContainAny(query.anyCmptTypes)
+					&& dstCmptTypeSet.IsNotContain(query.noneCmptTypes)
+					&& dstCmptTypeSet.IsContain(query.locateCmptTypes))
 				{
 					archetypes.insert(dstArchetype);
 				}
@@ -119,7 +119,7 @@ namespace Ubpa {
 		// move src to dst
 		size_t dstIdx = dstArchetype->RequestBuffer();
 
-		for (auto cmptID : srcID) {
+		for (auto cmptID : srcCmptTypeSet) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(cmptID, srcIdx);
 			auto [dstCmpt, dstSize] = dstArchetype->At(cmptID, dstIdx);
 			assert(srcSize == dstSize);
@@ -142,7 +142,7 @@ namespace Ubpa {
 		e->idx = dstIdx;
 
 		/*if (srcArchetype->Size() == 0 && srcArchetype->CmptNum() != 0) {
-			h2a.erase(srcArchetype->id);
+			h2a.erase(srcArchetype->cmptTypeSet);
 			delete srcArchetype;
 		}*/
 
@@ -172,29 +172,29 @@ namespace Ubpa {
 		static_assert(sizeof...(Cmpts) > 0, "EntityMngr::EntityAttach: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Cmpts...>>, "EntityMngr::EntityAttach: <Cmpts> must be different");
 
-		assert((e->archetype->id.IsContain<Cmpts>() &&...));
+		assert((e->archetype->cmptTypeSet.IsContain<Cmpts>() &&...));
 
 		Archetype* srcArchetype = e->archetype;
 		size_t srcIdx = e->idx;
 
-		auto& srcID = srcArchetype->ID();
-		auto dstID = srcID;
-		dstID.Remove<Cmpts...>();
-		size_t dstIDHash = dstID.Hash();
+		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+		auto dstCmptTypeSet = srcCmptTypeSet;
+		dstCmptTypeSet.Remove<Cmpts...>();
+		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
 
 		// get dstArchetype
 		Archetype* dstArchetype;
-		auto target = h2a.find(dstIDHash);
+		auto target = h2a.find(dstCmptTypeSetHashCode);
 		if (target == h2a.end()) {
 			dstArchetype = Archetype::Remove<Cmpts...>(srcArchetype);
-			assert(dstID == dstArchetype->ID());
-			h2a[dstIDHash] = dstArchetype;
+			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
+			h2a[dstCmptTypeSetHashCode] = dstArchetype;
 			for (auto& [queryHash, archetypes] : queryCache) {
-				const auto& query = id2query.find(queryHash)->second;
-				if (dstID.IsContain(query.allCmptIDs)
-					&& dstID.IsContainAny(query.anyCmptIDs)
-					&& dstID.IsNotContain(query.noneCmptIDs)
-					&& dstID.IsContain(query.locateCmptIDs))
+				const auto& query = queryHashmap.find(queryHash)->second;
+				if (dstCmptTypeSet.IsContain(query.allCmptTypes)
+					&& dstCmptTypeSet.IsContainAny(query.anyCmptTypes)
+					&& dstCmptTypeSet.IsNotContain(query.noneCmptTypes)
+					&& dstCmptTypeSet.IsContain(query.locateCmptTypes))
 				{
 					archetypes.insert(dstArchetype);
 				}
@@ -205,8 +205,8 @@ namespace Ubpa {
 
 		// move src to dst
 		size_t dstIdx = dstArchetype->RequestBuffer();
-		for (auto cmptID : srcID) {
-			if (dstID.IsContain(cmptID)) {
+		for (auto cmptID : srcCmptTypeSet) {
+			if (dstCmptTypeSet.IsContain(cmptID)) {
 				auto [srcCmpt, srcSize] = srcArchetype->At(cmptID, srcIdx);
 				auto [dstCmpt, dstSize] = dstArchetype->At(cmptID, dstIdx);
 				assert(srcSize == dstSize);
@@ -230,7 +230,7 @@ namespace Ubpa {
 		e->idx = dstIdx;
 
 		/*if (srcArchetype->Size() == 0) {
-			h2a.erase(srcArchetype->id);
+			h2a.erase(srcArchetype->cmptTypeSet);
 			delete srcArchetype;
 		}*/
 	}
@@ -244,8 +244,8 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	std::vector<size_t> EntityMngr::TypeListToIDVec(TypeList<Cmpts...>) {
-		return { TypeID<Cmpts>... };
+	std::vector<CmptType> EntityMngr::TypeListToTypeVec(TypeList<Cmpts...>) {
+		return { CmptType::Of<Cmpts>()... };
 	}
 }
 
@@ -263,7 +263,7 @@ namespace Ubpa::detail::EntityMngr_ {
 			assert(job->empty());
 			for (const Archetype* archetype : mngr->QueryArchetypes<AllList, AnyList, NoneList, CmptList>()) {
 				auto cmptsTupleVec = archetype->Locate<CmptTag::RemoveTag_t<TagedCmpts>...>();
-				size_t num = archetype->Size();
+				size_t num = archetype->EntityNum();
 				size_t chunkNum = archetype->ChunkNum();
 				size_t chunkCapacity = archetype->ChunkCapacity();
 

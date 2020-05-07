@@ -52,7 +52,7 @@ namespace Ubpa {
 		const std::tuple<Cmpts*...> EntityAttachWithoutInit(EntityData* e);
 
 		template<typename... Cmpts>
-		static std::vector<size_t> TypeListToIDVec(TypeList<Cmpts...>);
+		static std::vector<CmptType> TypeListToTypeVec(TypeList<Cmpts...>);
 
 		Ubpa::World* w;
 
@@ -60,30 +60,30 @@ namespace Ubpa {
 
 		std::map<std::tuple<Archetype*, size_t>, EntityData*> ai2e; // (archetype, idx) -> entity
 
-		std::unordered_map<size_t, Archetype*> h2a; // CmptIDSet's hash to archetype
+		std::unordered_map<size_t, Archetype*> h2a; // CmptTypeSet's hashcode to archetype
 
 		// Query Cache
 		// TypeID<AllList, AnyList, NoneList, LocateList> to archetype set
 		// AllList, AnyList, NoneList, LocateList are **sorted**
 		mutable std::unordered_map<size_t, std::set<Archetype*>> queryCache;
 		struct Query {
-			Query(const std::vector<size_t>& allCmptIDs,
-				const std::vector<size_t>& anyCmptIDs,
-				const std::vector<size_t>& noneCmptIDs,
-				const std::vector<size_t>& locateCmptIDs)
-				: allCmptIDs{ allCmptIDs },
-				anyCmptIDs{ anyCmptIDs },
-				noneCmptIDs{ noneCmptIDs },
-				locateCmptIDs { locateCmptIDs }
+			Query(const std::vector<CmptType>& allCmptTypes,
+				const std::vector<CmptType>& anyCmptTypes,
+				const std::vector<CmptType>& noneCmptTypes,
+				const std::vector<CmptType>& locateCmptTypes)
+				: allCmptTypes{ allCmptTypes },
+				anyCmptTypes{ anyCmptTypes },
+				noneCmptTypes{ noneCmptTypes },
+				locateCmptTypes{ locateCmptTypes }
 			{
 			}
 
-			std::vector<size_t> allCmptIDs; // sorted
-			std::vector<size_t> anyCmptIDs; // sorted
-			std::vector<size_t> noneCmptIDs; // sorted
-			std::vector<size_t> locateCmptIDs; // sorted
+			std::vector<CmptType> allCmptTypes; // sorted
+			std::vector<CmptType> anyCmptTypes; // sorted
+			std::vector<CmptType> noneCmptTypes; // sorted
+			std::vector<CmptType> locateCmptTypes; // sorted
 		};
-		mutable std::unordered_map<size_t, Query> id2query;
+		mutable std::unordered_map<size_t, Query> queryHashmap;
 
 		// command
 		std::vector<std::function<void()>> commandBuffer;

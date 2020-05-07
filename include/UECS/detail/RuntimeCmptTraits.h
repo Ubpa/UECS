@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UTemplate/TypeID.h>
+#include "../CmptType.h"
 
 #include <unordered_map>
 #include <functional>
@@ -13,14 +13,14 @@ namespace Ubpa {
 			return instance;
 		}
 
-		void Destruct(size_t id, void* cmpt) const {
-			auto target = destructors.find(id);
+		void Destruct(CmptType type, void* cmpt) const {
+			auto target = destructors.find(type);
 			if (target != destructors.end())
 				target->second(cmpt);
 		}
 
-		void MoveConstruct(size_t id, size_t size, void* dst, void* src) const {
-			auto target = move_constructors.find(id);
+		void MoveConstruct(CmptType type, size_t size, void* dst, void* src) const {
+			auto target = move_constructors.find(type);
 
 			if (target != move_constructors.end())
 				target->second(dst, src);
@@ -33,21 +33,23 @@ namespace Ubpa {
 			static_assert(std::is_move_constructible_v<Cmpt>);
 			static_assert(std::is_destructible_v<Cmpt>);
 
+			constexpr CmptType type = CmptType::Of<Cmpt>();
+
 			if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
-				destructors[TypeID<Cmpt>] = [](void* cmpt) {
+				destructors[type] = [](void* cmpt) {
 					reinterpret_cast<Cmpt*>(cmpt)->~Cmpt();
 				};
 			}
 			if constexpr (!std::is_trivially_move_constructible_v<Cmpt>) {
-				move_constructors[TypeID<Cmpt>] = [](void* dst, void* src) {
+				move_constructors[type] = [](void* dst, void* src) {
 					new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
 				};
 			}
 		}
 
 	private:
-		std::unordered_map<size_t, std::function<void(void*)>> destructors;
-		std::unordered_map<size_t, std::function<void(void*, void*)>> move_constructors; // dst <- src
+		std::unordered_map<CmptType, std::function<void(void*)>> destructors;
+		std::unordered_map<CmptType, std::function<void(void*, void*)>> move_constructors; // dst <- src
 
 		RuntimeCmptTraits() = default;
 	};

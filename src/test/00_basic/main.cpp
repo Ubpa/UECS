@@ -2,6 +2,7 @@
 #include <iostream>
 
 using namespace Ubpa;
+using namespace std;
 
 struct velocity { float value{ 0.f }; };
 struct position { float value{ 0.f }; };
@@ -23,11 +24,11 @@ int main() {
 	});
 
 	w.Each([](position* p) {
-		std::cout << p->value << std::endl;
+		cout << p->value << endl;
 	});
 
 	w.Each([](position* p)->bool {
-		std::cout << "stop each" << std::endl;
+		cout << "stop each" << endl;
 		return false;
 	});
 
