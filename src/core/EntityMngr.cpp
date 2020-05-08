@@ -73,7 +73,7 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 				// TODO
 			}
 			else {
-				job->emplace([sys, sizes=sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
+				job->emplace([sys, sizes = sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
 					for (size_t j = 0; j < J; j++) {
 						(*sys)(nullptr, cmpts.data());
 						for (size_t k = 0; k < cmpts.size(); k++)

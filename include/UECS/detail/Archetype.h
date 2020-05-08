@@ -69,7 +69,7 @@ namespace Ubpa {
 		CmptTypeSet cmptTypeSet;
 		std::map<CmptType, std::tuple<size_t, size_t>> type2so; // CmptType to (size, offset)
 
-		size_t chunkCapacity;
+		size_t chunkCapacity{ Chunk::size };
 		std::vector<Chunk*> chunks;
 
 		size_t entityNum{ 0 }; // number of entities

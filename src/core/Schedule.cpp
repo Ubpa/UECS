@@ -38,7 +38,7 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
 		const auto& locator = sysFunc->query.Locator();
 		for (const auto& type : locator.LastFrameCmptTypes())
-			cmptSysFuncsMap[type].latestSysFuncs.push_back(sysFunc);
+			cmptSysFuncsMap[type].lastFrameSysFuncs.push_back(sysFunc);
 		for (const auto& type : locator.WriteCmptTypes())
 			cmptSysFuncsMap[type].writeSysFuncs.push_back(sysFunc);
 		for (const auto& type : locator.LatestCmptTypes())
@@ -72,7 +72,7 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		for (const auto& lastFrameSysFunc : cmptSysFuncs.lastFrameSysFuncs)
 			graph.AddEdge(lastFrameSysFunc, sortedWriteSysFuncs.front());
 		for (const auto& latestSysFunc : cmptSysFuncs.latestSysFuncs)
-			graph.AddEdge(latestSysFunc, sortedWriteSysFuncs.front());
+			graph.AddEdge(sortedWriteSysFuncs.back(), latestSysFunc);
 		for (size_t i = 0; i < sortedWriteSysFuncs.size() - 1; i++)
 			graph.AddEdge(sortedWriteSysFuncs[i], sortedWriteSysFuncs[i + 1]);
 	}

@@ -1,13 +1,14 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace Ubpa {
 	class SystemFunc;
 	class SysFuncGraph {
 	public:
-		using AdjList = std::unordered_map<SystemFunc*, std::vector<SystemFunc*>>;
+		using AdjList = std::unordered_map<SystemFunc*, std::unordered_set<SystemFunc*>>;
 
 		void AddVertex(SystemFunc* x);
 		void AddEdge(SystemFunc* x, SystemFunc* y);
@@ -24,6 +25,6 @@ namespace Ubpa {
 		const AdjList& GetAdjList() const noexcept { return adjList; }
 
 	private:
-		std::unordered_map<SystemFunc*, std::vector<SystemFunc*>> adjList;
+		std::unordered_map<SystemFunc*, std::unordered_set<SystemFunc*>> adjList;
 	};
 }

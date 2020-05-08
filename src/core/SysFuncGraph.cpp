@@ -53,12 +53,12 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 
 void SysFuncGraph::AddVertex(SystemFunc* x) {
 	assert(!HaveVertex(x));
-	adjList.emplace(x, vector<SystemFunc*>{});
+	adjList.emplace(x, unordered_set<SystemFunc*>{});
 }
 
 void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
-	assert(!HaveEdge(x, y));
-	adjList[x].push_back(y);
+	assert(HaveVertex(x) && HaveVertex(y));
+	adjList[x].insert(y);
 }
 
 SysFuncGraph SysFuncGraph::SubGraph(const std::vector<SystemFunc*>& vertices) const {

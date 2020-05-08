@@ -27,6 +27,12 @@ void World::Update() {
 		table.emplace(v, jobGraph.composed_of(*job));
 	}
 
+	for (const auto& [v, adjVs] : graph.GetAdjList()) {
+		auto vJob = table[v];
+		for (auto adjV : adjVs)
+			vJob.precede(table[adjV]);
+	}
+
 	executor.run(jobGraph).wait();
 
 	entityMngr.RunCommands();
