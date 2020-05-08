@@ -28,7 +28,7 @@ namespace Ubpa {
 		// capacity, offsets
 		static const std::tuple<size_t, std::vector<size_t>> CO(const std::vector<size_t>& sizes) noexcept;
 
-		constexpr byte* Data() noexcept { return buffer.data(); }
+		byte* Data() noexcept { return buffer.data(); }
 
 	private:
 		std::array<byte, size> buffer;

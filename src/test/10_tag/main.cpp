@@ -13,7 +13,7 @@ struct A {
 };
 
 struct B {
-	void OnUpdate(CmptTag::Newest<A> a) {
+	void OnUpdate(CmptTag::Latest<A> a) {
 		cout << "B" << endl;
 	}
 };

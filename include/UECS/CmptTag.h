@@ -4,7 +4,7 @@
 
 namespace Ubpa {
 	namespace CmptTag {
-		// LastFrame -> Write -> Newest
+		// LastFrame -> Write -> Latest
 
 		template<typename Cmpt>
 		class LastFrame {
@@ -21,119 +21,39 @@ namespace Ubpa {
 		using Write = Cmpt*;
 
 		template<typename Cmpt>
-		using Newest = const Cmpt*;
+		using Latest = const Cmpt*;
 
-		// Remove LastFrame, Write, Newest
-		template<typename TagedCmpt>
+		// <Cmpt>
+		template<typename TaggedCmpt>
 		struct RemoveTag;
-		template<typename TagedCmpt>
-		using RemoveTag_t = typename RemoveTag<TagedCmpt>::type;
+		template<typename TaggedCmpt>
+		using RemoveTag_t = typename RemoveTag<TaggedCmpt>::type;
 
-		template<typename TagedCmpt>
+		// <Cmpt>*
+		template<typename TaggedCmpt>
+		struct DecayTag;
+		template<typename TaggedCmpt>
+		using DecayTag_t = typename DecayTag<TaggedCmpt>::type;
+
+		template<typename TaggedCmpt>
 		struct IsLastFrame;
-		template<typename TagedCmpt>
-		static constexpr bool IsLastFrame_v = IsLastFrame<TagedCmpt>::value;
+		template<typename TaggedCmpt>
+		static constexpr bool IsLastFrame_v = IsLastFrame<TaggedCmpt>::value;
 
-		template<typename TagedCmpt>
+		template<typename TaggedCmpt>
 		struct IsWrite;
-		template<typename TagedCmpt>
-		static constexpr bool IsWrite_v = IsWrite<TagedCmpt>::value;
+		template<typename TaggedCmpt>
+		static constexpr bool IsWrite_v = IsWrite<TaggedCmpt>::value;
 
-		template<typename TagedCmpt>
-		struct IsNewest;
-		template<typename TagedCmpt>
-		static constexpr bool IsNewest_v = IsNewest<TagedCmpt>::value;
-
-		template<typename TagedCmpt>
-		struct IsTimePoint;
-		template<typename TagedCmpt>
-		static constexpr bool IsTimePoint_v = IsTimePoint<TagedCmpt>::value;
-
-		template<typename ArgList>
-		struct GetTimePointList : Filter<ArgList, IsTimePoint> {};
-		template<typename ArgList>
-		using GetTimePointList_t = typename GetTimePointList<ArgList>::type;
-
-		template<typename ArgList>
-		struct RemoveTimePoint : Filter<ArgList, Negate<IsTimePoint>::template Ttype> {};
-		template<typename ArgList>
-		using RemoveTimePoint_t = typename RemoveTimePoint<ArgList>::type;
-
-		// ======================================================================
-
-		template<typename... Cmpts>
-		struct Before {
-			using CmptList = TypeList<Cmpts...>;
-		};
-		template<typename TagedCmpt>
-		struct IsBefore;
-		template<typename TagedCmpt>
-		static constexpr bool IsBefore_v = IsBefore<TagedCmpt>::value;
-
-		template<typename... Cmpts>
-		struct After {
-			using CmptList = TypeList<Cmpts...>;
-		};
-		template<typename TagedCmpt>
-		struct IsAfter;
-		template<typename TagedCmpt>
-		static constexpr bool IsAfter_v = IsAfter<TagedCmpt>::value;
-
-		template<typename TagedCmpt>
-		struct IsOrder : IValue<bool, IsBefore_v<TagedCmpt> || IsAfter_v<TagedCmpt>> {};
-		template<typename TagedCmpt>
-		static constexpr bool IsOrder_v = IsOrder<TagedCmpt>::value;
-
-		template<typename ArgList>
-		struct GetOrderList : Filter<ArgList, IsOrder> {};
-		template<typename ArgList>
-		using GetOrderList_t = typename GetOrderList<ArgList>::type;
-
-		// ======================================================================
-
-		template<typename... Cmpts>
-		struct All {
-			using CmptList = TypeList<Cmpts...>;
-		};
-		template<typename T>
-		struct IsAll;
-		template<typename T>
-		static constexpr bool IsAll_v = IsAll<T>::value;
-		template<typename ArgList>
-		struct ConcatedAllList; // TypeList<AllCmpts...>
-		template<typename ArgList>
-		using ConcatedAllList_t = typename ConcatedAllList<ArgList>::type;
-
-		template<typename... Cmpts>
-		struct Any {
-			using CmptList = TypeList<Cmpts...>;
-		};
-		template<typename T>
-		struct IsAny;
-		template<typename T>
-		static constexpr bool IsAny_v = IsAny<T>::value;
-		template<typename ArgList>
-		struct ConcatedAnyList; // TypeList<AnyCmpts...>
-		template<typename ArgList>
-		using ConcatedAnyList_t = typename ConcatedAnyList<ArgList>::type;
-
-		template<typename... Cmpts>
-		struct None {
-			using CmptList = TypeList<Cmpts...>;
-		};
-		template<typename T>
-		struct IsNone;
-		template<typename T>
-		static constexpr bool IsNone_v = IsNone<T>::value;
-		template<typename ArgList>
-		struct ConcatedNoneList; // TypeList<NoneCmpts...>
-		template<typename ArgList>
-		using ConcatedNoneList_t = typename ConcatedNoneList<ArgList>::type;
+		template<typename TaggedCmpt>
+		struct IsLatest;
+		template<typename TaggedCmpt>
+		static constexpr bool IsLatest_v = IsLatest<TaggedCmpt>::value;
 
 		template<typename T>
-		struct IsQuery : IValue<bool, IsAll_v<T> || IsAny_v<T> || IsNone_v<T>> {};
+		struct IsTaggedCmpt : IValue<bool, IsLastFrame_v<T> || IsWrite_v<T> || IsLatest_v<T>> {};
 		template<typename T>
-		static constexpr bool IsQuery_v = IsQuery<T>::value;
+		static constexpr bool IsTaggedCmpt_v = IsTaggedCmpt<T>::value;
 	}
 }
 

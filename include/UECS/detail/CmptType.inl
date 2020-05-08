@@ -1,10 +1,10 @@
 #pragma once
 
 namespace Ubpa {
-	constexpr bool operator<(CmptType x, CmptType y) noexcept {
+	inline constexpr bool operator<(const CmptType& x, const CmptType& y) noexcept {
 		return x.HashCode() < y.HashCode();
 	}
-	constexpr bool operator==(CmptType x, CmptType y) noexcept {
+	inline constexpr bool operator==(const CmptType& x, const CmptType& y) noexcept {
 		return x.HashCode() == y.HashCode();
 	}
 }
@@ -15,7 +15,7 @@ namespace std {
 
 	template<>
 	struct hash<Ubpa::CmptType> {
-		constexpr size_t operator()(Ubpa::CmptType t) const noexcept {
+		constexpr size_t operator()(const Ubpa::CmptType& t) const noexcept {
 			return t.HashCode();
 		}
 	};

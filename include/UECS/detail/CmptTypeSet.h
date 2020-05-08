@@ -1,7 +1,7 @@
 #pragma	once
 
 #include "Util.h"
-#include "../CmptType.h"
+#include "../EntityQuery.h"
 
 #include <UTemplate/TypeID.h>
 #include <UTemplate/TemplateList.h>
@@ -110,12 +110,18 @@ namespace Ubpa {
 			return true;
 		}
 
-		template<typename AllList, typename AnyList, typename NotList, typename LocateList>
-		bool IsMatch() const {
-			return IsContain(AllList{})
-				&& IsContainAny(AnyList{})
-				&& IsNotContain(NotList{})
-				&& IsContain(LocateList{});
+		bool IsMatch(const EntityFilter& filter) const {
+			return IsContain(filter.AllCmptTypes())
+				&& IsContainAny(filter.AnyCmptTypes())
+				&& IsNotContain(filter.NoneCmptTypes());
+		}
+
+		bool IsMatch(const EntityLocator& locator) const {
+			return IsContain(locator.CmptTypes());
+		}
+
+		bool IsMatch(const EntityQuery& query) const {
+			return IsMatch(query.Filter()) && IsMatch(query.Locator());
 		}
 
 		template<typename... Cmpts>

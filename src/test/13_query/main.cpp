@@ -25,7 +25,7 @@ struct MySystem {
 				// locate
 				CmptTag::LastFrame<F> f,
 				G* g, // CmptTag::Write<G>
-				const H* h // CmptTag::Newest<G>
+				const H* h // CmptTag::Latest<G>
 			)
 			{
 				cout << "MySystem" << endl;

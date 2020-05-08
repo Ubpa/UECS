@@ -1,7 +1,6 @@
 #pragma once
 
 #include "RuntimeCmptTraits.h"
-#include "CmptSysMngr.h"
 
 #include <UTemplate/Concept.h>
 
@@ -34,7 +33,6 @@ namespace Ubpa {
 		if constexpr (Require<detail::CmptRegistrar_::HaveOnRegister, Cmpt>)
 			Cmpt::OnRegister();
 
-		CmptSysMngr::Instance().Register<Cmpt>();
 		RuntimeCmptTraits::Instance().Register<Cmpt>();
 		
 		registeredCmpts.insert(TypeID<Cmpt>);

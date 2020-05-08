@@ -27,6 +27,8 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		const std::vector<std::tuple<Cmpts*...>> Locate() const;
+
+		std::vector<std::vector<void*>> Locate(const std::set<CmptType>& cmptTypes) const;
 		
 		std::tuple<void*, size_t> At(CmptType type, size_t idx) const;
 
