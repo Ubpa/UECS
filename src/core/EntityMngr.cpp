@@ -61,7 +61,7 @@ void EntityMngr::RunCommands() {
 
 void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 	for (const Archetype* archetype : QueryArchetypes(sys->query)) {
-		auto chunkCmpts = archetype->Locate(sys->query.Locator().CmptTypes());
+		auto [chunkCmpts, sizes] = archetype->Locate(sys->query.Locator().CmptTypes());
 
 		size_t num = archetype->EntityNum();
 		size_t chunkNum = archetype->ChunkNum();
@@ -73,9 +73,11 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 				// TODO
 			}
 			else {
-				job->emplace([sys, cmpts = std::move(chunkCmpts[i]), J]() mutable {
+				job->emplace([sys, sizes=sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
 					for (size_t j = 0; j < J; j++) {
 						(*sys)(nullptr, cmpts.data());
+						for (size_t k = 0; k < cmpts.size(); k++)
+							reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
 					}
 				});
 			}

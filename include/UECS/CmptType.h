@@ -6,6 +6,7 @@ namespace Ubpa {
 	class CmptType {
 	public:
 		explicit constexpr CmptType(size_t id) : hashcode{ id } {}
+		explicit constexpr CmptType(std::string_view type_name) : hashcode{ RuntimeTypeID(type_name) } {}
 
 		template<typename Cmpt>
 		static constexpr CmptType Of() noexcept { return CmptType{ TypeID<Cmpt> }; }

@@ -46,21 +46,27 @@ tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
 	return { buffer + offset + idxInChunk * size,size };
 }
 
-vector<vector<void*>> Archetype::Locate(const std::set<CmptType>& cmptTypes) const {
+tuple<vector<vector<void*>>, vector<size_t>> Archetype::Locate(const std::set<CmptType>& cmptTypes) const {
 	assert(cmptTypeSet.IsContain(cmptTypes));
-	vector<vector<void*>> rst(cmptTypes.size());
-	
-	for (const auto& chunk : chunks) {
-		auto data = chunk->Data();
-		size_t i = 0;
+	vector<vector<void*>> chunkCmpts(chunks.size());
+
+	for (size_t i = 0; i < chunks.size(); i++) {
+		auto data = chunks[i]->Data();
 		for (const auto& type : cmptTypes) {
 			size_t offset = get<1>(type2so.find(type)->second);
-			rst[i].push_back(data + offset);
-			i++;
+			chunkCmpts[i].push_back(data + offset);
 		}
 	}
 
-	return rst;
+	vector<size_t> sizes;
+
+	for (const auto& type : cmptTypes) {
+		size_t size = get<0>(type2so.find(type)->second);
+		sizes.push_back(size);
+	}
+
+
+	return { chunkCmpts, sizes };
 }
 
 size_t Archetype::Erase(size_t idx) {

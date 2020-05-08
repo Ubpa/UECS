@@ -20,24 +20,6 @@ namespace Ubpa {
 
 		std::string DumpUpdateJobGraph();
 
-		//// if Sys's return type is bool, Each stop when return false
-		//// run commands later
-		//template<typename Sys>
-		//void Each(Sys&& s);
-
-		//// if Sys's return type is bool, Each stop when return false
-		//// **not** run commands
-		//template<typename Sys>
-		//void Each(Sys&& s) const;
-
-		//// run commands later
-		//template<typename Sys>
-		//void ParallelEach(Sys&& s);
-
-		//// **not** run commands
-		//template<typename Sys>
-		//void ParallelEach(Sys&& s) const;
-
 		void AddCommand(const std::function<void()>& command);
 
 	private:

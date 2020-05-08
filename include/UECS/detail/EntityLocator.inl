@@ -12,10 +12,10 @@ namespace Ubpa {
 
 	template<typename... LastFrameCmpts, typename... WriteCmpts, typename... LatestCmpts>
 	EntityLocator::EntityLocator(TypeList<LastFrameCmpts...>, TypeList<WriteCmpts...>, TypeList<LatestCmpts...>)
-		: lastFrameCmptTypes{ CmptType::Of<LastFrameCmpts>()... },
-		writeCmptTypes{ CmptType::Of<WriteCmpts>()... },
-		latestCmptTypes{ CmptType::Of<LatestCmpts>()... },
-		cmptTypes{ CmptType::Of<LastFrameCmpts>()..., CmptType::Of<WriteCmpts>()...,CmptType::Of<LatestCmpts>()... },
+		: lastFrameCmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<LastFrameCmpts>>()... },
+		writeCmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<WriteCmpts>>()... },
+		latestCmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<LatestCmpts>>()... },
+		cmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<LastFrameCmpts>>()..., CmptType::Of<CmptTag::RemoveTag_t<WriteCmpts>>()...,CmptType::Of<CmptTag::RemoveTag_t<LatestCmpts>>()... },
 		hashCode{ GenHashCode() }
 	{}
 }
