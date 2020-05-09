@@ -1,4 +1,5 @@
 #include <UECS/detail/EntityMngr.h>
+#include <UECS/Entity.h>
 
 using namespace Ubpa;
 using namespace std;
@@ -37,6 +38,8 @@ void EntityMngr::Release(EntityData* e) {
 		movedEntity->idx = idx;
 		ai2e[{archetype, idx}] = movedEntity;
 	}
+	else
+		ai2e.erase({ archetype, idx });
 
 	/*if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
 		h2a.erase(archetype->cmptTypeSet);
@@ -60,7 +63,7 @@ void EntityMngr::RunCommands() {
 }
 
 void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
-	for (const Archetype* archetype : QueryArchetypes(sys->query)) {
+	for (Archetype* archetype : QueryArchetypes(sys->query)) {
 		auto [chunkCmpts, sizes] = archetype->Locate(sys->query.Locator().CmptTypes());
 
 		size_t num = archetype->EntityNum();
@@ -70,7 +73,17 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 		for (size_t i = 0; i < chunkNum; i++) {
 			size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
 			if (sys->IsNeedEntity()) {
-				// TODO
+				job->emplace([=, sizes = sizes, cmpts = std::move(chunkCmpts[i])]() mutable {
+					vector<Entity*> entities;
+					entities.resize(J);
+					for (size_t j = 0; j < J; j++)
+						entities[j] = static_cast<Entity*>(ai2e.find({ archetype, i * chunkCapacity + j })->second);
+					for (size_t j = 0; j < J; j++) {
+						(*sys)(entities[j], cmpts.data());
+						for (size_t k = 0; k < cmpts.size(); k++)
+							reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
+					}
+				});
 			}
 			else {
 				job->emplace([sys, sizes = sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {

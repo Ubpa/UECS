@@ -91,6 +91,8 @@ namespace Ubpa {
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
 			srcMovedEntity->idx = srcIdx;
 		}
+		else
+			ai2e.erase({ srcArchetype, srcIdx });
 
 		ai2e.emplace(std::make_pair(std::make_tuple(dstArchetype, dstIdx), e));
 
@@ -116,7 +118,7 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt, typename... Args>
-	Cmpt* EntityMngr::EntityAssignAttach(EntityData* e, Args... args) {
+	Cmpt* EntityMngr::EntityAssignAttach(EntityData* e, Args&&... args) {
 		static_assert(std::is_constructible_v<Cmpt, Args...>,
 			"EntityMngr::EntityAssignAttach: <Cmpt> isn't constructible with <Args...>");
 		auto [cmpt] = EntityAttachWithoutInit<Cmpt>(e);
@@ -173,6 +175,8 @@ namespace Ubpa {
 			ai2e[{srcArchetype, srcIdx}] = srcMovedEntity;
 			srcMovedEntity->idx = srcIdx;
 		}
+		else
+			ai2e.erase({ srcArchetype, srcIdx });
 
 		ai2e[{dstArchetype, dstIdx}] = e;
 

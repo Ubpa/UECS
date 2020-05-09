@@ -35,7 +35,7 @@ namespace Ubpa {
 		const std::tuple<Cmpts*...> EntityAttach(EntityData* e);
 
 		template<typename Cmpt, typename... Args>
-		Cmpt* EntityAssignAttach(EntityData* e, Args... args);
+		Cmpt* EntityAssignAttach(EntityData* e, Args&&... args);
 
 		template<typename... Cmpts>
 		void EntityDetach(EntityData* e);

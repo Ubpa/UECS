@@ -37,9 +37,11 @@ size_t Archetype::RequestBuffer() {
 }
 
 tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
-	assert(type2so.find(type) != type2so.end());
+	auto target = type2so.find(type);
+	if (target == type2so.end())
+		return { nullptr, 0 };
 
-	auto [size, offset] = type2so.find(type)->second;
+	auto [size, offset] = target->second;
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 

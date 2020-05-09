@@ -19,17 +19,17 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt, typename... Args>
-	Cmpt* Entity::AssignAttach(Args... args) {
+	Cmpt* Entity::AssignAttach(Args&&... args) {
 		assert("Entity::AssignAttach: <Cmpt> is unregistered" &&
 			CmptRegistrar::Instance().template IsRegistered<Cmpt>());
 		return archetype->mngr->EntityAssignAttach<Cmpt>(this, std::forward<Args>(args)...);
 	}
 
-	template<typename Cmpt>
-	inline Cmpt* Entity::GetOrAttach() {
+	template<typename Cmpt, typename... Args>
+	Cmpt* Entity::GetOrAssignAttach(Args&&... args) {
 		Cmpt* cmpt = archetype->At<Cmpt>(idx);
 		if (!cmpt)
-			std::tie(cmpt) = Attach<Cmpt>();
+			std::tie(cmpt) = Attach<Cmpt>(std::forward<Args>(args)...);
 		return cmpt;
 	}
 

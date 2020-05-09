@@ -9,8 +9,11 @@ Ubpa Entity-Component-System
 - [x] CmptIDSet hash
 - [x] CmptType
 - [x] EntityQuery
-- [ ] Query Entity
+- [x] Query Entity
 - [x] ~~SystemMngr += ScheduleRegistrar~~ 
+- [ ] System lifecycle
+  - [ ] start, stop
+  - [ ] creat, destroy
 - [ ] System Override (dynamic `None`)
 
 ### tool

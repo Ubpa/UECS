@@ -3,7 +3,7 @@
 #include "detail/EntityMngr.h"
 
 namespace Ubpa {
-	class Entity final : private EntityData {
+	class Entity final : public EntityData {
 		friend class EntityPtr;
 		friend class EntityCPtr;
 	public:
@@ -21,10 +21,10 @@ namespace Ubpa {
 		std::tuple<Cmpts *...> Attach();
 
 		template<typename Cmpt, typename... Args>
-		Cmpt* AssignAttach(Args... args);
+		Cmpt* AssignAttach(Args&&... args);
 
-		template<typename Cmpt>
-		inline Cmpt* GetOrAttach();
+		template<typename Cmpt, typename... Args>
+		inline Cmpt* GetOrAssignAttach(Args&&... args);
 
 		template<typename... Cmpts>
 		void Detach();

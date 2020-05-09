@@ -5,7 +5,7 @@ namespace Ubpa {
 
 	struct EntityData {
 		EntityData(Archetype* archetype, size_t idx)
-			: archetype{ archetype }, idx{ idx }, version{ version + 1 } {}
+			: archetype{ archetype }, idx{ idx } {}
 		~EntityData() { version += 1; }
 
 		bool operator<(const EntityData& e) const noexcept {
