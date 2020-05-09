@@ -12,7 +12,7 @@ namespace Ubpa {
 		EntityFilter();
 
 		template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts>
-		EntityFilter(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>);
+		EntityFilter(TypeList<AllCmpts...> allList, TypeList<AnyCmpts...> anyList, TypeList<NoneCmpts...> noneList);
 
 		size_t HashCode() const noexcept { return combinedHashCode; }
 

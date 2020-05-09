@@ -11,7 +11,10 @@ namespace Ubpa {
 		allHashCode{ GenAllHashCode() },
 		anyHashCode{ GenAnyHashCode() },
 		noneHashCode{ GenNoneHashCode() },
-		combinedHashCode{ hash_combine(std::array<size_t,3>{allHashCode,anyHashCode,noneHashCode}) }{}
+		combinedHashCode{ hash_combine(std::array<size_t,3>{allHashCode,anyHashCode,noneHashCode}) }
+	{
+		static_assert(sizeof...(AnyCmpts) != 1);
+	}
 }
 
 namespace std {
