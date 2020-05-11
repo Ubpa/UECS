@@ -27,7 +27,6 @@ struct alignas(8) E {
 };
 
 int main() {
-	CmptRegistrar::Instance().Register<A, B, C, D, E>();
 	World w;
 	w.entityMngr.CreateEntity<A, B, C, D, E>();
 	return 0;

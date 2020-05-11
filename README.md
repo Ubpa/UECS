@@ -18,7 +18,7 @@ Ubpa Entity-Component-System
   - [ ] start, stop
   - [ ] creat, destroy
 - [ ] System Override (dynamic `None`)
-- [ ] CmptRegistrar -> Archetype
+- [x] Archetype += RuntimeCmptTraits 
 - [ ] exception
 
 ### tool

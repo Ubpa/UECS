@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CmptRegistrar.h"
 #include "SystemFunc.h"
 #include "detail/Archetype.h"
 #include "detail/Job.h"

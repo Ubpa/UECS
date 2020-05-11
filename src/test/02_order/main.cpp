@@ -21,8 +21,6 @@ struct DataSystem {
 };
 
 int main() {
-	CmptRegistrar::Instance().Register<Data1, Data2>();
-
 	World w;
 	w.systemMngr.Register<DataSystem>();
 

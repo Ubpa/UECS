@@ -1,18 +1,16 @@
 #pragma once
 
-#include "RuntimeCmptTraits.h"
-
 #include <cassert>
 
 namespace Ubpa {
 	template<typename... Cmpts>
 	Archetype::Archetype(TypeList<Cmpts...>) noexcept
-		: types(TypeList<Entity, Cmpts...>{}),
-		type2size{ {CmptType::Of<Entity>(), sizeof(Entity)}, {CmptType::Of<Cmpts>(), sizeof(Cmpts)}... },
-		type2alignment{ {CmptType::Of<Entity>(), sizeof(Entity)}, {CmptType::Of<Cmpts>(), alignof(Cmpts)}... }
+		: types(TypeList<Entity, Cmpts...>{})
 	{
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"Archetype::Archetype: <Cmpts> must be different");
+		cmptTraits.Register<Entity>();
+		(cmptTraits.Register<Cmpts>(), ...);
 		SetLayout();
 	}
 
@@ -22,14 +20,12 @@ namespace Ubpa {
 		assert((from->types.IsNotContain<Cmpts>() &&...));
 
 		Archetype* rst = new Archetype;
-
+		
 		rst->types = from->types;
-		rst->type2alignment = from->type2alignment;
-		rst->type2size = from->type2size;
+		rst->cmptTraits = from->cmptTraits;
 
 		rst->types.Add<Cmpts...>();
-		((rst->type2alignment[CmptType::Of<Cmpts>()] = alignof(Cmpts)), ...);
-		((rst->type2size[CmptType::Of<Cmpts>()] = sizeof(Cmpts)), ...);
+		(rst->cmptTraits.Register<Cmpts>(), ...);
 
 		rst->SetLayout();
 		
@@ -44,12 +40,10 @@ namespace Ubpa {
 		Archetype* rst = new Archetype;
 
 		rst->types = from->types;
-		rst->type2alignment = from->type2alignment;
-		rst->type2size = from->type2size;
+		rst->cmptTraits = from->cmptTraits;
 
 		rst->types.Remove<Cmpts...>();
-		(rst->type2alignment.erase(CmptType::Of<Cmpts>()), ...);
-		(rst->type2size.erase(CmptType::Of<Cmpts>()), ...);
+		(rst->cmptTraits.Deregister<Cmpts>(), ...);
 
 		rst->SetLayout();
 
@@ -73,17 +67,13 @@ namespace Ubpa {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"Archetype::CreateEntity: <Cmpts> must be different");
 
-		using CmptList = TypeList<Cmpts...>;
 		size_t idx = RequestBuffer();
 		size_t idxInChunk = idx % chunkCapacity;
 		byte* buffer = chunks[idx / chunkCapacity]->Data();
 
-		constexpr auto entityType = CmptType::Of<Entity>();
-		new(buffer + type2offset[entityType] + idxInChunk * type2size[entityType])Entity(e);
+		new(buffer + Offsetof(CmptType::Of<Entity>()) + idxInChunk * sizeof(Entity))Entity(e);
 
-		std::array<size_t, sizeof...(Cmpts)> sizes = { type2size.find(CmptType::Of<Cmpts>())->second... };
-		std::array<size_t, sizeof...(Cmpts)> offsets = { type2offset.find(CmptType::Of<Cmpts>())->second... };
-		std::tuple<Cmpts*...> cmpts = { new(buffer + offsets[Find_v<CmptList,Cmpts>] + idxInChunk * sizes[Find_v<CmptList,Cmpts>])Cmpts... };
+		std::tuple<Cmpts*...> cmpts = { new(buffer + Offsetof(CmptType::Of<Cmpts>()) + idxInChunk * sizeof(Cmpts))Cmpts... };
 
 		return { idx,cmpts };
 	}
@@ -96,9 +86,9 @@ namespace Ubpa {
 
 		using CmptList = TypeList<Cmpts...>;
 
-		auto offsets = std::make_tuple(type2offset.find(CmptType::Of<Cmpts>())->second...);
+		auto offsets = std::make_tuple(Offsetof(CmptType::Of<Cmpts>())...);
 
-		auto offset_Entity = type2offset.find(CmptType::Of<Entity>())->second;
+		auto offset_Entity = Offsetof(CmptType::Of<Entity>());
 
 		std::vector<std::tuple<Entity*, Cmpts*...>> rst;
 		for (auto chunk : chunks) {

@@ -10,8 +10,8 @@ void Archetype::SetLayout() {
 	std::vector<size_t> sizes;
 
 	for (const auto& type : types) {
-		alignments.push_back(type2alignment[type]);
-		sizes.push_back(type2size[type]);
+		alignments.push_back(cmptTraits.Alignof(type));
+		sizes.push_back(cmptTraits.Sizeof(type));
 	}
 
 	auto layout = Chunk::GenLayout(alignments, sizes);
@@ -27,10 +27,10 @@ Archetype::~Archetype() {
 		size_t idxInChunk = i % chunkCapacity;
 		byte* buffer = chunks[i / chunkCapacity]->Data();
 		for (const auto& type : types) {
-			size_t size = type2size[type];
-			size_t offset = type2offset[type];
+			size_t size = cmptTraits.Sizeof(type);
+			size_t offset = Offsetof(type);
 			byte* address = buffer + offset + idxInChunk * size;
-			RuntimeCmptTraits::Instance().Destruct(type, address);
+			cmptTraits.Destruct(type, address);
 		}
 	}
 	for (Chunk* chunk : chunks) {
@@ -56,12 +56,9 @@ size_t Archetype::RequestBuffer() {
 
 tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
 	assert(idx <= entityNum);
-
-	auto size_target = type2size.find(type);
-	if (size_target == type2size.end())
-		return { nullptr, 0 };
+	assert(types.IsContain(type));
 	
-	size_t size = Sizeof(type);
+	size_t size = cmptTraits.Sizeof(type);
 	size_t offset = Offsetof(type);
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
@@ -84,7 +81,7 @@ tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(
 	vector<size_t> sizes;
 
 	for (const auto& type : cmptTypes)
-		sizes.push_back(Sizeof(type));
+		sizes.push_back(cmptTraits.Sizeof(type));
 
 
 	return { chunkEntity, chunkCmpts, sizes };
@@ -105,21 +102,21 @@ size_t Archetype::Erase(size_t idx) {
 		byte* srcBuffer = chunks[movedIdx / chunkCapacity]->Data();
 
 		for (auto type : types) {
-			auto size = Sizeof(type);
+			auto size = cmptTraits.Sizeof(type);
 			auto offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
-			RuntimeCmptTraits::Instance().Destruct(type, dst);
-			RuntimeCmptTraits::Instance().MoveConstruct(type, size, dst, src);
+			cmptTraits.Destruct(type, dst);
+			cmptTraits.MoveConstruct(type, dst, src);
 		}
 	}
 	else {
 		movedIdx = static_cast<size_t>(-1);
 		for (auto type : types) {
-			auto size = Sizeof(type);
+			auto size = cmptTraits.Sizeof(type);
 			auto offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
-			RuntimeCmptTraits::Instance().Destruct(type, dst);
+			cmptTraits.Destruct(type, dst);
 		}
 	}
 

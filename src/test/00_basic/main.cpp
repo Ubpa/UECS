@@ -26,8 +26,6 @@ struct MoverSystem {
 };
 
 int main() {
-	CmptRegistrar::Instance().Register<Position, Velocity>();
-
 	World w;
 	w.systemMngr.Register<MoverSystem>();
 
