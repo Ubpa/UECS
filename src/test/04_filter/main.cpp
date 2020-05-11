@@ -34,15 +34,15 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	auto [e0,     b0        ] = w.CreateEntity<   B      >(); // x
-	auto [e1, a1            ] = w.CreateEntity<A         >(); // x
-	auto [e2, a2,     c2, d2] = w.CreateEntity<A,    C, D>(); // x
-	auto [e3, a3, b3        ] = w.CreateEntity<A, B      >(); // bingo
+	auto [e0,     b0        ] = w.entityMngr.CreateEntity<   B      >(); // x
+	auto [e1, a1            ] = w.entityMngr.CreateEntity<A         >(); // x
+	auto [e2, a2,     c2, d2] = w.entityMngr.CreateEntity<A,    C, D>(); // x
+	auto [e3, a3, b3        ] = w.entityMngr.CreateEntity<A, B      >(); // bingo
 
-	e0->AssignAttach<E>(0.f);
-	e1->AssignAttach<E>(1.f);
-	e2->AssignAttach<E>(2.f);
-	e3->AssignAttach<E>(3.f);
+	w.entityMngr.AssignAttach<E>(e0, 0.f);
+	w.entityMngr.AssignAttach<E>(e1, 1.f);
+	w.entityMngr.AssignAttach<E>(e2, 2.f);
+	w.entityMngr.AssignAttach<E>(e3, 3.f);
 
 	w.Update();
 

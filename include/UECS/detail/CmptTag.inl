@@ -15,7 +15,7 @@ namespace Ubpa::CmptTag {
 
 	template<typename T> struct DecayTag : IType<T> {};
 	template<typename Cmpt> struct DecayTag<const Cmpt*> : IType<Cmpt*> {};
-	template<> struct DecayTag<const Entity*> : IType<const Entity*> {};
+	template<> struct DecayTag<const Entity> : IType<Entity> {};
 	// template<typename Cmpt> struct DecayTag<Cmpt*> : IType<Cmpt*> {};
 	template<typename Cmpt> struct DecayTag<LastFrame<Cmpt>> : IType<Cmpt*> {};
 

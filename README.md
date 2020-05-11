@@ -11,10 +11,15 @@ Ubpa Entity-Component-System
 - [x] EntityQuery
 - [x] Query Entity
 - [x] ~~SystemMngr += ScheduleRegistrar~~ 
+- [x] alignment
+- [x] `Entity` alias table: `Entity::idx -> (Archetype, idx)` 
+- [x] `Entity` as special `Component` stored in `Chunk` 
 - [ ] System lifecycle
   - [ ] start, stop
   - [ ] creat, destroy
 - [ ] System Override (dynamic `None`)
+- [ ] CmptRegistrar -> Archetype
+- [ ] exception
 
 ### tool
 

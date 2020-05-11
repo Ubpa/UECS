@@ -5,12 +5,30 @@
 using namespace std;
 using namespace Ubpa;
 
+void Archetype::SetLayout() {
+	std::vector<size_t> alignments;
+	std::vector<size_t> sizes;
+
+	for (const auto& type : types) {
+		alignments.push_back(type2alignment[type]);
+		sizes.push_back(type2size[type]);
+	}
+
+	auto layout = Chunk::GenLayout(alignments, sizes);
+	chunkCapacity = layout.capacity;
+
+	size_t i = 0;
+	for (const auto& type : types)
+		type2offset[type] = layout.offsets[i++];
+}
+
 Archetype::~Archetype() {
 	for (size_t i = 0; i < entityNum; i++) {
 		size_t idxInChunk = i % chunkCapacity;
 		byte* buffer = chunks[i / chunkCapacity]->Data();
-		for (auto [type, so] : type2so) {
-			auto [size, offset] = so;
+		for (const auto& type : types) {
+			size_t size = type2size[type];
+			size_t offset = type2offset[type];
 			byte* address = buffer + offset + idxInChunk * size;
 			RuntimeCmptTraits::Instance().Destruct(type, address);
 		}
@@ -37,38 +55,39 @@ size_t Archetype::RequestBuffer() {
 }
 
 tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
-	auto target = type2so.find(type);
-	if (target == type2so.end())
-		return { nullptr, 0 };
+	assert(idx <= entityNum);
 
-	auto [size, offset] = target->second;
+	auto size_target = type2size.find(type);
+	if (size_target == type2size.end())
+		return { nullptr, 0 };
+	
+	size_t size = Sizeof(type);
+	size_t offset = Offsetof(type);
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
 	return { buffer + offset + idxInChunk * size,size };
 }
 
-tuple<vector<vector<void*>>, vector<size_t>> Archetype::Locate(const std::set<CmptType>& cmptTypes) const {
-	assert(cmptTypeSet.IsContain(cmptTypes));
+tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(const std::set<CmptType>& cmptTypes) const {
+	assert(types.IsContain(cmptTypes));
 	vector<vector<void*>> chunkCmpts(chunks.size());
+	vector<Entity*> chunkEntity;
 
 	for (size_t i = 0; i < chunks.size(); i++) {
 		auto data = chunks[i]->Data();
-		for (const auto& type : cmptTypes) {
-			size_t offset = get<1>(type2so.find(type)->second);
-			chunkCmpts[i].push_back(data + offset);
-		}
+		for (const auto& type : cmptTypes)
+			chunkCmpts[i].push_back(data + Offsetof(type));
+		chunkEntity.push_back(reinterpret_cast<Entity*>(data + Offsetof(CmptType::Of<Entity>())));
 	}
 
 	vector<size_t> sizes;
 
-	for (const auto& type : cmptTypes) {
-		size_t size = get<0>(type2so.find(type)->second);
-		sizes.push_back(size);
-	}
+	for (const auto& type : cmptTypes)
+		sizes.push_back(Sizeof(type));
 
 
-	return { chunkCmpts, sizes };
+	return { chunkEntity, chunkCmpts, sizes };
 }
 
 size_t Archetype::Erase(size_t idx) {
@@ -85,20 +104,22 @@ size_t Archetype::Erase(size_t idx) {
 		size_t srcIdxInChunk = movedIdx % chunkCapacity;
 		byte* srcBuffer = chunks[movedIdx / chunkCapacity]->Data();
 
-		for (auto [id, so] : type2so) {
-			auto [size, offset] = so;
+		for (auto type : types) {
+			auto size = Sizeof(type);
+			auto offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
-			RuntimeCmptTraits::Instance().Destruct(id, dst);
-			RuntimeCmptTraits::Instance().MoveConstruct(id, size, dst, src);
+			RuntimeCmptTraits::Instance().Destruct(type, dst);
+			RuntimeCmptTraits::Instance().MoveConstruct(type, size, dst, src);
 		}
 	}
 	else {
 		movedIdx = static_cast<size_t>(-1);
-		for (auto [id, so] : type2so) {
-			auto [size, offset] = so;
+		for (auto type : types) {
+			auto size = Sizeof(type);
+			auto offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
-			RuntimeCmptTraits::Instance().Destruct(id, dst);
+			RuntimeCmptTraits::Instance().Destruct(type, dst);
 		}
 	}
 
@@ -120,7 +141,9 @@ size_t Archetype::Erase(size_t idx) {
 vector<CmptPtr> Archetype::Components(size_t idx) const {
 	vector<CmptPtr> rst;
 
-	for (const auto& [type, so] : type2so) {
+	for (const auto& type : types) {
+		if (type == CmptType::Of<Entity>())
+			continue;
 		auto [cmpt, size] = At(type, idx);
 		rst.emplace_back(type, cmpt);
 	}

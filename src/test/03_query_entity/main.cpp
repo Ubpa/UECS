@@ -12,24 +12,24 @@ struct C {};
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
 		schedule.Request(
-			[](Entity* e, const A* a, const B* b) {
-				e->AddCommand(
-					[e]() {
-						if (!e->Get<C>()) {
+			[w = schedule.GetWorld()](Entity e, const A* a, const B* b) {
+				w->AddCommand(
+					[e, w]() {
+						if (!w->entityMngr.Have<C>(e)) {
 							cout << "Attach C" << endl;
-							e->Attach<C>();
+							w->entityMngr.Attach<C>(e);
 						}
 					}
 				);
 			}, "AB"
 		);
 		schedule.Request(
-			[](Entity* e, const A* a, const B* b, const C* c) {
-				e->AddCommand(
-					[e]() {
-						if (e->Get<C>()) {
+			[w = schedule.GetWorld()](Entity e, const A* a, const B* b, const C* c) {
+				w->AddCommand(
+					[e, w]() {
+						if (w->entityMngr.Have<C>(e)) {
 							cout << "Dettach C" << endl;
-							e->Detach<C>();
+							w->entityMngr.Detach<C>(e);
 						}
 					}
 				);
@@ -44,7 +44,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	w.CreateEntity<A, B>();
+	w.entityMngr.CreateEntity<A, B>();
 
 	w.Update();
 	w.Update();

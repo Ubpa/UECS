@@ -2,16 +2,17 @@
 
 #include "Entity.h"
 #include "SystemMngr.h"
+#include "EntityMngr.h"
+
+#include <mutex>
 
 namespace Ubpa {
 	class World {
 	public:
+		World() : schedule{ this } {}
+
 		SystemMngr systemMngr;
-
-		World();
-
-		template<typename... Cmpts>
-		std::tuple<EntityPtr, Cmpts*...> CreateEntity();
+		EntityMngr entityMngr;
 
 		// static OnUpdateSchedule
 		// parallel OnUpdate
@@ -26,12 +27,13 @@ namespace Ubpa {
 		mutable JobExecutor executor;
 		Schedule schedule;
 
-		EntityMngr entityMngr;
-
 		Job jobGraph;
 		std::vector<Job*> jobs;
 		Pool<Job> jobPool;
+
+		// command
+		std::vector<std::function<void()>> commandBuffer;
+		std::mutex commandBufferMutex;
+		void RunCommands();
 	};
 }
-
-#include "detail/World.inl"

@@ -1,5 +1,4 @@
-#include <UECS/detail/EntityMngr.h>
-#include <UECS/Entity.h>
+#include <UECS/EntityMngr.h>
 
 using namespace Ubpa;
 using namespace std;
@@ -7,6 +6,33 @@ using namespace std;
 EntityMngr::~EntityMngr() {
 	for (auto p : h2a)
 		delete p.second;
+}
+
+size_t EntityMngr::RequestEntityFreeEntry() {
+	if (entityTableFreeEntry.empty()) {
+		size_t index = entityTable.size();
+		entityTable.emplace_back();
+		return index;
+	}
+
+	size_t entry = entityTableFreeEntry.back();
+	entityTableFreeEntry.pop_back();
+	return entry;
+}
+
+void EntityMngr::RecycleEntityEntry(Entity e) {
+	assert(Exist(e));
+
+	auto& info = entityTable[e.Idx()];
+	info.archetype = nullptr;
+	info.idxInArchetype = static_cast<size_t>(-1);
+	info.version++;
+
+	entityTableFreeEntry.push_back(e.Idx());
+}
+
+bool EntityMngr::Exist(Entity e) {
+	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 }
 
 const std::set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query) const {
@@ -24,47 +50,35 @@ const std::set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query
 	return archetypes;
 }
 
-void EntityMngr::Release(EntityData* e) {
-	auto archetype = e->archetype;
-	auto idx = e->idx;
-	entityPool.Recycle(e);
+void EntityMngr::Destroy(Entity e) {
+	assert(Exist(e));
+	auto info = entityTable[e.Idx()];
+	auto archetype = info.archetype;
+	auto idxInArchetype = info.idxInArchetype;
 
-	auto movedEntityIdx = archetype->Erase(idx);
+	auto movedIdxInArchetype = archetype->Erase(idxInArchetype);
 
-	if (movedEntityIdx != static_cast<size_t>(-1)) {
-		auto target = ai2e.find({ archetype, movedEntityIdx });
-		EntityData* movedEntity = target->second;
-		ai2e.erase(target);
-		movedEntity->idx = idx;
-		ai2e[{archetype, idx}] = movedEntity;
+	if (movedIdxInArchetype != Archetype::npos) {
+		auto target = ai2ei.find({ archetype, movedIdxInArchetype });
+		size_t movedEntityIndex = target->second;
+		ai2ei.erase(target);
+		ai2ei[{archetype, idxInArchetype}] = movedEntityIndex;
+		entityTable[movedEntityIndex].idxInArchetype = idxInArchetype;
 	}
 	else
-		ai2e.erase({ archetype, idx });
+		ai2ei.erase({ archetype, idxInArchetype });
 
 	/*if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
-		h2a.erase(archetype->cmptTypeSet);
+		h2a.erase(archetype->types);
 		delete archetype;
 	}*/
 
-	archetype = nullptr;
-	idx = static_cast<size_t>(-1);
-}
-
-void EntityMngr::AddCommand(const std::function<void()>& command) {
-	lock_guard<mutex> guard(commandBufferMutex);
-	commandBuffer.push_back(command);
-}
-
-void EntityMngr::RunCommands() {
-	lock_guard<mutex> guard(commandBufferMutex);
-	for (const auto& command : commandBuffer)
-		command();
-	commandBuffer.clear();
+	RecycleEntityEntry(e);
 }
 
 void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 	for (Archetype* archetype : QueryArchetypes(sys->query)) {
-		auto [chunkCmpts, sizes] = archetype->Locate(sys->query.Locator().CmptTypes());
+		auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->query.Locator().CmptTypes());
 
 		size_t num = archetype->EntityNum();
 		size_t chunkNum = archetype->ChunkNum();
@@ -72,28 +86,15 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 
 		for (size_t i = 0; i < chunkNum; i++) {
 			size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
-			if (sys->IsNeedEntity()) {
-				job->emplace([=, sizes = sizes, cmpts = std::move(chunkCmpts[i])]() mutable {
-					vector<Entity*> entities;
-					entities.resize(J);
-					for (size_t j = 0; j < J; j++)
-						entities[j] = static_cast<Entity*>(ai2e.find({ archetype, i * chunkCapacity + j })->second);
-					for (size_t j = 0; j < J; j++) {
-						(*sys)(entities[j], cmpts.data());
-						for (size_t k = 0; k < cmpts.size(); k++)
-							reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
+			job->emplace([entities = chunkEntity[i], sys, sizes = sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
+				for (size_t j = 0; j < J; j++) {
+					(*sys)(entities[j], cmpts.data());
+					for (size_t k = 0; k < cmpts.size(); k++) {
+						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
+						entities++;
 					}
-				});
-			}
-			else {
-				job->emplace([sys, sizes = sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
-					for (size_t j = 0; j < J; j++) {
-						(*sys)(nullptr, cmpts.data());
-						for (size_t k = 0; k < cmpts.size(); k++)
-							reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
-					}
-				});
-			}
+				}
+			});
 		}
 	}
 }

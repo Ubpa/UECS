@@ -7,6 +7,8 @@
 #include <UContainer/Pool.h>
 
 namespace Ubpa {
+	class World;
+
 	class Schedule {
 	public:
 		Schedule& Order(size_t x, size_t y);
@@ -20,7 +22,10 @@ namespace Ubpa {
 			return sysFunc;
 		}
 
+		World* GetWorld() const noexcept { return world; }
+
 	private:
+		Schedule(World* world) : world{ world } {}
 		void Clear();
 		SysFuncGraph GenSysFuncGraph() const;
 
@@ -32,7 +37,7 @@ namespace Ubpa {
 		std::unordered_map<size_t, size_t> sysFuncOrder;
 
 		Pool<SystemFunc> sysFuncPool;
-
+		World* world;
 		friend class World;
 	};
 }

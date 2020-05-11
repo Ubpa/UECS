@@ -5,21 +5,35 @@
 using namespace Ubpa;
 using namespace std;
 
-const tuple<size_t, vector<size_t>> Chunk::CO(const vector<size_t>& sizes) noexcept {
-	size_t N = sizes.size();
-	if (N == 0)
-		return { Chunk::size,vector<size_t>(1,1) };
+Chunk::Layout Chunk::GenLayout(const vector<size_t>& alignments, const vector<size_t>& sizes) noexcept {
+	Layout layout;
 
+	// alignment isn't sorted
+	struct Item {
+		size_t alignment;
+		size_t idx;
+		bool operator<(const Item& y)const noexcept {
+			return alignment < y.alignment;
+		}
+	};
+	vector<Item> items;
+	for (size_t i = 0; i < sizes.size(); i++)
+		items.push_back(Item{ alignments[i], i });
+	sort(items.begin(), items.end());
+
+	constexpr size_t chunkSize = 16 * 1024;
 	size_t sumSize = 0;
-	for (auto s : sizes)
+	for (size_t s : sizes)
 		sumSize += s;
+	layout.capacity = chunkSize / sumSize;
 
-	size_t capacity = size / sumSize;
-	vector<size_t> offsets;
-	offsets.resize(N);
-	offsets[0] = 0;
-	for (size_t i = 1; i < N; i++)
-		offsets[i] = offsets[i - 1] + capacity * sizes[i - 1];
+	layout.offsets.resize(sizes.size());
+	size_t curOffset = 0;
+	for (size_t i = 0; i < sizes.size(); i++) {
+		curOffset = items[i].alignment * ((curOffset + items[i].alignment - 1) / items[i].alignment);
+		layout.offsets[items[i].idx] = curOffset;
+		curOffset += sizes[items[i].idx] * layout.capacity;
+	}
 
-	return { capacity,offsets };
+	return layout;
 }

@@ -32,10 +32,10 @@ int main() {
 	w.systemMngr.Register<MoverSystem>();
 
 	for (size_t i = 0; i < 10; i++) {
-		auto [e] = w.CreateEntity<>();
+		auto [e] = w.entityMngr.CreateEntity<>();
 		float fi = static_cast<float>(i);
-		e->AssignAttach<Position>(fi);
-		e->AssignAttach<Velocity>(2 * fi);
+		w.entityMngr.AssignAttach<Position>(e, fi);
+		w.entityMngr.AssignAttach<Velocity>(e, 2 * fi);
 	}
 
 	w.Update();

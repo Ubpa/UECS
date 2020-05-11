@@ -20,8 +20,7 @@ namespace Ubpa {
 
 	template<typename Func, typename ArgList>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList)
-		: needEntity{ Contain_v<ArgList, Entity*>|| Contain_v<ArgList, const Entity*> },
-		func{ detail::System_::Pack(std::forward<Func>(func)) }, 
+		: func{ detail::System_::Pack(std::forward<Func>(func)) }, 
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
 		query{ std::move(filter), EntityLocator{Filter_t<ArgList, CmptTag::IsTaggedCmpt>{}} }
@@ -38,7 +37,7 @@ namespace Ubpa::detail::System_ {
 		using CmptList = TypeList<Cmpts...>;
 		template<typename Func>
 		static auto run(Func&& func) noexcept {
-			return [func = std::forward<Func>(func)](Entity* e, void** cmpt_arr) {
+			return [func = std::forward<Func>(func)](Entity e, void** cmpt_arr) {
 				auto unsorted_arg_tuple = std::make_tuple(reinterpret_cast<Cmpts*>(cmpt_arr[Find_v<CmptList, Cmpts>])..., e);
 				func(std::get<DecayedArgs>(unsorted_arg_tuple)...);
 			};
@@ -53,6 +52,7 @@ namespace Ubpa::detail::System_ {
 		static_assert(IsSet_v<DecayedArgList>, "detail::System_::Pack: <Func>'s argument types must be a set");
 
 		using TaggedCmptList = Filter_t<ArgList, CmptTag::IsTaggedCmpt>;
+
 		using CmptList = Transform_t<TaggedCmptList, CmptTag::RemoveTag>;
 		using SortedCmptList = QuickSort_t<CmptList, TypeID_Less>;
 

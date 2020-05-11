@@ -3,11 +3,6 @@
 using namespace Ubpa;
 using namespace std;
 
-World::World()
-	: entityMngr { this }
-{
-}
-
 void World::Update() {
 	schedule.Clear();
 	for (auto job : jobs)
@@ -36,13 +31,21 @@ void World::Update() {
 
 	executor.run(jobGraph).wait();
 
-	entityMngr.RunCommands();
+	RunCommands();
 }
 
-std::string World::DumpUpdateJobGraph() {
+void World::AddCommand(const function<void()>& command) {
+	lock_guard<mutex> guard(commandBufferMutex);
+	commandBuffer.push_back(command);
+}
+
+void World::RunCommands() {
+	lock_guard<mutex> guard(commandBufferMutex);
+	for (const auto& command : commandBuffer)
+		command();
+	commandBuffer.clear();
+}
+
+string World::DumpUpdateJobGraph() {
 	return jobGraph.dump();
-}
-
-void World::AddCommand(const std::function<void()>& command) {
-	entityMngr.AddCommand(command);
 }
