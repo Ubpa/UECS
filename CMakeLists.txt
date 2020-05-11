@@ -21,7 +21,7 @@ endif()
 
 Ubpa_InitProject()
 
-Ubpa_AddDep(UContainer 0.0.2)
+Ubpa_AddDep(UContainer 0.0.3)
 Ubpa_AddDep(UTemplate 0.4.1)
 
 Ubpa_AddSubDirsRec(include)

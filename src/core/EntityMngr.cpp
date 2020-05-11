@@ -68,11 +68,6 @@ void EntityMngr::Destroy(Entity e) {
 	else
 		ai2ei.erase({ archetype, idxInArchetype });
 
-	/*if (archetype->Size() == 0 && archetype->CmptNum() != 0) {
-		h2a.erase(archetype->types);
-		delete archetype;
-	}*/
-
 	RecycleEntityEntry(e);
 }
 

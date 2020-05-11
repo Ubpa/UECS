@@ -29,6 +29,16 @@ namespace Ubpa {
 		void Clear();
 		SysFuncGraph GenSysFuncGraph() const;
 
+		struct NoneGroup {
+			std::set<CmptType> allTypes;
+			std::set<CmptType> noneTypes;
+			std::set<SystemFunc*> sysFuncs;
+		};
+		static std::vector<NoneGroup> GenSortNoneGroup(SysFuncGraph writerGraph,
+			const std::vector<SystemFunc*>& preReaders,
+			const std::vector<SystemFunc*>& writers,
+			const std::vector<SystemFunc*>& postReaders);
+
 		// SystemFunc's hashcode to pointer of SystemFunc
 		std::unordered_map<size_t, SystemFunc*> sysFuncs;
 
