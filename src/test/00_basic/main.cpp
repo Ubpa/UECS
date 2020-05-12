@@ -1,44 +1,23 @@
 #include <UECS/World.h>
 
-#include <iostream>
-
-using namespace Ubpa;
-using namespace std;
-
-struct Position {
-	Position(float f) :val{ f } {}
-	float val;
-};
-struct Velocity {
-	Velocity(float f) :val{ f } {}
-	float val;
-};
+struct Position { float val; };
+struct Velocity { float val; };
 
 struct MoverSystem {
-	static void OnUpdate(Schedule& schedule) {
-		auto vp_sys = schedule.Request(
+	static void OnUpdate(Ubpa::Schedule& schedule) {
+		schedule.Request(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;
-				cout << p->val << endl;
-			},
-			"MoverSystem");
+			}, "MoverSystem");
 	}
 };
 
 int main() {
-	World w;
+	Ubpa::World w;
 	w.systemMngr.Register<MoverSystem>();
 
-	for (size_t i = 0; i < 10; i++) {
-		auto [e] = w.entityMngr.CreateEntity<>();
-		float fi = static_cast<float>(i);
-		w.entityMngr.AssignAttach<Position>(e, fi);
-		w.entityMngr.AssignAttach<Velocity>(e, 2 * fi);
-	}
+	for (size_t i = 0; i < 10; i++)
+		w.entityMngr.CreateEntity<>();
 
 	w.Update();
-
-	cout << w.DumpUpdateJobGraph() << endl;
-
-	return 0;
 }
