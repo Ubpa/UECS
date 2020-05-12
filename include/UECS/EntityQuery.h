@@ -6,20 +6,16 @@
 namespace Ubpa {
 	class EntityQuery {
 	public:
+		EntityFilter filter;
+		EntityLocator locator;
+
 		template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts, typename... Cmpts>
 		EntityQuery(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>, TypeList<Cmpts...>);
 
-		EntityQuery(EntityFilter filter, EntityLocator locator);
+		EntityQuery(EntityFilter filter, EntityLocator locator)
+			:filter{ std::move(filter) }, locator{ std::move(locator) } {}
 
-		size_t HashCode() const noexcept { return hashCode; }
-
-		const EntityFilter& Filter() const noexcept { return filter; }
-
-		const EntityLocator& Locator() const noexcept { return locator; }
-	private:
-		EntityFilter filter;
-		EntityLocator locator;
-		size_t hashCode;
+		size_t HashCode() const noexcept { return hash_combine(filter.HashCode(), locator.HashCode()); }
 	};
 }
 

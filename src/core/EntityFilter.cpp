@@ -33,3 +33,7 @@ size_t EntityFilter::GenNoneHashCode() const noexcept {
 	}
 	return rst;
 }
+
+size_t EntityFilter::GenCombinedHashCode() const noexcept {
+	return hash_combine(std::array<size_t, 3>{allHashCode, anyHashCode, noneHashCode});
+}

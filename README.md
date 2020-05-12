@@ -15,9 +15,13 @@ Ubpa Entity-Component-System
 - [x] `Entity` alias table: `Entity::idx -> (Archetype, idx)` 
 - [x] `Entity` as special `Component` stored in `Chunk` 
 - [x] `None` Parallel
-- [ ] System Override (dynamic `None`)
+- [x] System Override (dynamic `None`)
 - [x] Archetype += RuntimeCmptTraits
+
+### non-core
+
 - [ ] exception
+- [ ] return
 
 ### tool
 

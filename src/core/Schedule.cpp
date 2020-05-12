@@ -5,18 +5,57 @@
 using namespace Ubpa;
 using namespace std;
 
-Schedule& Schedule::Order(size_t x, size_t y) {
-	sysFuncOrder.emplace(x, y);
+Schedule& Schedule::Order(string_view x, string_view y) {
+	sysFuncOrder.emplace(SystemFunc::HashCode(x), SystemFunc::HashCode(y));
 	return *this;
 }
 
-Schedule& Schedule::Order(string_view x, string_view y) {
-	return Order(SystemFunc::HashCode(x), SystemFunc::HashCode(y));
+Schedule& Schedule::InsertAll(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseAlls.erase(type);
+	change.insertAlls.insert(type);
+	return *this;
 }
 
-Schedule& Schedule::Order(SystemFunc* x, SystemFunc* y) {
-	assert(x != nullptr && y != nullptr);
-	return Order(x->HashCode(), y->HashCode());
+Schedule& Schedule::InsertAny(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseAnys.erase(type);
+	change.insertAnys.insert(type);
+	return *this;
+}
+
+Schedule& Schedule::InsertNone(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseNones.erase(type);
+	change.insertNones.insert(type);
+	return *this;
+}
+
+Schedule& Schedule::EraseAll(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseAlls.insert(type);
+	change.insertAlls.erase(type);
+	return *this;
+}
+
+Schedule& Schedule::EraseAny(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseAnys.insert(type);
+	change.insertAnys.erase(type);
+	return *this;
+}
+
+Schedule& Schedule::EraseNone(string_view sys, CmptType type) {
+	size_t hashcode = SystemFunc::HashCode(sys);
+	auto& change = sysFilterChange[hashcode];
+	change.eraseNones.insert(type);
+	change.insertNones.erase(type);
+	return *this;
 }
 
 void Schedule::Clear() {
@@ -24,76 +63,101 @@ void Schedule::Clear() {
 	sysFuncOrder.clear();
 }
 
-vector<Schedule::NoneGroup> Schedule::GenSortNoneGroup(SysFuncGraph writerGraph,
-	const vector<SystemFunc*>& preReaders,
-	const vector<SystemFunc*>& writers,
-	const vector<SystemFunc*>& postReaders)
+Schedule::NoneGroup::NoneGroup(SystemFunc* func)
+	: sysFuncs{func}
 {
-	NoneGroup preGroup;
+	allTypes = SetUnion(func->query.filter.AllCmptTypes(), func->query.filter.AnyCmptTypes());
+	allTypes = SetUnion(allTypes, func->query.locator.CmptTypes());
+	noneTypes = func->query.filter.NoneCmptTypes();
+}
+
+void Schedule::SetPrePostEdge(SysFuncGraph& graph,
+	const std::vector<SystemFunc*>& preReaders,
+	const std::vector<SystemFunc*>& writers,
+	const std::vector<SystemFunc*>& postReaders)
+{
 	if (!preReaders.empty()) {
-		preGroup.sysFuncs.insert(preReaders.begin(), preReaders.end());
-		preGroup.allTypes = SetUnion(preReaders.front()->query.Filter().AllCmptTypes(), preReaders.front()->query.Filter().AnyCmptTypes());
-		preGroup.allTypes = SetUnion(preGroup.allTypes, preReaders.front()->query.Locator().CmptTypes());
-		preGroup.noneTypes = preReaders.front()->query.Filter().NoneCmptTypes();
+		NoneGroup preGroup(preReaders.front());
 		for (size_t i = 1; i < preReaders.size(); i++) {
-			auto allTypes = SetUnion(preReaders[i]->query.Filter().AllCmptTypes(), preReaders[i]->query.Filter().AnyCmptTypes());
-			allTypes = SetUnion(preGroup.allTypes, preReaders[i]->query.Locator().CmptTypes());
-			preGroup.allTypes = SetIntersection(preGroup.allTypes, allTypes);
-			preGroup.noneTypes = SetIntersection(preGroup.noneTypes, preReaders[i]->query.Filter().NoneCmptTypes());
+			NoneGroup group(preReaders[i]);
+			preGroup.allTypes = SetIntersection(preGroup.allTypes, group.allTypes);
+			preGroup.noneTypes = SetIntersection(preGroup.noneTypes, group.noneTypes);
 		}
 
-		writerGraph.AddVertex(preReaders.front());
-		for (auto writer : writers) {
-			auto allTypes = SetUnion(writer->query.Filter().AllCmptTypes(), writer->query.Filter().AnyCmptTypes());
-			allTypes = SetUnion(preGroup.allTypes, writer->query.Locator().CmptTypes());
-			if (SetIntersection(preGroup.allTypes, writer->query.Filter().NoneCmptTypes()).empty()
-				&& SetIntersection(allTypes, preGroup.noneTypes).empty())
+		for (const auto& w : writers) {
+			NoneGroup wG(w);
+			if (!SetIntersection(preGroup.allTypes, wG.noneTypes).empty()
+				|| !SetIntersection(wG.allTypes, preGroup.noneTypes).empty())
 				continue;
-			writerGraph.AddEdge(preReaders.front(), writer);
+			for(auto preReader : preReaders)
+				graph.AddEdge(preReader, w);
 		}
 	}
-	NoneGroup postGroup;
+
 	if (!postReaders.empty()) {
-		postGroup.sysFuncs.insert(postReaders.begin(), postReaders.end());
-		postGroup.allTypes = SetUnion(postReaders.front()->query.Filter().AllCmptTypes(), postReaders.front()->query.Filter().AnyCmptTypes());
-		postGroup.allTypes = SetUnion(postGroup.allTypes, postReaders.front()->query.Locator().CmptTypes());
-		postGroup.noneTypes = postReaders.front()->query.Filter().NoneCmptTypes();
+		NoneGroup postGroup(postReaders.front());
 		for (size_t i = 1; i < postReaders.size(); i++) {
-			auto allTypes = SetUnion(postReaders[i]->query.Filter().AllCmptTypes(), postReaders[i]->query.Filter().AnyCmptTypes());
-			allTypes = SetUnion(postGroup.allTypes, postReaders[i]->query.Locator().CmptTypes());
-			postGroup.allTypes = SetIntersection(postGroup.allTypes, allTypes);
-			postGroup.noneTypes = SetIntersection(postGroup.noneTypes, postReaders[i]->query.Filter().NoneCmptTypes());
+			NoneGroup group(postReaders[i]);
+			postGroup.allTypes = SetIntersection(postGroup.allTypes, group.allTypes);
+			postGroup.noneTypes = SetIntersection(postGroup.noneTypes, group.noneTypes);
 		}
 
-		writerGraph.AddVertex(postReaders.front());
-		for (auto writer : writers) {
-			auto allTypes = SetUnion(writer->query.Filter().AllCmptTypes(), writer->query.Filter().AnyCmptTypes());
-			allTypes = SetUnion(postGroup.allTypes, writer->query.Locator().CmptTypes());
-			if (SetIntersection(postGroup.allTypes, writer->query.Filter().NoneCmptTypes()).empty()
-				&& SetIntersection(allTypes, postGroup.noneTypes).empty())
+		for (const auto& w : writers) {
+			NoneGroup wG(w);
+			if (!SetIntersection(postGroup.allTypes, wG.noneTypes).empty()
+				|| !SetIntersection(wG.allTypes, postGroup.noneTypes).empty())
 				continue;
-			writerGraph.AddEdge(writer, postReaders.front());
+			for (auto postReader : postReaders)
+				graph.AddEdge(w, postReader);
+		}
+	}
+}
+
+vector<Schedule::NoneGroup> Schedule::GenSortNoneGroup(SysFuncGraph graph,
+	const std::vector<SystemFunc*>& preReaders,
+	const std::vector<SystemFunc*>& writers,
+	const std::vector<SystemFunc*>& postReaders)
+{
+	NoneGroup preGroup, postGroup;
+
+	if (!preReaders.empty()) {
+		preGroup = NoneGroup(preReaders.front());
+		for (size_t i = 1; i < preReaders.size(); i++) {
+			NoneGroup group(preReaders[i]);
+			preGroup.allTypes = SetIntersection(preGroup.allTypes, group.allTypes);
+			preGroup.noneTypes = SetIntersection(preGroup.noneTypes, group.noneTypes);
+		}
+	}
+	if (!postReaders.empty()) {
+		postGroup = NoneGroup(postReaders.front());
+		for (size_t i = 1; i < postReaders.size(); i++) {
+			NoneGroup group(postReaders[i]);
+			postGroup.allTypes = SetIntersection(postGroup.allTypes, group.allTypes);
+			postGroup.noneTypes = SetIntersection(postGroup.noneTypes, group.noneTypes);
 		}
 	}
 
-	auto [success, sortedFuncs] = writerGraph.Toposort();
+	vector<SystemFunc*> funcs;
+	if (!preGroup.sysFuncs.empty())
+		funcs.push_back(*preGroup.sysFuncs.begin());
+	if (!postGroup.sysFuncs.empty())
+		funcs.push_back(*postGroup.sysFuncs.begin());
+	for (auto w : writers)
+		funcs.push_back(w);
+
+	auto subgraph = graph.SubGraph(funcs);
+	auto [success, sortedFuncs] = subgraph.Toposort();
 	assert(success);
 
 	vector<NoneGroup> rst;
 
 	for (auto func : sortedFuncs) {
-		if (!preReaders.empty() && func == preReaders.front())
+		if (!preGroup.sysFuncs.empty() && func == *preGroup.sysFuncs.begin())
 			rst.push_back(move(preGroup));
-		else if (!postReaders.empty() && func == postReaders.front())
-			rst.push_back(move(postGroup));
-		else {
-			NoneGroup group;
-			group.allTypes = SetUnion(func->query.Filter().AllCmptTypes(), func->query.Filter().AnyCmptTypes());
-			group.allTypes = SetUnion(group.allTypes, func->query.Locator().CmptTypes());
-			group.noneTypes = func->query.Filter().NoneCmptTypes();
-			group.sysFuncs.insert(func);
-			rst.push_back(move(group));
-		}
+		else if (!postGroup.sysFuncs.empty() && func == *postGroup.sysFuncs.begin())
+				rst.push_back(move(postGroup));
+		else // writer
+			rst.push_back(NoneGroup(func));
 	}
 
 	for (size_t i = 0; i < rst.size(); i++) {
@@ -107,8 +171,8 @@ vector<Schedule::NoneGroup> Schedule::GenSortNoneGroup(SysFuncGraph writerGraph,
 			bool haveOrder = false;
 			for (auto ifunc : gi.sysFuncs) {
 				for (auto jfunc : gj.sysFuncs) {
-					if (writerGraph.HavePath(ifunc, jfunc)
-						|| writerGraph.HavePath(jfunc, ifunc)) {
+					if (subgraph.HavePath(ifunc, jfunc)
+						|| subgraph.HavePath(jfunc, ifunc)) {
 						haveOrder = true;
 						break;
 					}
@@ -134,9 +198,23 @@ vector<Schedule::NoneGroup> Schedule::GenSortNoneGroup(SysFuncGraph writerGraph,
 SysFuncGraph Schedule::GenSysFuncGraph() const {
 	// TODO : parallel
 
-	SysFuncGraph graph;
+	// [change func Filter]
+	for (const auto& [hashcode, change] : sysFilterChange) {
+		auto target = sysFuncs.find(hashcode);
+		if (target == sysFuncs.end())
+			continue;
 
-	// SystemFuncs related with <Cmpt>
+		auto func = target->second;
+
+		func->query.filter.InsertAll(change.insertAlls);
+		func->query.filter.InsertAny(change.insertAnys);
+		func->query.filter.InsertNone(change.insertNones);
+		func->query.filter.EraseAll(change.eraseAlls);
+		func->query.filter.EraseAny(change.eraseAnys);
+		func->query.filter.EraseNone(change.eraseNones);
+	}
+
+	// [gen cmptSysFuncsMap]
 	struct CmptSysFuncs {
 		vector<SystemFunc*> lastFrameSysFuncs;
 		vector<SystemFunc*> writeSysFuncs;
@@ -145,7 +223,7 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 	unordered_map<CmptType, CmptSysFuncs> cmptSysFuncsMap;
 
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
-		const auto& locator = sysFunc->query.Locator();
+		const auto& locator = sysFunc->query.locator;
 		for (const auto& type : locator.LastFrameCmptTypes())
 			cmptSysFuncsMap[type].lastFrameSysFuncs.push_back(sysFunc);
 		for (const auto& type : locator.WriteCmptTypes())
@@ -153,6 +231,9 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		for (const auto& type : locator.LatestCmptTypes())
 			cmptSysFuncsMap[type].latestSysFuncs.push_back(sysFunc);
 	}
+
+	// [gen graph]
+	SysFuncGraph graph;
 
 	for (const auto& [hashcode, sysFunc] : sysFuncs)
 		graph.AddVertex(sysFunc);
@@ -171,12 +252,21 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 	}
 
 	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap) {
+		SetPrePostEdge(graph,
+			cmptSysFuncs.lastFrameSysFuncs,
+			cmptSysFuncs.writeSysFuncs,
+			cmptSysFuncs.latestSysFuncs);
+	}
+
+	// [order]
+	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap) {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
-		auto subgraph = graph.SubGraph(cmptSysFuncs.writeSysFuncs);
-		const auto& cmptSysFuns = cmptSysFuncsMap[type];
-		auto sortedGroup = GenSortNoneGroup(subgraph, cmptSysFuns.lastFrameSysFuncs, cmptSysFuns.writeSysFuncs, cmptSysFuns.latestSysFuncs);
+		auto sortedGroup = GenSortNoneGroup(graph,
+			cmptSysFuncs.lastFrameSysFuncs,
+			cmptSysFuncs.writeSysFuncs,
+			cmptSysFuncs.latestSysFuncs);
 		
 		for (size_t i = 0; i < sortedGroup.size() - 1; i++) {
 			const auto& gx = sortedGroup[i];

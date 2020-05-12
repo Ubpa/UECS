@@ -4,8 +4,7 @@ namespace Ubpa {
 	template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts, typename... Cmpts>
 	EntityQuery::EntityQuery(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>, TypeList<Cmpts...>)
 		: filter{ TypeList<AllCmpts...>{}, TypeList<AnyCmpts...>{}, TypeList<NoneCmpts...>{} },
-		locator{ TypeList<Cmpts...>{} },
-		hashCode{ hash_combine(filter.HashCode(), locator.HashCode()) }
+		locator{ TypeList<Cmpts...>{} }
 	{
 	}
 

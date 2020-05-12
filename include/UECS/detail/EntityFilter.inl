@@ -11,9 +11,69 @@ namespace Ubpa {
 		allHashCode{ GenAllHashCode() },
 		anyHashCode{ GenAnyHashCode() },
 		noneHashCode{ GenNoneHashCode() },
-		combinedHashCode{ hash_combine(std::array<size_t,3>{allHashCode,anyHashCode,noneHashCode}) }
+		combinedHashCode{ GenCombinedHashCode() }
 	{
 		static_assert(sizeof...(AnyCmpts) != 1);
+	}
+
+	template<typename Container>
+	void EntityFilter::InsertAll(const Container& c) {
+		if (c.empty())
+			return;
+		for(const auto& type : c)
+			allCmptTypes.insert(type);
+		allHashCode = GenAllHashCode();
+		combinedHashCode = GenCombinedHashCode();
+	}
+
+	template<typename Container>
+	void EntityFilter::InsertAny(const Container& c) {
+		if (c.empty())
+			return;
+		for (const auto& type : c)
+			anyCmptTypes.insert(type);
+		anyHashCode = GenAnyHashCode();
+		combinedHashCode = GenCombinedHashCode();
+	}
+
+	template<typename Container>
+	void EntityFilter::InsertNone(const Container& c) {
+		if (c.empty())
+			return;
+		for (const auto& type : c)
+			noneCmptTypes.insert(type);
+		noneHashCode = GenNoneHashCode();
+		combinedHashCode = GenCombinedHashCode();
+	}
+
+	template<typename Container>
+	void EntityFilter::EraseAll(const Container& c) {
+		if (c.empty())
+			return;
+		for (const auto& type : c)
+			allCmptTypes.erase(type);
+		allHashCode = GenAllHashCode();
+		combinedHashCode = GenCombinedHashCode();
+	}
+
+	template<typename Container>
+	void EntityFilter::EraseAny(const Container& c) {
+		if (c.empty())
+			return;
+		for (const auto& type : c)
+			anyCmptTypes.erase(type);
+		anyHashCode = GenAnyHashCode();
+		combinedHashCode = GenCombinedHashCode();
+	}
+
+	template<typename Container>
+	void EntityFilter::EraseNone(const Container& c) {
+		if (c.empty())
+			return;
+		for (const auto& type : c)
+			noneCmptTypes.erase(type);
+		noneHashCode = GenNoneHashCode();
+		combinedHashCode = GenCombinedHashCode();
 	}
 }
 

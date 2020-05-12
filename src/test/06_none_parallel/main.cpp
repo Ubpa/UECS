@@ -18,8 +18,9 @@ struct MySystem {
 			TypeList<>{}, // any
 			TypeList<>{} // none
 		);
-		schedule.Request([](B*) {}, "need B, none A", filter_w0);
-		schedule.Request([](B*) {}, "need A, B", filter_w1);
+		schedule
+			.Request([](B*) {}, "need B, none A", filter_w0)
+			.Request([](B*) {}, "need A, B", filter_w1);
 	}
 };
 
