@@ -1,8 +1,10 @@
 # Compare with Unity ECS core
 
 > ref: [Unity Entities 0.10.0-preview.6](https://docs.unity3d.com/Packages/com.unity.entities@0.10/manual/index.html) 
-
-[TOC]
+>
+> ---
+>
+> [TOC]
 
 **ECS concepts** 
 

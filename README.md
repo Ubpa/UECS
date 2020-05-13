@@ -1,5 +1,5 @@
 # UECS
-Ubpa Entity-Component-System in Unity-style
+**U**bpa **E**ntity-**C**omponent-**S**ystem in Unity-style
 
 ## Example
 
