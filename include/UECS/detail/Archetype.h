@@ -59,8 +59,8 @@ namespace Ubpa {
 		const std::tuple<size_t, std::tuple<Cmpts*...>> CreateEntity(Entity e);
 
 		// erase idx-th entity
-		// if idx != num-1, back entity will put at idx, return num-1
-		// else return Archetype::npos
+		// if idx != num-1, back entity will put at idx, return moved Entity's index
+		// else return Entity::npos
 		size_t Erase(size_t idx);
 
 		// Components + Entity

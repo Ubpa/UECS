@@ -4,7 +4,7 @@
 
 [TOC]
 
-## Core ECS
+## 1. Core ECS
 
 **ECS concepts** 
 
@@ -28,7 +28,7 @@ only support "ForEach"
 
 (TODO) System Group
 
-### Entities
+### 1.1 Entities
 
 **Creating entities** 
 
@@ -36,7 +36,7 @@ only support "ForEach"
 
 (TODO) batch create
 
-#### Entity Queries
+#### 1.1.1 Entity Queries
 
 `Query` = `Filter`(`All`, `Any`, `None`) + `Locator`, for `SystemFunc` 
 
@@ -44,33 +44,33 @@ only support "ForEach"
 
 (TODO) change filter
 
-#### Worlds
+#### 1.1.2 Worlds
 
-### Components
+### 1.2 Components
 
-#### General purpose components
+#### 1.2.1 General purpose components
 
-#### Shared components
+#### 1.2.2 Shared components
 
 (TODO)
 
-#### System state components
+#### 1.2.3 System state components
 
 needless, you can use components constructor, destructor and move comstructor (copy constructor)
 
-#### Dynamic buffer components
+#### 1.2.4 Dynamic buffer components
 
 needless, you can use `std::vector` in Component
 
-#### Chunk components
+#### 1.2.5 Chunk components
 
 (TODO)
 
-### Systems
+### 1.3 Systems
 
 no instantiation, just use static function `OnUpdate(Schedule&)`，you can regist `SystemFunc`，set update order, dynamic change filter, etc.
 
-#### Creating systems
+#### 1.3.1 Creating systems
 
 lifecycle: only support `OnUpdate`, because of no instantiation
 
@@ -84,38 +84,41 @@ lifecycle: only support `OnUpdate`, because of no instantiation
 - (TODO) `size_t int entityInQueryIndex` 
 - (TODO) `size_t nativeThreadIndex` 
 
-#### System update order
+#### 1.3.2 System update order
 
 (TODO) System Group
 
-#### Job dependencies
+#### 1.3.3 Job dependencies
 
-#### Looking up data
+#### 1.3.4 Looking up data
 
-#### Entity command buffers
+#### 1.3.5 Entity command buffers
 
 `World::AddCommand()`，run all commands after Update Graph
 
-### Sync points and structural changes
+### 1.4 Sync points and structural changes
 
 （TODO）
 
 currently, UECS only has a sync point `World::AddCommand()` 
 
-### Component WriteGroups
+### 1.5 Component WriteGroups
 
 use `Schedule::{Insert|Erase}{All|Any|None}` to dynamic change a system's filter
 
-### Versions and generations
+### 1.6 Versions and generations
 
 only support `Entity::Version` 
 
-### C# Job System extensions
+### 1.7 C# Job System extensions
 
 cpp-Taskflow
 
-## Creating gameplay
+## 2. Creating gameplay
 
+### Transforms
 
+### Redering
 
-### 
+### Common patterns
+

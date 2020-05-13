@@ -56,17 +56,10 @@ void EntityMngr::Destroy(Entity e) {
 	auto archetype = info.archetype;
 	auto idxInArchetype = info.idxInArchetype;
 
-	auto movedIdxInArchetype = archetype->Erase(idxInArchetype);
+	auto movedEntityIndex = archetype->Erase(idxInArchetype);
 
-	if (movedIdxInArchetype != Archetype::npos) {
-		auto target = ai2ei.find({ archetype, movedIdxInArchetype });
-		size_t movedEntityIndex = target->second;
-		ai2ei.erase(target);
-		ai2ei[{archetype, idxInArchetype}] = movedEntityIndex;
+	if (movedEntityIndex != Entity::npos)
 		entityTable[movedEntityIndex].idxInArchetype = idxInArchetype;
-	}
-	else
-		ai2ei.erase({ archetype, idxInArchetype });
 
 	RecycleEntityEntry(e);
 }

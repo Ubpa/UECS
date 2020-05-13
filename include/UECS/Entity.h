@@ -3,6 +3,7 @@
 namespace Ubpa {
 	class Entity final {
 	public:
+		static constexpr size_t npos = static_cast<size_t>(-1);
 		size_t Idx() const noexcept { return idx; }
 		size_t Version() const noexcept { return version; }
 		friend bool operator==(const Entity& x, const Entity& y) noexcept {
