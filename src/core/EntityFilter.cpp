@@ -37,3 +37,9 @@ size_t EntityFilter::GenNoneHashCode() const noexcept {
 size_t EntityFilter::GenCombinedHashCode() const noexcept {
 	return hash_combine(std::array<size_t, 3>{allHashCode, anyHashCode, noneHashCode});
 }
+
+bool EntityFilter::operator==(const EntityFilter& filter) const noexcept {
+	return allCmptTypes == filter.allCmptTypes
+		&& anyCmptTypes == filter.anyCmptTypes
+		&& noneCmptTypes == filter.noneCmptTypes;
+}

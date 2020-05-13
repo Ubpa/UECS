@@ -10,3 +10,9 @@ size_t EntityLocator::GenHashCode() const noexcept {
 		rst = hash_combine(rst, type.HashCode());
 	return rst;
 }
+
+bool EntityLocator::operator==(const EntityLocator& locator) const noexcept {
+	return lastFrameCmptTypes == locator.lastFrameCmptTypes
+		&& writeCmptTypes == locator.writeCmptTypes
+		&& latestCmptTypes == latestCmptTypes;
+}

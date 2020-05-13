@@ -18,8 +18,7 @@ namespace Ubpa {
 		
 		const std::string& Name() const noexcept { return name; }
 
-		// TODO: constexpr
-		static size_t HashCode(std::string_view name) { return std::hash<std::string_view>{}(name); }
+		static constexpr size_t HashCode(std::string_view name) { return RuntimeTypeID(name); }
 
 		size_t HashCode() const noexcept { return hashCode; }
 
@@ -27,6 +26,8 @@ namespace Ubpa {
 
 		// no arguments <Func>
 		bool IsJob() const noexcept { return isJob; }
+
+		bool operator==(const SystemFunc& func) const noexcept { return name == func.name; }
 	private:
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);

@@ -44,7 +44,6 @@ namespace Ubpa {
 
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
 
-
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
 

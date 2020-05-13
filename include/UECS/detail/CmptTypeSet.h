@@ -11,142 +11,78 @@
 namespace Ubpa {
 	class CmptTypeSet : std::set<CmptType> {
 	public:
-		CmptTypeSet() = default;
+		CmptTypeSet() : hashcode{ TypeID<CmptTypeSet> } {}
 		template<typename... Cmpts>
-		CmptTypeSet(TypeList<Cmpts...>) : std::set<CmptType>{ CmptType::Of<Cmpts>()... }{}
+		CmptTypeSet(TypeList<Cmpts...>);
 
 		template<typename... Cmpts>
-		static constexpr size_t HashCodeOf() {
-			return HashCodeOf(QuickSort_t<TypeList<Cmpts...>, TypeID_Less>{});
-		}
+		static constexpr size_t HashCodeOf() noexcept;
 
-		size_t HashCode() const {
-			size_t rst = TypeID<CmptTypeSet>;
-			for (CmptType type : *this)
-				rst = hash_combine(rst, type.HashCode());
-			return rst;
-		}
+		size_t HashCode() const { return hashcode; }
 
 		template<typename... Cmpts>
-		void Insert() { (insert(CmptType::Of<Cmpts>()), ...); }
-		template<typename... Cmpts>
-		void Erase() noexcept { (erase(CmptType::Of<Cmpts>()), ...); }
+		void Insert();
 
 		template<typename... Cmpts>
-		constexpr bool IsContain() const {
-			if constexpr (sizeof...(Cmpts) == 0)
-				return true;
-			else
-				return ((find(CmptType::Of<Cmpts>()) != cend()) &&...);
-		}
+		void Erase() noexcept;
 
 		template<typename... Cmpts>
-		constexpr bool IsContain(TypeList<Cmpts...>) const {
-			return IsContain<Cmpts...>();
-		}
+		constexpr bool IsContain() const;
 
-		bool IsContain(CmptType type) const {
-			return find(type) != cend();
-		}
+		template<typename... Cmpts>
+		constexpr bool IsContain(TypeList<Cmpts...>) const;
+
+		inline bool IsContain(CmptType type) const;
 
 		template<typename CmptTypeContainer>
-		bool IsContain(const CmptTypeContainer& types) const {
-			for (auto type : types) {
-				if (!IsContain(type))
-					return false;
-			}
-			return true;
-		}
+		bool IsContain(const CmptTypeContainer& types) const;
 
 		template<typename... Cmpts>
-		constexpr bool IsContainAny() const {
-			if constexpr (sizeof...(Cmpts) == 0)
-				return true;
-			else
-				return ((find(CmptType::Of<Cmpts>()) != end()) ||...);
-		}
+		constexpr bool IsContainAny() const;
 
 		template<typename... Cmpts>
-		constexpr bool IsContainAny(TypeList<Cmpts...>) const {
-			return IsContainAny<Cmpts...>();
-		}
+		constexpr bool IsContainAny(TypeList<Cmpts...>) const;
 
 		template<typename CmptTypeContainer>
-		bool IsContainAny(const CmptTypeContainer& types) const {
-			if (types.empty())
-				return true;
-
-			for (auto type : types) {
-				if (IsContain(type))
-					return true;
-			}
-
-			return false;
-		}
+		bool IsContainAny(const CmptTypeContainer& types) const;
 
 		template<typename... Cmpts>
-		constexpr bool IsNotContain() const {
-			if constexpr (sizeof...(Cmpts) == 0)
-				return true;
-			else
-				return ((find(CmptType::Of<Cmpts>()) == end()) &&...);
-		}
+		constexpr bool IsNotContain() const;
 
 		template<typename... Cmpts>
-		constexpr bool IsNotContain(TypeList<Cmpts...>) const {
-			return IsNotContain<Cmpts...>();
-		}
+		constexpr bool IsNotContain(TypeList<Cmpts...>) const;
 
-		bool IsNotContain(CmptType type) const {
-			return find(type) == cend();
-		}
+		inline bool IsNotContain(CmptType type) const;
 
 		template<typename CmptTypeContainer>
-		bool IsNotContain(const CmptTypeContainer& types) const {
-			for (auto type : types) {
-				if (IsContain(type))
-					return false;
-			}
-			return true;
-		}
+		bool IsNotContain(const CmptTypeContainer& types) const;
 
-		bool IsMatch(const EntityFilter& filter) const {
-			return IsContain(filter.AllCmptTypes())
-				&& IsContainAny(filter.AnyCmptTypes())
-				&& IsNotContain(filter.NoneCmptTypes());
-		}
+		inline bool IsMatch(const EntityFilter& filter) const;
 
-		bool IsMatch(const EntityLocator& locator) const {
-			return IsContain(locator.CmptTypes());
-		}
+		inline bool IsMatch(const EntityLocator& locator) const;
 
-		bool IsMatch(const EntityQuery& query) const {
-			return IsMatch(query.filter) && IsMatch(query.locator);
-		}
+		inline bool IsMatch(const EntityQuery& query) const;
 
 		template<typename... Cmpts>
-		bool Is() const {
-			return sizeof...(Cmpts) == size() && IsContain<Cmpts...>();
-		}
+		bool Is() const;
 
 		using std::set<CmptType>::begin;
 		using std::set<CmptType>::end;
 		using std::set<CmptType>::size;
 
-		friend bool operator<(const CmptTypeSet& x, const CmptTypeSet& y) {
-			return static_cast<const std::set<CmptType>&>(x) < static_cast<const std::set<CmptType>&>(y);
-		}
 		friend bool operator==(const CmptTypeSet& x, const CmptTypeSet& y) {
 			return static_cast<const std::set<CmptType>&>(x) == static_cast<const std::set<CmptType>&>(y);
 		}
 
 	private:
 		template<typename... Cmpts>
-		static constexpr size_t HashCodeOf(TypeList<Cmpts...>) {
-			size_t seed = TypeID<CmptTypeSet>;
-			((seed = hash_combine(seed, CmptType::HashCodeOf<Cmpts>())), ...);
-			return seed;
-		}
+		static constexpr size_t HashCodeOf(TypeList<Cmpts...>) noexcept;
 
+		template<typename Container>
+		static constexpr size_t HashCodeOf(const Container& cmpts);
+
+		size_t hashcode;
 	};
 }
+
+#include "CmptTypeSet.inl"

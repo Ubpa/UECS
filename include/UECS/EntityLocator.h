@@ -22,6 +22,7 @@ namespace Ubpa {
 		const std::set<CmptType>& LatestCmptTypes() const noexcept { return latestCmptTypes; }
 		const std::set<CmptType>& CmptTypes() const noexcept { return cmptTypes; }
 
+		bool operator==(const EntityLocator& locator) const noexcept;
 	private:
 		size_t GenHashCode() const noexcept;
 

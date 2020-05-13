@@ -7,14 +7,6 @@ namespace Ubpa {
 		locator{ TypeList<Cmpts...>{} }
 	{
 	}
-
-	inline bool operator<(const EntityQuery& x, const EntityQuery& y) noexcept {
-		return x.HashCode() < y.HashCode();
-	}
-
-	inline bool operator==(const EntityQuery& x, const EntityQuery& y) noexcept {
-		return x.HashCode() == y.HashCode();
-	}
 }
 
 namespace std {

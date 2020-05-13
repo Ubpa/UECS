@@ -54,7 +54,7 @@ namespace Ubpa {
 		Archetype* srcArchetype = info.archetype;
 		size_t srcIdxInArchetype = info.idxInArchetype;
 
-		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
 		dstCmptTypeSet.Insert<Cmpts...>();
 		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
@@ -128,7 +128,7 @@ namespace Ubpa {
 		Archetype* srcArchetype = info.archetype;
 		size_t srcIdxInArchetype = info.idxInArchetype;
 
-		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
 		dstCmptTypeSet.Erase<Cmpts...>();
 		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();

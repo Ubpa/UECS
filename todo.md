@@ -28,6 +28,7 @@
 - [x] exception: invalid `Entity` 
 - [ ] copy
 - [ ] batch create
+- [ ] lock filter change
 
 ## tool
 
@@ -40,7 +41,7 @@
 - [x] Archetype share `Pool<Chunk>` 
 - [ ] simplify `Schedule` 
 - [ ] parallel `Schedule` 
-- [ ] `constexpr SystemFunc::HashCode()` 
-- [ ] `unordered_set` for hashable object
+- [x] `constexpr SystemFunc::HashCode( )` 
+- [x] cache `CmptIDSet`'s hashcode
 - [ ] store `EntityMngr` instead `World` in `Schedule` 
 

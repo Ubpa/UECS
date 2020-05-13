@@ -13,7 +13,7 @@ namespace Ubpa {
 
 		template<typename Cmpt>
 		Cmpt* As() const noexcept {
-			assert(type.HashCode() == CmptType::HashCodeOf<Cmpt>());
+			assert(type.Is<Cmpt>());
 			return reinterpret_cast<Cmpt*>(p);
 		}
 		CmptType& Type() noexcept { return type; }
@@ -33,7 +33,7 @@ namespace Ubpa {
 
 		template<typename Cmpt>
 		const Cmpt* As() const noexcept {
-			assert(type.HashCode() == TypeID<Cmpt>);
+			assert(type.Is<Cmpt>());
 			return reinterpret_cast<Cmpt*>(p);
 		}
 		CmptType& Type() noexcept { return type; }

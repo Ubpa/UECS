@@ -33,6 +33,8 @@ namespace Ubpa {
 		template<typename Container>
 		void EraseNone(const Container&);
 
+		bool operator==(const EntityFilter& filter) const noexcept;
+
 	private:
 		size_t GenAllHashCode() const noexcept;
 		size_t GenAnyHashCode() const noexcept;
