@@ -35,6 +35,8 @@ namespace Ubpa {
 		template<typename Cmpt>
 		Cmpt* Get(Entity e);
 
+		size_t EntityNum(const EntityQuery& query) const;
+
 	private:
 		friend class World;
 		EntityMngr() = default;

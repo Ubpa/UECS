@@ -23,15 +23,18 @@ namespace Ubpa {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(Entity e, void** cmptArr) { return func(e, cmptArr); }
+		void operator()(Entity e, size_t entityIndexInQuery, void** cmptArr) { return func(e, entityIndexInQuery, cmptArr); }
 
+		// no arguments <Func>
+		bool IsJob() const noexcept { return isJob; }
 	private:
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);
 
-		std::function<void(Entity, void**)> func;
+		std::function<void(Entity, size_t, void**)> func;
 
 		std::string name;
+		bool isJob;
 		size_t hashCode; // after name
 	};
 }

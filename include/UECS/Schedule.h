@@ -20,6 +20,9 @@ namespace Ubpa {
 			return *this;
 		}
 
+		// if sys is not register, return static_cast<size_t>(-1)
+		size_t EntityNumInQuery(std::string_view sys) const;
+
 		World* GetWorld() const noexcept { return world; }
 
 		Schedule& Order(std::string_view x, std::string_view y);

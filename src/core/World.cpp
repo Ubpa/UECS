@@ -16,11 +16,14 @@ void World::Update() {
 
 	unordered_map<SystemFunc*, JobHandle> table;
 
-	for (const auto& [v, adjVs] : graph.GetAdjList()) {
-		auto job = jobPool.Request(v->Name());
+	for (const auto& [func, adjVs] : graph.GetAdjList()) {
+		auto job = jobPool.Request(func->Name());
 		jobs.push_back(job);
-		entityMngr.GenJob(job, v);
-		table.emplace(v, jobGraph.composed_of(*job));
+		if (!func->IsJob())
+			entityMngr.GenJob(job, func);
+		else
+			job->emplace([func = func]() { (*func)(Entity::Invalid(), static_cast<size_t>(-1), nullptr); });
+		table[func] = jobGraph.composed_of(*job);
 	}
 
 	for (const auto& [v, adjVs] : graph.GetAdjList()) {

@@ -12,10 +12,11 @@ namespace Ubpa {
 		friend bool operator<(const Entity& x, const Entity& y) noexcept {
 			return x.idx < y.idx || (x.idx == y.idx && x.version < y.version);
 		}
+		static constexpr Entity Invalid() noexcept { return { npos,npos }; }
 	private:
 		friend class EntityMngr;
 		friend class Archetype;
-		Entity(size_t idx, size_t version) : idx(idx), version(version) {}
+		constexpr Entity(size_t idx, size_t version) : idx(idx), version(version) {}
 		size_t idx;
 		size_t version;
 	};

@@ -50,6 +50,13 @@ const std::set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query
 	return archetypes;
 }
 
+size_t EntityMngr::EntityNum(const EntityQuery& query) const {
+	size_t sum = 0;
+	for (const auto& archetype : QueryArchetypes(query))
+		sum += archetype->EntityNum();
+	return sum;
+}
+
 void EntityMngr::Destroy(Entity e) {
 	assert(Exist(e));
 	auto info = entityTable[e.Idx()];
@@ -65,6 +72,7 @@ void EntityMngr::Destroy(Entity e) {
 }
 
 void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
+	size_t indexOffsetInQuery = 0;
 	for (Archetype* archetype : QueryArchetypes(sys->query)) {
 		auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->query.locator.CmptTypes());
 
@@ -73,10 +81,13 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 		size_t chunkCapacity = archetype->ChunkCapacity();
 
 		for (size_t i = 0; i < chunkNum; i++) {
-			size_t J = std::min(chunkCapacity, num - (i * chunkCapacity));
-			job->emplace([entities = chunkEntity[i], sys, sizes = sizes, cmpts = std::move(chunkCmpts[i]), J]() mutable {
+			job->emplace([=, sizes = sizes, entities = chunkEntity[i], cmpts = std::move(chunkCmpts[i])]() mutable {
+				size_t idxOffsetInChunk = i * chunkCapacity;
+				size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
+
+				size_t J = std::min(chunkCapacity, num - idxOffsetInChunk);
 				for (size_t j = 0; j < J; j++) {
-					(*sys)(entities[j], cmpts.data());
+					(*sys)(entities[j], indexOffsetInQueryChunk + j, cmpts.data());
 					for (size_t k = 0; k < cmpts.size(); k++) {
 						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
 						entities++;
@@ -84,5 +95,7 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 				}
 			});
 		}
+
+		indexOffsetInQuery += num;
 	}
 }
