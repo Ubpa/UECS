@@ -23,32 +23,23 @@ void Archetype::SetLayout() {
 }
 
 Archetype::~Archetype() {
-	for (size_t i = 0; i < entityNum; i++) {
-		size_t idxInChunk = i % chunkCapacity;
-		byte* buffer = chunks[i / chunkCapacity]->Data();
-		for (const auto& type : types) {
-			size_t size = cmptTraits.Sizeof(type);
-			size_t offset = Offsetof(type);
+	for (const auto& type : types) {
+		size_t size = cmptTraits.Sizeof(type);
+		size_t offset = Offsetof(type);
+		for (size_t i = 0; i < entityNum; i++) {
+			size_t idxInChunk = i % chunkCapacity;
+			byte* buffer = chunks[i / chunkCapacity]->Data();
 			byte* address = buffer + offset + idxInChunk * size;
 			cmptTraits.Destruct(type, address);
 		}
 	}
-	for (Chunk* chunk : chunks) {
-#ifdef WIN32
-		_aligned_free(chunk);
-#else
-		free(chunk);
-#endif // WIN32
-	}
+	for (Chunk* chunk : chunks)
+		sharedChunkPool.Recycle(chunk);
 }
 
 size_t Archetype::RequestBuffer() {
 	if (entityNum == chunks.size() * chunkCapacity) {
-#ifdef WIN32
-		auto chunk = reinterpret_cast<Chunk*>(_aligned_malloc(sizeof(Chunk), std::alignment_of_v<Chunk>));
-#else
-		auto chunk = reinterpret_cast<Chunk*>(aligned_alloc(sizeof(Chunk), std::alignment_of_v<Chunk>));
-#endif // WIN32
+		auto chunk = sharedChunkPool.Request();
 		chunks.push_back(chunk);
 	}
 	return entityNum++;
@@ -127,11 +118,7 @@ size_t Archetype::Erase(size_t idx) {
 
 	if (chunks.size() * chunkCapacity - entityNum >= chunkCapacity) {
 		Chunk* chunk = chunks.back();
-#ifdef WIN32
-		_aligned_free(chunk);
-#else
-		free(chunk);
-#endif // WIN32
+		sharedChunkPool.Recycle(chunk);
 		chunks.pop_back();
 	}
 

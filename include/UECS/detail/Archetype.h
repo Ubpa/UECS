@@ -12,6 +12,8 @@
 #include <UTemplate/Typelist.h>
 #include <UTemplate/TypeID.h>
 
+#include <UContainer/Pool.h>
+
 #include <map>
 
 namespace Ubpa {
@@ -96,6 +98,8 @@ namespace Ubpa {
 		std::vector<Chunk*> chunks;
 
 		size_t entityNum{ 0 }; // number of entities
+
+		inline static Pool<Chunk> sharedChunkPool; // no lock
 	};
 }
 

@@ -62,7 +62,7 @@ Read [compare.md](compare.md) for details.
 - [x] remove `EntityMngr::ai2ei` 
 - [ ] copy
 - [ ] batch create
-- [ ] Archetype share `Pool<Chunk>` 
+- [x] Archetype share `Pool<Chunk>` 
 
 ### tool
 
