@@ -9,7 +9,8 @@
 #include <map>
 
 namespace Ubpa {
-	class World;
+	class EntityMngr;
+	class SystemMngr;
 
 	class Schedule {
 	public:
@@ -23,7 +24,8 @@ namespace Ubpa {
 		// if sys is not register, return static_cast<size_t>(-1)
 		size_t EntityNumInQuery(std::string_view sys) const;
 
-		World* GetWorld() const noexcept { return world; }
+		EntityMngr* GetEntityMngr() const noexcept { return entityMngr; }
+		SystemMngr* GetSystemMngr() const noexcept { return systemMngr; }
 
 		Schedule& Order(std::string_view x, std::string_view y);
 
@@ -41,7 +43,7 @@ namespace Ubpa {
 		template<typename Cmpt> Schedule& EraseNone(std::string_view sys) { return EraseNone(sys, CmptType::Of<Cmpt>()); }
 
 	private:
-		Schedule(World* world) : world{ world } {}
+		Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr) : entityMngr{ entityMngr }, systemMngr{ systemMngr }{}
 		void Clear();
 		SysFuncGraph GenSysFuncGraph() const;
 
@@ -82,7 +84,8 @@ namespace Ubpa {
 		std::unordered_map<size_t, FilterChange> sysFilterChange;
 
 		Pool<SystemFunc> sysFuncPool;
-		World* world;
+		EntityMngr* entityMngr;
+		SystemMngr* systemMngr;
 		friend class World;
 	};
 }

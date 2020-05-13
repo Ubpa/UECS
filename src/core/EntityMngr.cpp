@@ -99,3 +99,15 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 		indexOffsetInQuery += num;
 	}
 }
+
+void EntityMngr::AddCommand(const function<void()>& command) {
+	lock_guard<mutex> guard(commandBufferMutex);
+	commandBuffer.push_back(command);
+}
+
+void EntityMngr::RunCommands() {
+	lock_guard<mutex> guard(commandBufferMutex);
+	for (const auto& command : commandBuffer)
+		command();
+	commandBuffer.clear();
+}

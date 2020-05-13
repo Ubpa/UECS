@@ -18,7 +18,7 @@ size_t Schedule::EntityNumInQuery(std::string_view sys) const {
 	if (target == sysFuncs.end())
 		return static_cast<size_t>(-1);
 	auto func = target->second;
-	return world->entityMngr.EntityNum(func->query);
+	return entityMngr->EntityNum(func->query);
 }
 
 Schedule& Schedule::InsertAll(string_view sys, CmptType type) {

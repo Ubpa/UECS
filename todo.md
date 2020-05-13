@@ -4,12 +4,11 @@
 
 ### important
 
-- [x] ~~EntityData: version~~ 
-- [x] CmptIDSet hash
+- [x] Entity += version
+- [x] CmptTypeSet hash
 - [x] CmptType
 - [x] EntityQuery
 - [x] Query Entity
-- [x] ~~SystemMngr += ScheduleRegistrar~~ 
 - [x] alignment
 - [x] `Entity` alias table: `Entity::idx -> (Archetype, idx)` 
 - [x] `Entity` as special `Component` stored in `Chunk` 
@@ -43,5 +42,5 @@
 - [ ] parallel `Schedule` 
 - [x] `constexpr SystemFunc::HashCode( )` 
 - [x] cache `CmptIDSet`'s hashcode
-- [ ] store `EntityMngr` instead `World` in `Schedule` 
+- [x] store `EntityMngr` and `SystemMngr` instead `World` in `Schedule` 
 

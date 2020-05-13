@@ -34,21 +34,9 @@ void World::Update() {
 
 	executor.run(jobGraph).wait();
 
-	RunCommands();
+	entityMngr.RunCommands();
 }
 
-void World::AddCommand(const function<void()>& command) {
-	lock_guard<mutex> guard(commandBufferMutex);
-	commandBuffer.push_back(command);
-}
-
-void World::RunCommands() {
-	lock_guard<mutex> guard(commandBufferMutex);
-	for (const auto& command : commandBuffer)
-		command();
-	commandBuffer.clear();
-}
-
-string World::DumpUpdateJobGraph() {
+string World::DumpUpdateJobGraph() const {
 	return jobGraph.dump();
 }

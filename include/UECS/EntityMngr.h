@@ -7,6 +7,8 @@
 
 #include <UContainer/Pool.h>
 
+#include <mutex>
+
 namespace Ubpa {
 	class World;
 
@@ -37,6 +39,8 @@ namespace Ubpa {
 
 		size_t EntityNum(const EntityQuery& query) const;
 
+		void AddCommand(const std::function<void()>& command);
+
 	private:
 		friend class World;
 		EntityMngr() = default;
@@ -65,6 +69,11 @@ namespace Ubpa {
 		std::unordered_map<size_t, Archetype*> h2a; // archetype's hashcode to archetype
 		
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
+
+		// command
+		std::vector<std::function<void()>> commandBuffer;
+		std::mutex commandBufferMutex;
+		void RunCommands();
 	};
 }
 

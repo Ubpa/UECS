@@ -4,12 +4,10 @@
 #include "SystemMngr.h"
 #include "EntityMngr.h"
 
-#include <mutex>
-
 namespace Ubpa {
 	class World {
 	public:
-		World() : schedule{ this } {}
+		World() : schedule{ &entityMngr, &systemMngr } {}
 
 		SystemMngr systemMngr;
 		EntityMngr entityMngr;
@@ -19,9 +17,7 @@ namespace Ubpa {
 		// Commands, one-by-one
 		void Update();
 
-		std::string DumpUpdateJobGraph();
-
-		void AddCommand(const std::function<void()>& command);
+		std::string DumpUpdateJobGraph() const;
 
 	private:
 		mutable JobExecutor executor;
@@ -30,10 +26,5 @@ namespace Ubpa {
 		Job jobGraph;
 		std::vector<Job*> jobs;
 		Pool<Job> jobPool;
-
-		// command
-		std::vector<std::function<void()>> commandBuffer;
-		std::mutex commandBufferMutex;
-		void RunCommands();
 	};
 }
