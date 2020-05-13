@@ -25,8 +25,7 @@
 
 ### unimportant
 
-- [ ] exception
-- [ ] return
+- [x] exception: invalid `Entity` 
 - [ ] copy
 - [ ] batch create
 

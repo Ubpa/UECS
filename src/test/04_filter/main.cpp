@@ -37,10 +37,10 @@ int main() {
 	auto [e2, a2,     c2, d2] = w.entityMngr.CreateEntity<A,    C, D>(); // x
 	auto [e3, a3, b3        ] = w.entityMngr.CreateEntity<A, B      >(); // bingo
 
-	w.entityMngr.AssignAttach<E>(e0, 0.f);
-	w.entityMngr.AssignAttach<E>(e1, 1.f);
-	w.entityMngr.AssignAttach<E>(e2, 2.f);
-	w.entityMngr.AssignAttach<E>(e3, 3.f);
+	w.entityMngr.Emplace<E>(e0, 0.f);
+	w.entityMngr.Emplace<E>(e1, 1.f);
+	w.entityMngr.Emplace<E>(e2, 2.f);
+	w.entityMngr.Emplace<E>(e3, 3.f);
 
 	w.Update();
 

@@ -24,7 +24,7 @@ namespace Ubpa {
 		rst->types = from->types;
 		rst->cmptTraits = from->cmptTraits;
 
-		rst->types.Add<Cmpts...>();
+		rst->types.Insert<Cmpts...>();
 		(rst->cmptTraits.Register<Cmpts>(), ...);
 
 		rst->SetLayout();
@@ -42,7 +42,7 @@ namespace Ubpa {
 		rst->types = from->types;
 		rst->cmptTraits = from->cmptTraits;
 
-		rst->types.Remove<Cmpts...>();
+		rst->types.Erase<Cmpts...>();
 		(rst->cmptTraits.Deregister<Cmpts>(), ...);
 
 		rst->SetLayout();

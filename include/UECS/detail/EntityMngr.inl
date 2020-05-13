@@ -43,22 +43,20 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> EntityMngr::AttachWithoutInit(Entity e) {
+	std::tuple<std::array<bool, sizeof...(Cmpts)>, std::tuple<Cmpts*...>>  EntityMngr::AttachWithoutInit(Entity e) {
 		static_assert(sizeof...(Cmpts) > 0,
 			"EntityMngr::AttachWithoutInit: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"EntityMngr::AttachWithoutInit: <Cmpts> must be different");
-		assert("EntityMngr::AttachWithoutInit: e is invalid" && Exist(e));
+		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		auto& info = entityTable[e.Idx()];
 		Archetype* srcArchetype = info.archetype;
 		size_t srcIdxInArchetype = info.idxInArchetype;
 
-		assert((srcArchetype->types.IsNotContain<Cmpts>() &&...));
-
 		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.Add<Cmpts...>();
+		dstCmptTypeSet.Insert<Cmpts...>();
 		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
 
 		// get dstArchetype
@@ -75,6 +73,9 @@ namespace Ubpa {
 		}
 		else
 			dstArchetype = target->second;
+
+		if (dstArchetype == srcArchetype)
+			return { std::array<bool, sizeof...(Cmpts)>{false}, {srcArchetype->At<Cmpts>(srcIdxInArchetype)...} };
 
 		// move src to dst
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
@@ -95,25 +96,25 @@ namespace Ubpa {
 		info.archetype = dstArchetype;
 		info.idxInArchetype = dstIdxInArchetype;
 
-		return { dstArchetype->At<Cmpts>(dstIdxInArchetype)... };
+		return { {srcArchetype->GetCmptTypeSet().IsNotContain<Cmpts>()...}, {dstArchetype->At<Cmpts>(dstIdxInArchetype)...} };
 	}
 
 	template<typename... Cmpts>
 	const std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"EntityMngr::Attach: <Cmpts> isn't constructible");
+		using CmptList = TypeList<Cmpts...>;
+		auto [success, cmpts] = AttachWithoutInit<Cmpts...>(e);
 
-		auto cmpts = AttachWithoutInit<Cmpts...>(e);
-
-		return { new(std::get<Cmpts*>(cmpts))Cmpts... };
+		return { (std::get<Find_v<CmptList,Cmpts>>(success) ? new(std::get<Cmpts*>(cmpts))Cmpts : std::get<Cmpts*>(cmpts))... };
 	}
 
 	template<typename Cmpt, typename... Args>
-	Cmpt* EntityMngr::AssignAttach(Entity e, Args&&... args) {
+	Cmpt* EntityMngr::Emplace(Entity e, Args&&... args) {
 		static_assert(std::is_constructible_v<Cmpt, Args...>,
-			"EntityMngr::AssignAttach: <Cmpt> isn't constructible with <Args...>");
-		auto [cmpt] = AttachWithoutInit<Cmpt>(e);
-		return new(cmpt)Cmpt{ std::forward<Args>(args)... };
+			"EntityMngr::Emplace: <Cmpt> isn't constructible with <Args...>");
+		auto [success, cmpt] = AttachWithoutInit<Cmpt>(e);
+		return std::get<0>(success) ? new(std::get<Cmpt*>(cmpt))Cmpt{ std::forward<Args>(args)... } : std::get<Cmpt*>(cmpt);
 	}
 
 	template<typename... Cmpts>
@@ -121,17 +122,15 @@ namespace Ubpa {
 		static_assert(sizeof...(Cmpts) > 0, "EntityMngr::Detach: sizeof...(<Cmpts>) > 0");
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"EntityMngr::Detach: <Cmpts> must be different");
-		assert("EntityMngr::Detach: e is invalid" && Exist(e));
+		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		auto& info = entityTable[e.Idx()];
 		Archetype* srcArchetype = info.archetype;
 		size_t srcIdxInArchetype = info.idxInArchetype;
 
-		assert((srcArchetype->types.IsContain<Cmpts>() &&...));
-
 		auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.Remove<Cmpts...>();
+		dstCmptTypeSet.Erase<Cmpts...>();
 		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
 
 		// get dstArchetype
@@ -148,6 +147,9 @@ namespace Ubpa {
 		}
 		else
 			dstArchetype = target->second;
+
+		if (dstArchetype == srcArchetype)
+			return;
 
 		// move src to dst
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
@@ -173,16 +175,16 @@ namespace Ubpa {
 	}
 
 	template<typename Cmpt>
-	bool EntityMngr::Have(Entity e) {
+	bool EntityMngr::Have(Entity e) const {
 		static_assert(!std::is_same_v<Cmpt, Entity>, "EntityMngr::Have: <Cmpt> != Entity");
-		assert(Exist(e));
+		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 		return entityTable[e.Idx()].archetype->GetCmptTypeSet().IsContain<Cmpt>();
 	}
 
 	template<typename Cmpt>
-	Cmpt* EntityMngr::Get(Entity e) {
+	Cmpt* EntityMngr::Get(Entity e) const {
 		static_assert(!std::is_same_v<Cmpt, Entity>, "EntityMngr::Get: <Cmpt> != Entity");
-		assert(Exist(e));
+		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 		const auto& info = entityTable[e.Idx()];
 		return info.archetype->At<Cmpt>(info.idxInArchetype);
 	}

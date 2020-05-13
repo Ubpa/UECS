@@ -28,9 +28,9 @@ namespace Ubpa {
 		}
 
 		template<typename... Cmpts>
-		void Add() { (insert(CmptType::Of<Cmpts>()), ...); }
+		void Insert() { (insert(CmptType::Of<Cmpts>()), ...); }
 		template<typename... Cmpts>
-		void Remove() noexcept { (erase(CmptType::Of<Cmpts>()), ...); }
+		void Erase() noexcept { (erase(CmptType::Of<Cmpts>()), ...); }
 
 		template<typename... Cmpts>
 		constexpr bool IsContain() const {
