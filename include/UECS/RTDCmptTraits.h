@@ -66,6 +66,7 @@ namespace Ubpa {
 	private:
 		friend class RTSCmptTraits;
 		friend class Archetype;
+		friend class EntityMngr;
 
 		RTDCmptTraits() = default;
 

@@ -15,8 +15,8 @@ namespace Ubpa {
 		template<typename... Cmpts>
 		CmptTypeSet(TypeList<Cmpts...>);
 		template<typename... CmptTypes>
-		CmptTypeSet(CmptTypes... types) : std::set<CmptType>{ types... } {
-			static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		CmptTypeSet(CmptTypes... types) : std::set<CmptType>{ types... }, hashcode{ HashCodeOf(*this) } {
+			static_assert((std::is_same_v<CmptTypes, CmptType>&&...));
 		}
 
 		template<typename... Cmpts>
@@ -26,9 +26,13 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		void Insert();
+		template<typename... CmptTypes>
+		void Insert(CmptTypes...);
 
 		template<typename... Cmpts>
 		void Erase() noexcept;
+		template<typename... CmptTypes>
+		void Erase(CmptTypes...) noexcept;
 
 		template<typename... Cmpts>
 		constexpr bool IsContain() const;

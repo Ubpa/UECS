@@ -12,13 +12,25 @@ namespace Ubpa {
 
 	template<typename... Cmpts>
 	void CmptTypeSet::Insert() {
-		(insert(CmptType::Of<Cmpts>()), ...);
+		Insert(CmptType::Of<Cmpts>()...);
+	}
+
+	template<typename... CmptTypes>
+	void CmptTypeSet::Insert(CmptTypes... types) {
+		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		(insert(types), ...);
 		hashcode = HashCodeOf(*this);
 	}
 
 	template<typename... Cmpts>
 	void CmptTypeSet::Erase() noexcept {
-		(erase(CmptType::Of<Cmpts>()), ...);
+		Erase(CmptType::Of<Cmpts>()...);
+	}
+
+	template<typename... CmptTypes>
+	void CmptTypeSet::Erase(CmptTypes... types) noexcept {
+		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		(erase(types), ...);
 		hashcode = HashCodeOf(*this);
 	}
 
