@@ -16,7 +16,9 @@ namespace Ubpa {
 	public:
 		template<typename... Cmpts>
 		std::tuple<Entity, Cmpts*...> CreateEntity();
-		Entity CreateEntity(CmptTypeSet types);
+		// use RTDCmptTraits
+		template<typename... CmptTypes>
+		Entity CreateEntity(CmptTypes...);
 
 		Entity Instantiate(Entity e);
 
@@ -24,6 +26,7 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		std::tuple<Cmpts*...> Attach(Entity e);
+		// use RTDCmptTraits
 		template<typename... CmptTypes>
 		std::array<CmptPtr, sizeof...(CmptTypes)> Attach(Entity e, CmptTypes...);
 
@@ -58,7 +61,8 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
-		Archetype* GetOrCreateArchetypeOf(CmptTypeSet types);
+		template<typename... CmptTypes>
+		Archetype* GetOrCreateArchetypeOf(CmptTypes... types);
 		
 		template<typename... CmptTypes> // <CmptTypes> == CmptType
 		void AttachWithoutInit(Entity e, CmptTypes... types);

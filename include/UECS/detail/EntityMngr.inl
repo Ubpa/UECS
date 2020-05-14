@@ -36,6 +36,23 @@ namespace Ubpa {
 		return archetype;
 	}
 
+	template<typename... CmptTypes>
+	Archetype* EntityMngr::GetOrCreateArchetypeOf(CmptTypes... types) {
+		size_t hashcode = Archetype::HashCode(types...);
+		auto target = h2a.find(hashcode);
+		if (target != h2a.end())
+			return target->second;
+
+		auto archetype = Archetype::New(types...);
+		h2a[hashcode] = archetype;
+		for (auto& [query, archetypes] : queryCache) {
+			if (archetype->GetCmptTypeSet().IsMatch(query))
+				archetypes.insert(archetype);
+		}
+
+		return archetype;
+	}
+
 	template<typename... Cmpts>
 	std::tuple<Entity, Cmpts*...> EntityMngr::CreateEntity() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
@@ -48,6 +65,18 @@ namespace Ubpa {
 		auto [idxInArchetype, cmpts] = archetype->CreateEntity<Cmpts...>(e);
 		info.idxInArchetype = idxInArchetype;
 		return { e, std::get<Cmpts*>(cmpts)... };
+	}
+
+	template<typename... CmptTypes>
+	Entity EntityMngr::CreateEntity(CmptTypes... types) {
+		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		Archetype* archetype = GetOrCreateArchetypeOf(types...);
+		size_t entityIndex = RequestEntityFreeEntry();
+		EntityInfo& info = entityTable[entityIndex];
+		Entity e{ entityIndex, info.version };
+		info.archetype = archetype;
+		info.idxInArchetype = archetype->CreateEntity(e);
+		return e;
 	}
 
 	template<typename... CmptTypes> // <CmptTypes> == CmptType
