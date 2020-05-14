@@ -15,6 +15,10 @@ namespace Ubpa {
 
 		template<typename Func>
 		SystemFunc(Func&& func, EntityFilter filter = EntityFilter{});
+
+		// run-time dynamic function
+		template<typename Func>
+		SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{});
 		
 		const std::string& Name() const noexcept { return name; }
 
@@ -22,7 +26,9 @@ namespace Ubpa {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(Entity e, size_t entityIndexInQuery, void** cmptArr) { return func(e, entityIndexInQuery, cmptArr); }
+		void operator()(Entity e, size_t entityIndexInQuery, const EntityLocator* locator, void** cmptArr) {
+			return func(e, entityIndexInQuery, locator, cmptArr);
+		}
 
 		// no arguments <Func>
 		bool IsJob() const noexcept { return isJob; }
@@ -32,7 +38,7 @@ namespace Ubpa {
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);
 
-		std::function<void(Entity, size_t, void**)> func;
+		std::function<void(Entity, size_t, const EntityLocator*, void**)> func;
 
 		std::string name;
 		bool isJob;

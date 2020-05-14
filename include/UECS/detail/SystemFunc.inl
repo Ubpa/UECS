@@ -9,14 +9,30 @@ namespace Ubpa::detail::System_ {
 
 namespace Ubpa {
 	template<typename Func>
+	SystemFunc::SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter)
+		: isJob{ IsEmpty_v<FuncTraits_ArgList<Func>> },
+		func{ detail::System_::Pack(std::forward<Func>(func)) },
+		name{ std::move(name) },
+		hashCode{ HashCode(this->name) },
+		query{ std::move(filter), std::move(locator) }
+	{
+		using ArgList = FuncTraits_ArgList<Func>;
+
+		static_assert(ContainTs_v<ArgList, const EntityLocator*, void**>,
+			"<Func>'s argument must contain const EntityLocator* and void**");
+	}
+
+	template<typename Func>
 	SystemFunc::SystemFunc(Func&& func, EntityFilter filter)
 		: SystemFunc{ std::string(nameof::nameof_type<Func>().data()), std::forward<Func>(func), std::move(filter) } {}
+
 
 	template<typename Func>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityFilter filter)
 		: SystemFunc(std::forward<Func>(func), std::move(name), std::move(filter), FuncTraits_ArgList<Func>{})
 	{
 	}
+
 
 	template<typename Func, typename ArgList>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList)
@@ -38,8 +54,8 @@ namespace Ubpa::detail::System_ {
 		using CmptList = TypeList<Cmpts...>;
 		template<typename Func>
 		static auto run(Func&& func) noexcept {
-			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, void** cmpt_arr) {
-				auto unsorted_arg_tuple = std::make_tuple(reinterpret_cast<Cmpts*>(cmpt_arr[Find_v<CmptList, Cmpts>])..., e, entityIndexInQuery);
+			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, const EntityLocator* locator, void** cmpt_arr) {
+				auto unsorted_arg_tuple = std::make_tuple(e, entityIndexInQuery, locator, cmpt_arr, reinterpret_cast<Cmpts*>(cmpt_arr[Find_v<CmptList, Cmpts>])...);
 				func(std::get<DecayedArgs>(unsorted_arg_tuple)...);
 			};
 		}

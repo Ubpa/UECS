@@ -108,7 +108,7 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 
 				size_t J = min(chunkCapacity, num - idxOffsetInChunk);
 				for (size_t j = 0; j < J; j++) {
-					(*sys)(entities[j], indexOffsetInQueryChunk + j, cmpts.data());
+					(*sys)(entities[j], indexOffsetInQueryChunk + j, &sys->query.locator, cmpts.data());
 					for (size_t k = 0; k < cmpts.size(); k++)
 						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
 				}

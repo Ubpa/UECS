@@ -23,31 +23,37 @@ namespace Ubpa {
 			return instance;
 		}
 
+		// neccessary
 		RTDCmptTraits& RegisterSize(CmptType type, size_t size) {
 			sizeofs[type] = size;
 			return *this;
 		}
 
+		// optional
 		RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment) {
 			alignments[type] = alignment;
 			return *this;
 		}
 
+		// optional
 		RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f) {
 			default_constructors[type] = std::move(f);
 			return *this;
 		}
 
+		// optional
 		RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f) {
 			copy_constructors[type] = std::move(f);
 			return *this;
 		}
 
+		// optional
 		RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f) {
 			move_constructors[type] = std::move(f);
 			return *this;
 		}
 
+		// optional
 		RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f) {
 			destructors[type] = std::move(f);
 			return *this;

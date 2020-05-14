@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CmptTag.inl"
+
+#include <UContainer/Algorithm.h>
+
 #include <UTemplate/Func.h>
 
 namespace Ubpa {
@@ -8,7 +11,9 @@ namespace Ubpa {
 	EntityLocator::EntityLocator(TaggedCmptList)
 		: EntityLocator{ Filter_t<TaggedCmptList, CmptTag::IsLastFrame>{},
 		Filter_t<TaggedCmptList, CmptTag::IsWrite>{},
-		Filter_t<TaggedCmptList, CmptTag::IsLatest>{} } {}
+		Filter_t<TaggedCmptList, CmptTag::IsLatest>{} }
+	{
+	}
 
 	template<typename... LastFrameCmpts, typename... WriteCmpts, typename... LatestCmpts>
 	EntityLocator::EntityLocator(TypeList<LastFrameCmpts...>, TypeList<WriteCmpts...>, TypeList<LatestCmpts...>)
@@ -17,5 +22,6 @@ namespace Ubpa {
 		latestCmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<LatestCmpts>>()... },
 		cmptTypes{ CmptType::Of<CmptTag::RemoveTag_t<LastFrameCmpts>>()..., CmptType::Of<CmptTag::RemoveTag_t<WriteCmpts>>()...,CmptType::Of<CmptTag::RemoveTag_t<LatestCmpts>>()... },
 		hashCode{ GenHashCode() }
-	{}
+	{
+	}
 }

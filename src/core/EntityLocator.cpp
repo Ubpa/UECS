@@ -3,6 +3,19 @@
 #include <UECS/detail/Util.h>
 
 using namespace Ubpa;
+using namespace std;
+
+EntityLocator::EntityLocator(set<CmptType> lastFrameCmpts,
+	set<CmptType> writeFrameCmpts,
+	set<CmptType> latestCmpts)
+	: lastFrameCmptTypes{ move(lastFrameCmpts) },
+	writeCmptTypes{ move(writeFrameCmpts) },
+	latestCmptTypes{ move(latestCmpts) }
+{
+	cmptTypes = SetUnion(lastFrameCmptTypes, writeCmptTypes);
+	cmptTypes = SetUnion(cmptTypes, latestCmptTypes);
+	hashCode = GenHashCode();
+}
 
 size_t EntityLocator::GenHashCode() const noexcept {
 	size_t rst = TypeID<EntityLocator>;
