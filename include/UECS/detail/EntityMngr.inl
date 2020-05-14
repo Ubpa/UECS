@@ -6,6 +6,8 @@
 #include <UTemplate/Func.h>
 #include <UTemplate/Concept.h>
 
+#include <stdexcept>
+
 namespace Ubpa::detail::EntityMngr_ {
 	template<typename Cmpt, typename... Ts>
 	Concept(IsAggregatableHelper, Cmpt{ std::declval<Ts>()... });
@@ -14,8 +16,6 @@ namespace Ubpa::detail::EntityMngr_ {
 	template<typename Cmpt, typename... Ts>
 	static constexpr bool IsAggregatable_v = IsAggregatable<Cmpt, Ts...>::value;
 }
-
-#include <stdexcept>
 
 namespace Ubpa {
 	template<typename... Cmpts>
@@ -90,7 +90,7 @@ namespace Ubpa {
 		// move src to dst
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
-		auto srcCmptTraits = srcArchetype->GetRuntimeCmptTraits();
+		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 		for (auto type : srcCmptTypeSet) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
 			auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
@@ -163,7 +163,7 @@ namespace Ubpa {
 
 		// move src to dst
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
-		auto srcCmptTraits = srcArchetype->GetRuntimeCmptTraits();
+		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 		for (auto type : srcCmptTypeSet) {
 			auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
 			if (dstCmptTypeSet.IsContain(type)) {

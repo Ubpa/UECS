@@ -26,7 +26,7 @@
 ### unimportant
 
 - [x] exception: invalid `Entity` 
-- [ ] batch create/instantiate
+- [ ] batch create/instantiate (need benchmark)
 - [ ] lock `FilterChange` 
 - [ ] EntityMngr Query-driven API
 
