@@ -16,6 +16,7 @@ namespace Ubpa {
 	public:
 		template<typename... Cmpts>
 		std::tuple<Entity, Cmpts*...> CreateEntity();
+		Entity CreateEntity(CmptTypeSet types);
 
 		Entity Instantiate(Entity e);
 
@@ -55,6 +56,7 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
+		Archetype* GetOrCreateArchetypeOf(CmptTypeSet types);
 
 		template<typename... Cmpts>
 		std::tuple<std::array<bool, sizeof...(Cmpts)>, std::tuple<Cmpts*...>> AttachWithoutInit(Entity e);

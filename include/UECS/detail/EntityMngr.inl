@@ -6,8 +6,6 @@
 #include <UTemplate/Func.h>
 #include <UTemplate/Concept.h>
 
-#include <stdexcept>
-
 namespace Ubpa::detail::EntityMngr_ {
 	template<typename Cmpt, typename... Ts>
 	Concept(IsAggregatableHelper, Cmpt{ std::declval<Ts>()... });

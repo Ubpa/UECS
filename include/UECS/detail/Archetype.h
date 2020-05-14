@@ -1,13 +1,11 @@
 #pragma once
 
 #include "../Entity.h"
-
 #include "../CmptPtr.h"
 
-#include "Chunk.h"
-#include "CmptTypeSet.h"
-
 #include "RTSCmptTraits.h"
+#include "CmptTypeSet.h"
+#include "Chunk.h"
 
 #include <UTemplate/Typelist.h>
 #include <UTemplate/TypeID.h>
@@ -26,6 +24,8 @@ namespace Ubpa {
 		// auto add Entity
 		template<typename... Cmpts>
 		Archetype(TypeList<Cmpts...>) noexcept;
+		// auto add Entity, use RTDCmptTraits
+		Archetype(CmptTypeSet types) noexcept;
 
 		// auto add Entity
 		template<typename... Cmpts>
@@ -36,11 +36,9 @@ namespace Ubpa {
 
 		~Archetype();
 
-		template<typename... Cmpts>
-		const std::vector<std::tuple<Entity*, Cmpts*...>> Locate() const;
-
 		// Entity + Components
-		std::tuple<std::vector<Entity*>, std::vector<std::vector<void*>>, std::vector<size_t>> Locate(const std::set<CmptType>& cmptTypes) const;
+		std::tuple<std::vector<Entity*>, std::vector<std::vector<void*>>, std::vector<size_t>>
+		Locate(const std::set<CmptType>& cmptTypes) const;
 		
 		std::tuple<void*, size_t> At(CmptType type, size_t idx) const;
 
@@ -54,8 +52,10 @@ namespace Ubpa {
 		size_t RequestBuffer();
 
 		// init cmpts, set Entity
+		// size_t: index in archetype
 		template<typename... Cmpts>
-		const std::tuple<size_t, std::tuple<Cmpts*...>> CreateEntity(Entity e);
+		std::tuple<size_t, std::tuple<Cmpts*...>> CreateEntity(Entity e);
+		size_t CreateEntity(Entity e);
 
 		// return index in archetype
 		size_t Instantiate(Entity e, size_t srcIdx);

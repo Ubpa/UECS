@@ -60,7 +60,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity(Entity e) {
+	std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::CreateEntity(Entity e) {
 		assert((types.IsContain<Cmpts>() &&...) && types.size() == 1 + sizeof...(Cmpts));
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"Archetype::CreateEntity: <Cmpts> isn't constructible");
@@ -76,26 +76,5 @@ namespace Ubpa {
 		std::tuple<Cmpts*...> cmpts = { new(buffer + Offsetof(CmptType::Of<Cmpts>()) + idxInChunk * sizeof(Cmpts))Cmpts... };
 
 		return { idx,cmpts };
-	}
-
-	template<typename... Cmpts>
-	const std::vector<std::tuple<Entity*, Cmpts*...>> Archetype::Locate() const {
-		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"Archetype::Archetype: <Cmpts> must be different");
-		assert((types.IsContain<Cmpts>() &&...));
-
-		using CmptList = TypeList<Cmpts...>;
-
-		auto offsets = std::make_tuple(Offsetof(CmptType::Of<Cmpts>())...);
-
-		auto offset_Entity = Offsetof(CmptType::Of<Entity>());
-
-		std::vector<std::tuple<Entity*, Cmpts*...>> rst;
-		for (auto chunk : chunks) {
-			auto ptr_Entity = reinterpret_cast<Entity*>(chunk->Data() + offset_Entity);
-			rst.emplace_back(ptr_Entity, reinterpret_cast<Cmpts*>(chunk->Data() + std::get<Find_v<CmptList, Cmpts>>(offsets))...);
-		}
-
-		return rst;
 	}
 }

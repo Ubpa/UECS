@@ -8,6 +8,23 @@ EntityMngr::~EntityMngr() {
 		delete a;
 }
 
+Archetype* EntityMngr::GetOrCreateArchetypeOf(CmptTypeSet types) {
+	types.Insert<Entity>();
+	size_t hashcode = types.HashCode();
+	auto target = h2a.find(hashcode);
+	if (target != h2a.end())
+		return target->second;
+
+	auto archetype = new Archetype(move(types));
+	h2a[hashcode] = archetype;
+	for (auto& [query, archetypes] : queryCache) {
+		if (archetype->GetCmptTypeSet().IsMatch(query))
+			archetypes.insert(archetype);
+	}
+
+	return archetype;
+}
+
 size_t EntityMngr::RequestEntityFreeEntry() {
 	if (entityTableFreeEntry.empty()) {
 		size_t index = entityTable.size();
@@ -29,6 +46,16 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 	info.version++;
 
 	entityTableFreeEntry.push_back(e.Idx());
+}
+
+Entity EntityMngr::CreateEntity(CmptTypeSet types) {
+	Archetype* archetype = GetOrCreateArchetypeOf(move(types));
+	size_t entityIndex = RequestEntityFreeEntry();
+	EntityInfo& info = entityTable[entityIndex];
+	Entity e{ entityIndex, info.version };
+	info.archetype = archetype;
+	info.idxInArchetype = archetype->CreateEntity(e);
+	return e;
 }
 
 vector<CmptPtr> EntityMngr::Components(Entity e) const {

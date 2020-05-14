@@ -14,6 +14,10 @@ namespace Ubpa {
 		CmptTypeSet() : hashcode{ TypeID<CmptTypeSet> } {}
 		template<typename... Cmpts>
 		CmptTypeSet(TypeList<Cmpts...>);
+		template<typename... CmptTypes>
+		CmptTypeSet(CmptTypes... types) : std::set<CmptType>{ types... } {
+			static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		}
 
 		template<typename... Cmpts>
 		static constexpr size_t HashCodeOf() noexcept;
