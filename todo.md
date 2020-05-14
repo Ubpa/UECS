@@ -20,13 +20,15 @@
   - [x] SystemFunc support
   - [x] get entity num of query
 - [x] instantiate
+- [ ] string/CmptType-driven API
+  - [ ] RumtimeCustomCmptTraits
 
 ### unimportant
 
 - [x] exception: invalid `Entity` 
-- [ ] string-driven API
-- [ ] batch create
-- [ ] lock filter change
+- [ ] batch create/instantiate
+- [ ] lock `FilterChange` 
+- [ ] EntityMngr Query-driven API
 
 ### maybe deprecate
 
@@ -42,7 +44,7 @@
 
 - [x] remove `EntityMngr::ai2ei` 
 - [x] Archetype share `Pool<Chunk>` 
-- [ ] simplify `Schedule` 
+- [x] simplify `Schedule` 
 - [ ] parallel `Schedule` 
 - [x] `constexpr SystemFunc::HashCode()` 
 - [x] cache `CmptIDSet`'s hashcode

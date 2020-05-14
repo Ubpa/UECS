@@ -47,25 +47,6 @@ namespace Ubpa {
 		void Clear();
 		SysFuncGraph GenSysFuncGraph() const;
 
-		struct NoneGroup {
-			NoneGroup() = default;
-			NoneGroup(SystemFunc* func);
-
-			std::set<CmptType> allTypes;
-			std::set<CmptType> noneTypes;
-			std::set<SystemFunc*> sysFuncs;
-		};
-
-		static void SetPrePostEdge(SysFuncGraph& graph,
-			const std::vector<SystemFunc*>& preReaders,
-			const std::vector<SystemFunc*>& writers,
-			const std::vector<SystemFunc*>& postReaders);
-
-		static std::vector<NoneGroup> GenSortNoneGroup(SysFuncGraph graph,
-			const std::vector<SystemFunc*>& preReaders,
-			const std::vector<SystemFunc*>& writers,
-			const std::vector<SystemFunc*>& postReaders);
-
 		// SystemFunc's hashcode to pointer of SystemFunc
 		std::unordered_map<size_t, SystemFunc*> sysFuncs;
 

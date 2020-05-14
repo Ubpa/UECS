@@ -31,12 +31,20 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 	entityTableFreeEntry.push_back(e.Idx());
 }
 
+vector<CmptPtr> EntityMngr::Components(Entity e) const {
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
+
+	const auto& info = entityTable[e.Idx()];
+	return info.archetype->Components(info.idxInArchetype);
+}
+
 bool EntityMngr::Exist(Entity e) const {
 	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 }
 
 Entity EntityMngr::Instantiate(Entity srcEntity) {
 	if (!Exist(srcEntity)) throw std::invalid_argument("Entity is invalid");
+
 	size_t dstEntityIndex = RequestEntityFreeEntry();
 	const auto& srcInfo = entityTable[srcEntity.Idx()];
 	auto& dstInfo = entityTable[dstEntityIndex];

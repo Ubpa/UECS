@@ -39,7 +39,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Entity, Cmpts*...> EntityMngr::CreateEntity() {
+	std::tuple<Entity, Cmpts*...> EntityMngr::CreateEntity() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"EntityMngr::CreateEntity: <Cmpts> must be different");
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
@@ -110,7 +110,7 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	const std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
+	std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"EntityMngr::Attach: <Cmpts> isn't constructible");
 		using CmptList = TypeList<Cmpts...>;

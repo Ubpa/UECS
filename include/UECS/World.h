@@ -12,11 +12,13 @@ namespace Ubpa {
 		SystemMngr systemMngr;
 		EntityMngr entityMngr;
 
-		// static OnUpdateSchedule
-		// parallel OnUpdate
-		// Commands, one-by-one
+		// 1. schedule: run registered System's static OnUpdate(Schedule&)
+		// 2. job graph: schedule -> graph
+		// 3. run job graph in worker threads
+		// 4. run commands in main threads
 		void Update();
 
+		// after running Update
 		std::string DumpUpdateJobGraph() const;
 
 	private:
