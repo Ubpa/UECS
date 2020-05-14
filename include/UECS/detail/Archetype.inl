@@ -60,18 +60,7 @@ namespace Ubpa {
 
 	template<typename... Cmpts>
 	Archetype* Archetype::Remove(const Archetype* from) {
-		assert((from->types.IsContain<Cmpts>() &&...));
-
-		Archetype* rst = new Archetype;
-
-		rst->types = from->types;
-		rst->types.Erase<Cmpts...>();
-		rst->cmptTraits = from->cmptTraits;
-		(rst->cmptTraits.Deregister<Cmpts>(), ...);
-
-		rst->SetLayout();
-
-		return rst;
+		return Remove(from, CmptType::Of<Cmpts>()...);
 	}
 
 	template<typename... CmptTypes>

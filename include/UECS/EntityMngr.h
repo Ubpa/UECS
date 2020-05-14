@@ -20,35 +20,40 @@ namespace Ubpa {
 		template<typename... CmptTypes>
 		Entity CreateEntity(CmptTypes...);
 
-		Entity Instantiate(Entity e);
+		Entity Instantiate(Entity);
 
 		// TODO: CreateEntities
 
 		template<typename... Cmpts>
-		std::tuple<Cmpts*...> Attach(Entity e);
+		std::tuple<Cmpts*...> Attach(Entity);
 		// use RTDCmptTraits
 		template<typename... CmptTypes>
-		std::array<CmptPtr, sizeof...(CmptTypes)> Attach(Entity e, CmptTypes...);
+		std::array<CmptPtr, sizeof...(CmptTypes)> Attach(Entity, CmptTypes...);
 
 		template<typename Cmpt, typename... Args>
-		Cmpt* Emplace(Entity e, Args&&... args);
+		Cmpt* Emplace(Entity, Args&&...);
 
 		template<typename... Cmpts>
-		void Detach(Entity e);
+		void Detach(Entity);
+		// use RTDCmptTraits
+		template<typename... CmptTypes>
+		void Detach(Entity, CmptTypes...);
 
 		template<typename Cmpt>
-		bool Have(Entity e) const;
+		bool Have(Entity) const;
+		inline bool Have(Entity, CmptType) const;
 
 		template<typename Cmpt>
-		Cmpt* Get(Entity e) const;
+		Cmpt* Get(Entity) const;
+		inline CmptPtr Get(Entity, CmptType) const;
 
-		std::vector<CmptPtr> Components(Entity e) const;
+		std::vector<CmptPtr> Components(Entity) const;
 
-		bool Exist(Entity e) const;
+		bool Exist(Entity) const;
 
-		void Destroy(Entity e);
+		void Destroy(Entity);
 
-		size_t EntityNum(const EntityQuery& query) const;
+		size_t EntityNum(const EntityQuery&) const;
 
 		void AddCommand(const std::function<void()>& command);
 
