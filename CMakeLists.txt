@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(UECS VERSION 0.8.3)
+project(UECS VERSION 0.8.4)
 message(STATUS "[Project] ${PROJECT_NAME}")
 
 include(FetchContent)

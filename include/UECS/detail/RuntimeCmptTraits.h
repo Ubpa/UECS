@@ -24,6 +24,15 @@ namespace Ubpa {
 				target->second(cmpt);
 		}
 
+		void CopyConstruct(CmptType type, void* dst, void* src) const {
+			auto target = copy_constructors.find(type);
+
+			if (target != copy_constructors.end())
+				target->second(dst, src);
+			else
+				memcpy(dst, src, Sizeof(type));
+		}
+
 		void MoveConstruct(CmptType type, void* dst, void* src) const {
 			auto target = move_constructors.find(type);
 
@@ -42,6 +51,7 @@ namespace Ubpa {
 		std::unordered_map<CmptType, size_t> sizeofs;
 		std::unordered_map<CmptType, size_t> alignments;
 		std::unordered_map<CmptType, std::function<void(void*)>> destructors;
+		std::unordered_map<CmptType, std::function<void(void*, void*)>> copy_constructors; // dst <- src
 		std::unordered_map<CmptType, std::function<void(void*, void*)>> move_constructors; // dst <- src
 	};
 }

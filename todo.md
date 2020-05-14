@@ -19,15 +19,19 @@
 - [x] index in Query
   - [x] SystemFunc support
   - [x] get entity num of query
-- [ ] Shared Component
-- [ ] system group
+- [x] instantiate
 
 ### unimportant
 
 - [x] exception: invalid `Entity` 
-- [ ] copy
+- [ ] string-driven API
 - [ ] batch create
 - [ ] lock filter change
+
+### maybe deprecate
+
+- [ ] shared component
+- [ ] system group
 
 ## tool
 
@@ -40,7 +44,7 @@
 - [x] Archetype share `Pool<Chunk>` 
 - [ ] simplify `Schedule` 
 - [ ] parallel `Schedule` 
-- [x] `constexpr SystemFunc::HashCode( )` 
+- [x] `constexpr SystemFunc::HashCode()` 
 - [x] cache `CmptIDSet`'s hashcode
 - [x] store `EntityMngr` and `SystemMngr` instead `World` in `Schedule` 
 

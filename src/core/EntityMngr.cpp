@@ -35,6 +35,18 @@ bool EntityMngr::Exist(Entity e) const {
 	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 }
 
+Entity EntityMngr::Instantiate(Entity srcEntity) {
+	if (!Exist(srcEntity)) throw std::invalid_argument("Entity is invalid");
+	size_t dstEntityIndex = RequestEntityFreeEntry();
+	const auto& srcInfo = entityTable[srcEntity.Idx()];
+	auto& dstInfo = entityTable[dstEntityIndex];
+	Entity dstEntity{ dstEntityIndex, dstInfo.version };
+	size_t dstIndexInArchetype = srcInfo.archetype->Instantiate(dstEntity, srcInfo.idxInArchetype);
+	dstInfo.archetype = srcInfo.archetype;
+	dstInfo.idxInArchetype = dstIndexInArchetype;
+	return dstEntity;
+}
+
 const set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query) const {
 	auto target = queryCache.find(query);
 	if (target != queryCache.end())
@@ -58,14 +70,15 @@ size_t EntityMngr::EntityNum(const EntityQuery& query) const {
 }
 
 void EntityMngr::Destroy(Entity e) {
-	assert(Exist(e));
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
+
 	auto info = entityTable[e.Idx()];
 	auto archetype = info.archetype;
 	auto idxInArchetype = info.idxInArchetype;
 
 	auto movedEntityIndex = archetype->Erase(idxInArchetype);
 
-	if (movedEntityIndex != Entity::npos)
+	if (movedEntityIndex != size_t_invalid)
 		entityTable[movedEntityIndex].idxInArchetype = idxInArchetype;
 
 	RecycleEntityEntry(e);
@@ -88,10 +101,8 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 				size_t J = min(chunkCapacity, num - idxOffsetInChunk);
 				for (size_t j = 0; j < J; j++) {
 					(*sys)(entities[j], indexOffsetInQueryChunk + j, cmpts.data());
-					for (size_t k = 0; k < cmpts.size(); k++) {
+					for (size_t k = 0; k < cmpts.size(); k++)
 						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
-						entities++;
-					}
 				}
 			});
 		}

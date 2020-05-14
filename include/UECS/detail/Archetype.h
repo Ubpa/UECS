@@ -22,8 +22,6 @@ namespace Ubpa {
 	// Entity is a special Component
 	class Archetype {
 	public:
-		static constexpr size_t npos = static_cast<size_t>(-1);
-
 		// argument TypeList<Cmpts...> is for type deduction
 		// auto add Entity
 		template<typename... Cmpts>
@@ -55,14 +53,16 @@ namespace Ubpa {
 		// no init
 		size_t RequestBuffer();
 
-		// init cmpts
-		// set Entity
+		// init cmpts, set Entity
 		template<typename... Cmpts>
 		const std::tuple<size_t, std::tuple<Cmpts*...>> CreateEntity(Entity e);
 
+		// return index in archetype
+		size_t Instantiate(Entity e, size_t srcIdx);
+
 		// erase idx-th entity
 		// if idx != num-1, back entity will put at idx, return moved Entity's index
-		// else return Entity::npos
+		// else return size_t_invalid
 		size_t Erase(size_t idx);
 
 		// Components + Entity

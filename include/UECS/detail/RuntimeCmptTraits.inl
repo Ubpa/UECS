@@ -21,6 +21,11 @@ namespace Ubpa {
 				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
 			};
 		}
+		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
+			copy_constructors[type] = [](void* dst, void* src) {
+				new(dst)Cmpt(*reinterpret_cast<Cmpt*>(src));
+			};
+		}
 	}
 
 	template<typename Cmpt>
@@ -34,5 +39,8 @@ namespace Ubpa {
 			destructors.erase(type);
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>)
 			move_constructors.erase(type);
+		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
+			copy_constructors.erase(type);
+		}
 	}
 }

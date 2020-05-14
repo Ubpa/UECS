@@ -4,6 +4,16 @@
 
 #include <UTemplate/Typelist.h>
 #include <UTemplate/Func.h>
+#include <UTemplate/Concept.h>
+
+namespace Ubpa::detail::EntityMngr_ {
+	template<typename Cmpt, typename... Ts>
+	Concept(IsAggregatableHelper, Cmpt{ std::declval<Ts>()... });
+	template<typename Cmpt, typename... Ts>
+	struct IsAggregatable : IValue<bool, std::is_aggregate_v<Cmpt> && Require<IsAggregatableHelper, Cmpt, Ts...>> {};
+	template<typename Cmpt, typename... Ts>
+	static constexpr bool IsAggregatable_v = IsAggregatable<Cmpt, Ts...>::value;
+}
 
 #include <stdexcept>
 
@@ -90,7 +100,7 @@ namespace Ubpa {
 
 		// erase
 		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
-		if (srcMovedEntityIndex != Entity::npos)
+		if (srcMovedEntityIndex != size_t_invalid)
 			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
 
 		info.archetype = dstArchetype;
@@ -111,8 +121,8 @@ namespace Ubpa {
 
 	template<typename Cmpt, typename... Args>
 	Cmpt* EntityMngr::Emplace(Entity e, Args&&... args) {
-		static_assert(std::is_constructible_v<Cmpt, Args...>,
-			"EntityMngr::Emplace: <Cmpt> isn't constructible with <Args...>");
+		static_assert(std::is_constructible_v<Cmpt, Args...> || detail::EntityMngr_::IsAggregatable_v<Cmpt, Args...>,
+			"EntityMngr::Emplace: <Cmpt> isn't constructible/aggregatable with <Args...>");
 		auto [success, cmpt] = AttachWithoutInit<Cmpt>(e);
 		return std::get<0>(success) ? new(std::get<Cmpt*>(cmpt))Cmpt{ std::forward<Args>(args)... } : std::get<Cmpt*>(cmpt);
 	}
@@ -167,7 +177,7 @@ namespace Ubpa {
 
 		// erase
 		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
-		if (srcMovedEntityIndex != Entity::npos)
+		if (srcMovedEntityIndex != size_t_invalid)
 			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
 
 		info.archetype = dstArchetype;

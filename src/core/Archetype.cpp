@@ -46,7 +46,7 @@ size_t Archetype::RequestBuffer() {
 }
 
 tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
-	assert(idx <= entityNum);
+	assert(idx < entityNum);
 	assert(types.IsContain(type));
 	
 	size_t size = cmptTraits.Sizeof(type);
@@ -55,6 +55,34 @@ tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
 	return { buffer + offset + idxInChunk * size,size };
+}
+
+size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
+	assert(srcIdx < entityNum);
+	size_t dstIdx = RequestBuffer();
+
+	size_t srcIdxInChunk = srcIdx % chunkCapacity;
+	byte* srcBuffer = chunks[srcIdx / chunkCapacity]->Data();
+	size_t dstIdxInChunk = dstIdx % chunkCapacity;
+	byte* dstBuffer = chunks[dstIdx / chunkCapacity]->Data();
+
+	for (auto type : types) {
+		size_t offset = Offsetof(type);
+
+		if (type.Is<Entity>()) {
+			constexpr size_t size = sizeof(Entity);
+			memcpy(dstBuffer + offset + dstIdxInChunk * size, &e, size);
+		}
+		else {
+			size_t size = cmptTraits.Sizeof(type);
+			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
+			byte* src = srcBuffer + offset + srcIdxInChunk * size;
+
+			cmptTraits.CopyConstruct(type, dst, src);
+		}
+	}
+
+	return dstIdx;
 }
 
 tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(const std::set<CmptType>& cmptTypes) const {
@@ -84,7 +112,7 @@ size_t Archetype::Erase(size_t idx) {
 	size_t dstIdxInChunk = idx % chunkCapacity;
 	byte* dstBuffer = chunks[idx / chunkCapacity]->Data();
 
-	size_t movedIdx = static_cast<size_t>(-1);;
+	size_t movedIdx = size_t_invalid;
 	
 	if (idx != entityNum - 1) {
 		size_t movedIdxInArchetype = entityNum - 1;
