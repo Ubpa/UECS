@@ -13,16 +13,13 @@ namespace Ubpa {
 		template<typename Func>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter = EntityFilter{});
 
-		template<typename Func>
-		SystemFunc(Func&& func, EntityFilter filter = EntityFilter{});
-
 		// run-time dynamic function
 		template<typename Func>
 		SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{});
 		
 		const std::string& Name() const noexcept { return name; }
 
-		static constexpr size_t HashCode(std::string_view name) { return RuntimeTypeID(name); }
+		static constexpr size_t HashCode(std::string_view name) { return hash_string(name); }
 
 		size_t HashCode() const noexcept { return hashCode; }
 

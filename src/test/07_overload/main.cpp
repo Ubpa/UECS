@@ -11,14 +11,14 @@ struct A {};
 
 struct VP_System {
 	static void OnUpdate(Schedule& schedule) {
-		schedule.Request([](const V*, P*) {cout << "VP" << endl; }, "VP");
+		schedule.Register([](const V*, P*) {cout << "VP" << endl; }, "VP");
 	}
 };
 
 struct AVP_System {
 	static void OnUpdate(Schedule& schedule) {
 		schedule
-			.Request([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP")
+			.Register([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP")
 			.InsertNone<A>("VP");
 	}
 };

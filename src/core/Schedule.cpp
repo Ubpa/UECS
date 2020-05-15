@@ -161,7 +161,10 @@ size_t Schedule::EntityNumInQuery(string_view sys) const {
 	size_t hashcode = SystemFunc::HashCode(sys);
 	auto target = sysFuncs.find(hashcode);
 	if (target == sysFuncs.end())
-		return static_cast<size_t>(-1);
+		return size_t_invalid;
+
+	const_cast<Schedule*>(this)->LockFilter(sys);
+
 	auto func = target->second;
 	return entityMngr->EntityNum(func->query);
 }
@@ -217,6 +220,8 @@ Schedule& Schedule::EraseNone(string_view sys, CmptType type) {
 void Schedule::Clear() {
 	sysFuncs.clear();
 	sysFuncOrder.clear();
+	sysFilterChange.clear();
+	sysLockFilter.clear();
 }
 
 SysFuncGraph Schedule::GenSysFuncGraph() const {
@@ -224,6 +229,9 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 	// [change func Filter]
 	for (const auto& [hashcode, change] : sysFilterChange) {
+		if (sysLockFilter.find(hashcode) != sysLockFilter.end())
+			continue;
+
 		auto target = sysFuncs.find(hashcode);
 		if (target == sysFuncs.end())
 			continue;

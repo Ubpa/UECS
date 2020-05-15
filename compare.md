@@ -80,7 +80,7 @@ lifecycle: only support `OnUpdate`, because of no instantiation
 
 **Components** 
 
-use `CmptTag::LastFrame<Cmpt>`, `CmptTag::Write<Cmpt> == <Cmpt> *`, `CmptTag::Lastest<Cmpt> == const <Cmpt>* ` to differentiate read/write and timepoint
+use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <Cmpt> *`, `CmptTag::Lastest<Cmpt> == const <Cmpt>* ` to differentiate read/write and timepoint
 
 - `SystemFunc` with `LastFrame<Cmpt>` run before any `SystemFunc` with `CmptTag::Write<Cmpt>` 
 
@@ -91,11 +91,14 @@ use `CmptTag::LastFrame<Cmpt>`, `CmptTag::Write<Cmpt> == <Cmpt> *`, `CmptTag::La
 - `[const] Entity` 
 - `size_t int entityInQueryIndex` 
 - (not-support) `size_t nativeThreadIndex` 
+- `const EntityLocator* locator` 
+- `void** cmpts` 
 
 **System kind** 
 
 - components + special parameters : system for each entity
 - empty : job
+- `const EntityLocator* locator` + `void** cmpts`: run-time dynamic system function
 
 ### 3.2 System update order
 

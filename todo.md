@@ -24,19 +24,23 @@
   - [x] RTDCmptTraits : **R**un-**T**ime **D**ynamic **C**omponent **T**raits
   - [x] run-time dynamic `SystemFunc` 
   - [x] C-style API
-- [ ] ChunkJob
 
 ### unimportant
 
 - [x] exception: invalid `Entity` 
 - [ ] batch create/instantiate (need benchmark)
-- [ ] lock `FilterChange` 
+- [x] lock `FilterChange` 
 - [ ] EntityMngr Query-driven API
 
 ### maybe deprecate
 
 - [ ] shared component
 - [ ] system group
+
+### not sure
+
+- [ ] `Any` influence `EntityLocator` 
+- [ ] ChunkJob
 
 ## tool
 
@@ -53,5 +57,4 @@
 - [x] `constexpr SystemFunc::HashCode()` 
 - [x] cache `CmptIDSet`'s hashcode
 - [x] store `EntityMngr` and `SystemMngr` instead `World` in `Schedule` 
-- [ ] simplify `template Cmpt` and `CmptType` API
 

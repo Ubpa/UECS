@@ -9,7 +9,7 @@ struct A { float val; };
 
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
-		schedule.Request([](Entity e, const A* a) {
+		schedule.Register([](Entity e, const A* a) {
 			cout << e.Idx() << ": " << a->val << endl;
 		}, "");
 	}

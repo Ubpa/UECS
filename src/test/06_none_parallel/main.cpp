@@ -19,8 +19,8 @@ struct MySystem {
 			TypeList<>{} // none
 		);
 		schedule
-			.Request([](B*) {}, "need B, none A", filter_w0)
-			.Request([](B*) {}, "need A, B", filter_w1);
+			.Register([](B*) {}, "need B, none A", filter_w0)
+			.Register([](B*) {}, "need A, B", filter_w1);
 	}
 };
 

@@ -23,11 +23,6 @@ namespace Ubpa {
 	}
 
 	template<typename Func>
-	SystemFunc::SystemFunc(Func&& func, EntityFilter filter)
-		: SystemFunc{ std::string(nameof::nameof_type<Func>().data()), std::forward<Func>(func), std::move(filter) } {}
-
-
-	template<typename Func>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityFilter filter)
 		: SystemFunc(std::forward<Func>(func), std::move(name), std::move(filter), FuncTraits_ArgList<Func>{})
 	{

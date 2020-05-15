@@ -10,6 +10,66 @@ EntityFilter::EntityFilter()
 {
 }
 
+EntityFilter::EntityFilter(std::set<CmptType> allCmptTypes,
+	std::set<CmptType> anyCmptTypes,
+	std::set<CmptType> noneCmptTypes)
+	: allCmptTypes{ move(allCmptTypes) },
+	anyCmptTypes{ move(anyCmptTypes) },
+	noneCmptTypes{ move(noneCmptTypes) },
+	allHashCode{ GenAllHashCode() },
+	anyHashCode{ GenAnyHashCode() },
+	noneHashCode{ GenNoneHashCode() },
+	combinedHashCode{ GenCombinedHashCode()}
+{
+}
+
+void EntityFilter::InsertAll(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+		allCmptTypes.insert(types[i]);
+	allHashCode = GenAllHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
+void EntityFilter::InsertAny(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+		anyCmptTypes.insert(types[i]);
+	anyHashCode = GenAnyHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
+void EntityFilter::InsertNone(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+		noneCmptTypes.insert(types[i]);
+	noneHashCode = GenNoneHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
+void EntityFilter::EraseAll(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+		allCmptTypes.erase(types[i]);
+	allHashCode = GenAllHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
+void EntityFilter::EraseAny(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+	anyHashCode = GenAnyHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
+void EntityFilter::EraseNone(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+	for (size_t i = 0; i < num; i++)
+		noneCmptTypes.erase(types[i]);
+	noneHashCode = GenNoneHashCode();
+	combinedHashCode = GenCombinedHashCode();
+}
+
 size_t EntityFilter::GenAllHashCode() const noexcept {
 	size_t rst = TypeID<EntityFilter>;
 	for (auto type : allCmptTypes) {

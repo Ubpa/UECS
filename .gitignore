@@ -275,3 +275,5 @@ lib/
 bin/
 build/
 _deps/
+
+resources/

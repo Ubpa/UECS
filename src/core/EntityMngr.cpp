@@ -25,7 +25,7 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 
 	auto& info = entityTable[e.Idx()];
 	info.archetype = nullptr;
-	info.idxInArchetype = static_cast<size_t>(-1);
+	info.idxInArchetype = size_t_invalid;
 	info.version++;
 
 	entityTableFreeEntry.push_back(e.Idx());

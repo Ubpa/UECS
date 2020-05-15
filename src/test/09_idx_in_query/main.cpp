@@ -12,12 +12,12 @@ struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
 		auto flags = std::make_shared<std::vector<bool>>();
 		schedule
-			.Request(
+			.Register(
 				[flags](Entity e, size_t indexInQuery, const A*) {
 					flags->at(indexInQuery) = true;
 				}, "set flag"
 			)
-			.Request(
+			.Register(
 				[flags]() {
 					for (auto flag : *flags)
 						cout << flag << endl;

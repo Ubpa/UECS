@@ -14,14 +14,21 @@ namespace Ubpa {
 
 	class Schedule {
 	public:
-		template<typename... Args>
-		Schedule& Request(Args&&... args) {
-			SystemFunc* sysFunc = sysFuncPool.Request(std::forward<Args>(args)...);
-			sysFuncs.emplace(sysFunc->HashCode(), sysFunc);
-			return *this;
+		template<typename Func>
+		Schedule& Register(Func&& func, std::string name, EntityFilter filter = EntityFilter{}) {
+			return Request(std::forward<Func>(func), std::move(name), std::move(filter));
 		}
 
-		// if sys is not register, return static_cast<size_t>(-1)
+		// run-time dynamic function
+		template<typename Func>
+		Schedule& Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{}) {
+			return Request(std::forward<Func>(func), std::move(name), std::move(locator), std::move(filter));
+		}
+
+		Schedule& LockFilter(std::string_view sys) { sysLockFilter.insert(SystemFunc::HashCode(sys)); return *this; }
+
+		// if sys is unregistered, return size_t_invalid
+		// call LockFilterChange(std::string_view)
 		size_t EntityNumInQuery(std::string_view sys) const;
 
 		EntityMngr* GetEntityMngr() const noexcept { return entityMngr; }
@@ -43,6 +50,13 @@ namespace Ubpa {
 		template<typename Cmpt> Schedule& EraseNone(std::string_view sys) { return EraseNone(sys, CmptType::Of<Cmpt>()); }
 
 	private:
+		template<typename... Args>
+		Schedule& Request(Args&&... args) {
+			SystemFunc* sysFunc = sysFuncPool.Request(std::forward<Args>(args)...);
+			sysFuncs.emplace(sysFunc->HashCode(), sysFunc);
+			return *this;
+		}
+
 		Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr) : entityMngr{ entityMngr }, systemMngr{ systemMngr }{}
 		void Clear();
 		SysFuncGraph GenSysFuncGraph() const;
@@ -63,6 +77,7 @@ namespace Ubpa {
 			std::set<CmptType> eraseNones;
 		};
 		std::unordered_map<size_t, FilterChange> sysFilterChange;
+		std::unordered_set<size_t> sysLockFilter;
 
 		Pool<SystemFunc> sysFuncPool;
 		EntityMngr* entityMngr;

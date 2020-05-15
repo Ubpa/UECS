@@ -12,7 +12,7 @@ struct RTDSystem {
 			{}, // write
 			{} // read: lastest
 		);
-		schedule.Request([](const EntityLocator* locator, void** cmpts) {
+		schedule.Register([](const EntityLocator* locator, void** cmpts) {
 			for (auto type : locator->CmptTypes())
 				cout << type.HashCode() << endl;
 			}, "run-time dynamic func", locator);

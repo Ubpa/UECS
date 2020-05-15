@@ -20,7 +20,7 @@ struct MySystem {
 			TypeList<B, C>{}, // any
 			TypeList<D>{} // none
 		);
-		schedule.Request(
+		schedule.Register(
 			[](const E* e) {
 				cout << e->val << endl;
 			}, "test filter", filter

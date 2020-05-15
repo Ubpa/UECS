@@ -5,7 +5,7 @@ struct Velocity { float val; };
 
 struct MoverSystem {
 	static void OnUpdate(Ubpa::Schedule& schedule) {
-		schedule.Request(
+		schedule.Register(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;
 			}, "MoverSystem");

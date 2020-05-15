@@ -29,4 +29,9 @@ namespace Ubpa {
         }
         return rst;
     }
+
+    // fnv1a
+    inline constexpr size_t hash_string(std::string_view str) noexcept {
+        return RuntimeTypeID(str);
+    }
 }

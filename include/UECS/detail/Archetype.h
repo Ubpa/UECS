@@ -97,8 +97,8 @@ namespace Ubpa {
 		template<typename... CmptTypes,
 			// for function overload
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		static size_t HashCode(CmptTypes... types) noexcept { return CmptTypeSet{ CmptType::Of<Entity>(), types... }.HashCode(); }
-		static size_t HashCode(const CmptType* types, size_t num) noexcept {
+		static size_t HashCode(CmptTypes... types) { return CmptTypeSet{ CmptType::Of<Entity>(), types... }.HashCode(); }
+		static size_t HashCode(const CmptType* types, size_t num) {
 			CmptTypeSet typeset{ types,num };
 			typeset.Insert(CmptType::Of<Entity>());
 			return typeset.HashCode();
@@ -119,7 +119,7 @@ namespace Ubpa {
 		RTSCmptTraits cmptTraits;
 		std::unordered_map<CmptType, size_t> type2offset; // CmptType to offset in chunk (include Entity)
 
-		size_t chunkCapacity{ static_cast<size_t>(-1) };
+		size_t chunkCapacity{ size_t_invalid };
 		std::vector<Chunk*> chunks;
 
 		size_t entityNum{ 0 }; // number of entities
