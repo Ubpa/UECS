@@ -22,11 +22,16 @@
 
 cpp-Taskflow
 
-only support "ForEach" 
+support
+
+- `Entities.ForEach`: use `schedule.Register([](<Component-Tag>...){...})` 
+- `Job.WithCode`: use `schedule.Register([](){...})`(empty argument)
 
 **System organization** 
 
 (TODO) System Group
+
+use `schedule.Order(<system-name>, <system-name>)` to set system update order
 
 ## 1. Entities
 
@@ -44,7 +49,7 @@ only support "ForEach"
 
 (TODO) change filter
 
-#### 1.2 Worlds
+### 1.2 Worlds
 
 ## 2. Components
 
@@ -60,7 +65,7 @@ needless, you can use components constructor, destructor and move comstructor (c
 
 ### 2.4 Dynamic buffer components
 
-needless, you can use `std::vector` in Component
+needless, you can use any type (e.g. `std::vector`) in Component
 
 ### 2.5 Chunk components
 
@@ -125,6 +130,8 @@ use `Schedule::{Insert|Erase}{All|Any|None}` to dynamic change a system's filter
 ## 6. Versions and generations
 
 only support `Entity::Version` 
+
+(TODO) chunk version
 
 ## 7. C# Job System extensions
 
