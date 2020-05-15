@@ -36,21 +36,11 @@ namespace Ubpa {
 		return archetype;
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	Archetype* EntityMngr::GetOrCreateArchetypeOf(CmptTypes... types) {
-		size_t hashcode = Archetype::HashCode(types...);
-		auto target = h2a.find(hashcode);
-		if (target != h2a.end())
-			return target->second;
-
-		auto archetype = Archetype::New(types...);
-		h2a[hashcode] = archetype;
-		for (auto& [query, archetypes] : queryCache) {
-			if (archetype->GetCmptTypeSet().IsMatch(query))
-				archetypes.insert(archetype);
-		}
-
-		return archetype;
+		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return GetOrCreateArchetypeOf(typeArr.data(), typeArr.size());
 	}
 
 	template<typename... Cmpts>
@@ -67,69 +57,18 @@ namespace Ubpa {
 		return { e, std::get<Cmpts*>(cmpts)... };
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	Entity EntityMngr::CreateEntity(CmptTypes... types) {
-		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		Archetype* archetype = GetOrCreateArchetypeOf(types...);
-		size_t entityIndex = RequestEntityFreeEntry();
-		EntityInfo& info = entityTable[entityIndex];
-		Entity e{ entityIndex, info.version };
-		info.archetype = archetype;
-		info.idxInArchetype = archetype->CreateEntity(e);
-		return e;
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return CreateEntity(typeArr.data(), typeArr.size());
 	}
 
-	template<typename... CmptTypes> // <CmptTypes> == CmptType
+	template<typename... CmptTypes, typename>
 	void EntityMngr::AttachWithoutInit(Entity e, CmptTypes... types) {
 		static_assert(sizeof...(CmptTypes) > 0,
 			"EntityMngr::AttachWithoutInit: !types.empty()");
-		assert(Exist(e));
-
-		auto& info = entityTable[e.Idx()];
-		Archetype* srcArchetype = info.archetype;
-		size_t srcIdxInArchetype = info.idxInArchetype;
-
-		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
-		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.Insert(types...);
-		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
-
-		// get dstArchetype
-		Archetype* dstArchetype;
-		auto target = h2a.find(dstCmptTypeSetHashCode);
-		if (target == h2a.end()) {
-			dstArchetype = Archetype::Add(srcArchetype, types...);
-			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
-			h2a[dstCmptTypeSetHashCode] = dstArchetype;
-			for (auto& [query, archetypes] : queryCache) {
-				if (dstCmptTypeSet.IsMatch(query))
-					archetypes.insert(dstArchetype);
-			}
-		}
-		else
-			dstArchetype = target->second;
-
-		if (dstArchetype == srcArchetype)
-			return;
-
-		// move src to dst
-		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
-
-		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-		for (auto type : srcCmptTypeSet) {
-			auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
-			auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
-			assert(srcSize == dstSize);
-			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
-		}
-
-		// erase
-		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
-		if (srcMovedEntityIndex != size_t_invalid)
-			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
-
-		info.archetype = dstArchetype;
-		info.idxInArchetype = dstIdxInArchetype;
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return AttachWithoutInit(e, typeArr.data(), typeArr.size());
 	}
 
 	template<typename... Cmpts>
@@ -149,9 +88,8 @@ namespace Ubpa {
 		return cmpts;
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	std::array<CmptPtr, sizeof...(CmptTypes)> EntityMngr::Attach(Entity e, CmptTypes... types) {
-		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
 		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		constexpr size_t N = sizeof...(types);
@@ -205,59 +143,11 @@ namespace Ubpa {
 		Detach(e, CmptType::Of<Cmpts>()...);
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	void EntityMngr::Detach(Entity e, CmptTypes... types) {
 		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
-
-		auto& info = entityTable[e.Idx()];
-		Archetype* srcArchetype = info.archetype;
-		size_t srcIdxInArchetype = info.idxInArchetype;
-
-		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
-		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.Erase(types...);
-		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
-
-		// get dstArchetype
-		Archetype* dstArchetype;
-		auto target = h2a.find(dstCmptTypeSetHashCode);
-		if (target == h2a.end()) {
-			dstArchetype = Archetype::Remove(srcArchetype, types...);
-			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
-			h2a[dstCmptTypeSetHashCode] = dstArchetype;
-			for (auto& [query, archetypes] : queryCache) {
-				if (dstCmptTypeSet.IsMatch(query))
-					archetypes.insert(dstArchetype);
-			}
-		}
-		else
-			dstArchetype = target->second;
-
-		if (dstArchetype == srcArchetype)
-			return;
-
-		// move src to dst
-		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
-		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-		for (auto type : srcCmptTypeSet) {
-			auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
-			if (dstCmptTypeSet.IsContain(type)) {
-				auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
-				assert(srcSize == dstSize);
-				srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
-			}
-			else
-				srcCmptTraits.Destruct(type, srcCmpt);
-		}
-
-		// erase
-		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
-		if (srcMovedEntityIndex != size_t_invalid)
-			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
-
-		info.archetype = dstArchetype;
-		info.idxInArchetype = dstIdxInArchetype;
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return Detach(e, typeArr.data(), typeArr.size());
 	}
 
 	template<typename Cmpt>

@@ -31,6 +31,156 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 	entityTableFreeEntry.push_back(e.Idx());
 }
 
+Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num) {
+	size_t hashcode = Archetype::HashCode(types, num);
+	auto target = h2a.find(hashcode);
+	if (target != h2a.end())
+		return target->second;
+
+	auto archetype = Archetype::New(types, num);
+	h2a[hashcode] = archetype;
+	for (auto& [query, archetypes] : queryCache) {
+		if (archetype->GetCmptTypeSet().IsMatch(query))
+			archetypes.insert(archetype);
+	}
+
+	return archetype;
+}
+
+Entity EntityMngr::CreateEntity(const CmptType* types, size_t num) {
+	Archetype* archetype = GetOrCreateArchetypeOf(types, num);
+	size_t entityIndex = RequestEntityFreeEntry();
+	EntityInfo& info = entityTable[entityIndex];
+	Entity e{ entityIndex, info.version };
+	info.archetype = archetype;
+	info.idxInArchetype = archetype->CreateEntity(e);
+	return e;
+}
+
+void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) {
+	assert(Exist(e));
+
+	auto& info = entityTable[e.Idx()];
+	Archetype* srcArchetype = info.archetype;
+	size_t srcIdxInArchetype = info.idxInArchetype;
+
+	const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+	auto dstCmptTypeSet = srcCmptTypeSet;
+	for (size_t i = 0; i < num; i++)
+		dstCmptTypeSet.Insert(types[i]);
+	size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+
+	// get dstArchetype
+	Archetype* dstArchetype;
+	auto target = h2a.find(dstCmptTypeSetHashCode);
+	if (target == h2a.end()) {
+		dstArchetype = Archetype::Add(srcArchetype, types, num);
+		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
+		h2a[dstCmptTypeSetHashCode] = dstArchetype;
+		for (auto& [query, archetypes] : queryCache) {
+			if (dstCmptTypeSet.IsMatch(query))
+				archetypes.insert(dstArchetype);
+		}
+	}
+	else
+		dstArchetype = target->second;
+
+	if (dstArchetype == srcArchetype)
+		return;
+
+	// move src to dst
+	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
+
+	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	for (auto type : srcCmptTypeSet) {
+		auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
+		auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
+		assert(srcSize == dstSize);
+		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
+	}
+
+	// erase
+	auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
+	if (srcMovedEntityIndex != size_t_invalid)
+		entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
+
+	info.archetype = dstArchetype;
+	info.idxInArchetype = dstIdxInArchetype;
+}
+
+void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
+
+	auto srcArchetype = entityTable[e.Idx()].archetype;
+	AttachWithoutInit(e, types, num);
+	const auto& new_info = entityTable[e.Idx()];
+	const auto& rtdct = RTDCmptTraits::Instance();
+	for (size_t i = 0; i < num; i++) {
+		auto type = types[i];
+		if (srcArchetype->GetCmptTypeSet().IsContain(type))
+			continue;
+		auto target = rtdct.default_constructors.find(type);
+		if (target == rtdct.default_constructors.end())
+			continue;
+
+		target->second(get<void*>(new_info.archetype->At(type, new_info.idxInArchetype)));
+	}
+}
+
+void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
+	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
+
+	auto& info = entityTable[e.Idx()];
+	Archetype* srcArchetype = info.archetype;
+	size_t srcIdxInArchetype = info.idxInArchetype;
+
+	const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+	auto dstCmptTypeSet = srcCmptTypeSet;
+	for (size_t i = 0; i < num; i++)
+		dstCmptTypeSet.Erase(types[i]);
+	size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+
+	// get dstArchetype
+	Archetype* dstArchetype;
+	auto target = h2a.find(dstCmptTypeSetHashCode);
+	if (target == h2a.end()) {
+		dstArchetype = Archetype::Remove(srcArchetype, types, num);
+		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
+		h2a[dstCmptTypeSetHashCode] = dstArchetype;
+		for (auto& [query, archetypes] : queryCache) {
+			if (dstCmptTypeSet.IsMatch(query))
+				archetypes.insert(dstArchetype);
+		}
+	}
+	else
+		dstArchetype = target->second;
+
+	if (dstArchetype == srcArchetype)
+		return;
+
+	// move src to dst
+	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
+	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	for (auto type : srcCmptTypeSet) {
+		auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
+		if (dstCmptTypeSet.IsContain(type)) {
+			auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
+			assert(srcSize == dstSize);
+			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
+		}
+		else
+			srcCmptTraits.Destruct(type, srcCmpt);
+	}
+
+	// erase
+	auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
+	if (srcMovedEntityIndex != size_t_invalid)
+		entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
+
+	info.archetype = dstArchetype;
+	info.idxInArchetype = dstIdxInArchetype;
+}
+
 vector<CmptPtr> EntityMngr::Components(Entity e) const {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 

@@ -14,15 +14,11 @@ namespace Ubpa {
 		SetLayout();
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	static Archetype* Archetype::New(CmptTypes... types) {
-		auto rst = new Archetype;
-		rst->types = { CmptType::Of<Entity>(), types... };
-		cmptTraits.Register<Entity>();
-		for (const auto& type : types)
-			cmptTraits.Register(type);
-		SetLayout();
-		return rst;
+		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return New(typeArr.data(), typeArr.size());
 	}
 
 	template<typename... Cmpts>
@@ -41,21 +37,11 @@ namespace Ubpa {
 		return rst;
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	Archetype* Archetype::Add(const Archetype* from, CmptTypes... types) {
 		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		assert((from->types.IsNotContain(types) &&...));
-
-		Archetype* rst = new Archetype;
-
-		rst->types = from->types;
-		rst->types.Insert(types...);
-		rst->cmptTraits = from->cmptTraits;
-		(rst->cmptTraits.Register(types), ...);
-
-		rst->SetLayout();
-
-		return rst;
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return Add(typeArr.data(), typeArr.size());
 	}
 
 	template<typename... Cmpts>
@@ -63,21 +49,11 @@ namespace Ubpa {
 		return Remove(from, CmptType::Of<Cmpts>()...);
 	}
 
-	template<typename... CmptTypes>
+	template<typename... CmptTypes, typename>
 	Archetype* Archetype::Remove(const Archetype* from, CmptTypes... types) {
 		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		assert((from->types.IsContain(types) &&...));
-
-		Archetype* rst = new Archetype;
-
-		rst->types = from->types;
-		rst->types.Erase(types...);
-		rst->cmptTraits = from->cmptTraits;
-		(rst->cmptTraits.Deregister(types), ...);
-
-		rst->SetLayout();
-
-		return rst;
+		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
+		return Remove(typeArr.data(), typeArr.size());
 	}
 
 	template<typename Cmpt>

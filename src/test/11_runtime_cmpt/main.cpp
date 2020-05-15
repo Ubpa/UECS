@@ -24,13 +24,17 @@ int main() {
 	RTDCmptTraits::Instance().RegisterSize(type, 16);
 	RTDCmptTraits::Instance().RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl;});
 	RTDCmptTraits::Instance().RegisterDestructor(type, [](void*) { cout << "destructor" << endl; });
-	
+
 	World w;
+	w.systemMngr.Register<RTDSystem>();
+
 	auto [e] = w.entityMngr.CreateEntity();
 	w.entityMngr.Attach(e, type);
+	// C-style API
+	//w.entityMngr.Attach(e, &type, 1);
 
-	w.systemMngr.Register<RTDSystem>();
 	w.Update();
+
 	cout << w.DumpUpdateJobGraph() << endl;
 
 	return 0;

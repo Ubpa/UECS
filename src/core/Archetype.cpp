@@ -20,6 +20,53 @@ void Archetype::SetLayout() {
 		type2offset[type] = layout.offsets[i++];
 }
 
+Archetype* Archetype::New(const CmptType* types, size_t num) {
+	auto rst = new Archetype;
+	rst->types = CmptTypeSet{ types, num };
+	rst->types.Insert(CmptType::Of<Entity>());
+	rst->cmptTraits.Register<Entity>();
+	for (size_t i = 0; i < num; i++)
+		rst->cmptTraits.Register(types[i]);
+	rst->SetLayout();
+	return rst;
+}
+
+Archetype* Archetype::Add(const Archetype* from, const CmptType* types, size_t num) {
+	for (size_t i = 0; i < num; i++)
+		assert(from->types.IsNotContain(types[i]));
+
+	Archetype* rst = new Archetype;
+
+	rst->types = from->types;
+	rst->cmptTraits = from->cmptTraits;
+	for (size_t i = 0; i < num; i++) {
+		rst->types.Insert(types[i]);
+		rst->cmptTraits.Register(types[i]);
+	}
+
+	rst->SetLayout();
+
+	return rst;
+}
+
+Archetype* Archetype::Remove(const Archetype* from, const CmptType* types, size_t num) {
+	for (size_t i = 0; i < num; i++)
+		assert(from->types.IsContain(types[i]));
+
+	Archetype* rst = new Archetype;
+
+	rst->types = from->types;
+	rst->cmptTraits = from->cmptTraits;
+	for (size_t i = 0; i < num; i++) {
+		rst->types.Erase(types[i]);
+		rst->cmptTraits.Deregister(types[i]);
+	}
+
+	rst->SetLayout();
+
+	return rst;
+}
+
 size_t Archetype::CreateEntity(Entity e) {
 	size_t idx = RequestBuffer();
 	size_t idxInChunk = idx % chunkCapacity;

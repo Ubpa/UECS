@@ -14,9 +14,15 @@ namespace Ubpa {
 		CmptTypeSet() : hashcode{ TypeID<CmptTypeSet> } {}
 		template<typename... Cmpts>
 		CmptTypeSet(TypeList<Cmpts...>);
-		template<typename... CmptTypes>
-		CmptTypeSet(CmptTypes... types) : std::set<CmptType>{ types... }, hashcode{ HashCodeOf(*this) } {
-			static_assert((std::is_same_v<CmptTypes, CmptType>&&...));
+		template<typename... CmptTypes,
+			// for function overload
+			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
+		CmptTypeSet(CmptTypes... types) : std::set<CmptType>{ types... }, hashcode{ HashCodeOf(*this) } {}
+		CmptTypeSet(const CmptType* types, size_t num) {
+			assert(types != nullptr && num != 0);
+			for (size_t i = 0; i < num; i++)
+				insert(types[i]);
+			hashcode = HashCodeOf(*this);
 		}
 
 		template<typename... Cmpts>

@@ -26,18 +26,28 @@ namespace Ubpa {
 		Archetype(TypeList<Cmpts...>);
 
 		// auto add Entity, use RTDCmptTraits
-		template<typename... CmptTypes>
+		template<typename... CmptTypes,
+			// for function overload
+			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		static Archetype* New(CmptTypes...);
+		static Archetype* New(const CmptType* types, size_t num);
 
 		// auto add Entity
 		template<typename... Cmpts>
 		static Archetype* Add(const Archetype* from);
-		template<typename... CmptTypes>
+		static Archetype* Add(const Archetype* from, const CmptType* types, size_t num);
+		template<typename... CmptTypes,
+			// for function overload
+			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		static Archetype* Add(const Archetype* from, CmptTypes...);
+
 		// auto add Entity
 		template<typename... Cmpts>
 		static Archetype* Remove(const Archetype* from);
-		template<typename... CmptTypes>
+		static Archetype* Remove(const Archetype* from, const CmptType* types, size_t num);
+		template<typename... CmptTypes,
+			// for function overload
+			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		static Archetype* Remove(const Archetype* from, CmptTypes...);
 
 		~Archetype();
@@ -84,8 +94,15 @@ namespace Ubpa {
 
 		template<typename... Cmpts>
 		static constexpr size_t HashCode() noexcept { return CmptTypeSet::HashCodeOf<Entity, Cmpts...>(); }
-		template<typename... CmptTypes>
+		template<typename... CmptTypes,
+			// for function overload
+			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		static size_t HashCode(CmptTypes... types) noexcept { return CmptTypeSet{ CmptType::Of<Entity>(), types... }.HashCode(); }
+		static size_t HashCode(const CmptType* types, size_t num) noexcept {
+			CmptTypeSet typeset{ types,num };
+			typeset.Insert(CmptType::Of<Entity>());
+			return typeset.HashCode();
+		}
 
 	private:
 		Archetype() = default;
