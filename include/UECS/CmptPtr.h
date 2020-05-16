@@ -12,13 +12,14 @@ namespace Ubpa {
 		template<typename Cmpt>
 		CmptPtr(Cmpt* p) : type{ CmptType::Of<Cmpt>() }, p{ p }{}
 
+		CmptType Type() const noexcept { return type; }
+		void* Ptr() const noexcept { return p; }
+
 		template<typename Cmpt>
 		Cmpt* As() const noexcept {
 			assert(type.Is<Cmpt>());
 			return reinterpret_cast<Cmpt*>(p);
 		}
-		CmptType Type() const noexcept { return type; }
-		void* Ptr() const noexcept { return p; }
 	private:
 		CmptType type;
 		void* p;
@@ -31,13 +32,14 @@ namespace Ubpa {
 		template<typename Cmpt>
 		CmptCPtr(const Cmpt* p) : type{ CmptType::Of<Cmpt>() }, p{ p }{}
 
+		CmptType Type() const noexcept { return type; }
+		const void* Ptr() const noexcept { return p; }
+
 		template<typename Cmpt>
 		const Cmpt* As() const noexcept {
 			assert(type.Is<Cmpt>());
 			return reinterpret_cast<Cmpt*>(p);
 		}
-		CmptType Type() const noexcept { return type; }
-		const void* Ptr() const noexcept { return p; }
 	private:
 		CmptType type;
 		const void* p;
