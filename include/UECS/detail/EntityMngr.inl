@@ -44,23 +44,23 @@ namespace Ubpa {
 	}
 
 	template<typename... Cmpts>
-	std::tuple<Entity, Cmpts*...> EntityMngr::CreateEntity() {
+	std::tuple<Entity, Cmpts*...> EntityMngr::Create() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::CreateEntity: <Cmpts> must be different");
+			"EntityMngr::Create: <Cmpts> must be different");
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		size_t entityIndex = RequestEntityFreeEntry();
 		EntityInfo& info = entityTable[entityIndex];
 		Entity e{ entityIndex, info.version };
 		info.archetype = archetype;
-		auto [idxInArchetype, cmpts] = archetype->CreateEntity<Cmpts...>(e);
+		auto [idxInArchetype, cmpts] = archetype->Create<Cmpts...>(e);
 		info.idxInArchetype = idxInArchetype;
 		return { e, std::get<Cmpts*>(cmpts)... };
 	}
 
 	template<typename... CmptTypes, typename>
-	Entity EntityMngr::CreateEntity(CmptTypes... types) {
+	Entity EntityMngr::Create(CmptTypes... types) {
 		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		return CreateEntity(typeArr.data(), typeArr.size());
+		return Create(typeArr.data(), typeArr.size());
 	}
 
 	template<typename... Cmpts>

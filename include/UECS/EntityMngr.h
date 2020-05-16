@@ -12,17 +12,26 @@
 namespace Ubpa {
 	class World;
 
+	// Entity Manager of World
+	// auto maintain Component's lifecycle ({default|copy|move} constructor, destructor)
+	// [API]
+	// - Entity: Create, Instantiate, Destroy, Exist
+	// - Component: Attach, Emplace, Detach, Have, Get, Components
+	// - other: EntityNum, AddCommand
+	// [important]
+	// - API with CmptType need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
+	// - API with Entity require Entity exist  (throw std::invalid_argument)
 	class EntityMngr {
 	public:
 		template<typename... Cmpts>
-		std::tuple<Entity, Cmpts*...> CreateEntity();
+		std::tuple<Entity, Cmpts*...> Create();
 		// use RTDCmptTraits
-		Entity CreateEntity(const CmptType* types, size_t num);
-		// call CreateEntity(const CmptType*, size_t)
+		Entity Create(const CmptType* types, size_t num);
+		// call Create(const CmptType*, size_t)
 		template<typename... CmptTypes,
 			// for function overload
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		Entity CreateEntity(CmptTypes...);
+		Entity Create(CmptTypes...);
 
 		Entity Instantiate(Entity);
 

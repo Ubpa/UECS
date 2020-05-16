@@ -47,13 +47,13 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 	return archetype;
 }
 
-Entity EntityMngr::CreateEntity(const CmptType* types, size_t num) {
+Entity EntityMngr::Create(const CmptType* types, size_t num) {
 	Archetype* archetype = GetOrCreateArchetypeOf(types, num);
 	size_t entityIndex = RequestEntityFreeEntry();
 	EntityInfo& info = entityTable[entityIndex];
 	Entity e{ entityIndex, info.version };
 	info.archetype = archetype;
-	info.idxInArchetype = archetype->CreateEntity(e);
+	info.idxInArchetype = archetype->Create(e);
 	return e;
 }
 

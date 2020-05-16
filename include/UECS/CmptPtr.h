@@ -5,6 +5,7 @@
 #include <cassert>
 
 namespace Ubpa {
+	// CmptType + void*
 	class CmptPtr {
 	public:
 		CmptPtr(CmptType type, void* p) :type{ type }, p{ p }{}
@@ -23,6 +24,7 @@ namespace Ubpa {
 		void* p;
 	};
 
+	// CmptType + const void*
 	class CmptCPtr {
 	public:
 		CmptCPtr(CmptType type, const void* p) :type{ type }, p{ p }{}

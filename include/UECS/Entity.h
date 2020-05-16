@@ -3,7 +3,8 @@
 #include "detail/Util.h"
 
 namespace Ubpa {
-	class Entity final {
+	// index + version
+	class Entity {
 	public:
 		size_t Idx() const noexcept { return idx; }
 		size_t Version() const noexcept { return version; }

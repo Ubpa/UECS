@@ -3,6 +3,9 @@
 #include "Schedule.h"
 
 namespace Ubpa{
+	// System Manager
+	// System is a struct with specific function
+	// signature: static void OnUpdate(Schedule&)
 	class SystemMngr {
 	public:
 		template<typename... Systems>

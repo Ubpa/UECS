@@ -28,6 +28,6 @@ struct alignas(8) E {
 
 int main() {
 	World w;
-	w.entityMngr.CreateEntity<A, B, C, D, E>();
+	w.entityMngr.Create<A, B, C, D, E>();
 	return 0;
 }

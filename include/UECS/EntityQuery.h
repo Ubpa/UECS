@@ -4,6 +4,7 @@
 #include "EntityLocator.h"
 
 namespace Ubpa {
+	// EntityFilter + EntityLocator
 	class EntityQuery {
 	public:
 		EntityFilter filter;

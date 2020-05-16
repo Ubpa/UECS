@@ -19,7 +19,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	auto [e] = w.entityMngr.CreateEntity<>();
+	auto [e] = w.entityMngr.Create<>();
 	w.entityMngr.Emplace<A>(e, 1.f);
 	w.entityMngr.Instantiate(e);
 

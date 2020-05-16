@@ -7,6 +7,7 @@
 #include <set>
 
 namespace Ubpa {
+	// locate components in function's argument list for Archetype
 	class EntityLocator {
 	public:
 		template<typename TaggedCmptList>

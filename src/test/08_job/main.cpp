@@ -35,7 +35,7 @@ int main() {
 	w.systemMngr.Register<MySystem>();
 
 	for (size_t i = 1; i <= 100; i++) {
-		auto [e] = w.entityMngr.CreateEntity();
+		auto [e] = w.entityMngr.Create();
 		w.entityMngr.Emplace<Data>(e, i);
 	}
 

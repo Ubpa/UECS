@@ -27,8 +27,8 @@ int main() {
 	World w;
 	w.systemMngr.Register<VP_System, AVP_System>();
 
-	w.entityMngr.CreateEntity<V, P>();
-	w.entityMngr.CreateEntity<A, V, P>();
+	w.entityMngr.Create<V, P>();
+	w.entityMngr.Create<A, V, P>();
 
 	w.Update();
 

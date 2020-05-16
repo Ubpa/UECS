@@ -55,7 +55,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<RTDSystem>();
 
-	auto [e] = w.entityMngr.CreateEntity();
+	auto [e] = w.entityMngr.Create();
 	w.entityMngr.Attach(e, type);
 
 	w.Update();

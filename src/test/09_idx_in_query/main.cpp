@@ -33,9 +33,9 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	w.entityMngr.CreateEntity<A>();
-	w.entityMngr.CreateEntity<A>();
-	w.entityMngr.CreateEntity<A, B>();
+	w.entityMngr.Create<A>();
+	w.entityMngr.Create<A>();
+	w.entityMngr.Create<A, B>();
 
 	w.Update();
 

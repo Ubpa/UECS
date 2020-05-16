@@ -67,7 +67,7 @@ Archetype* Archetype::Remove(const Archetype* from, const CmptType* types, size_
 	return rst;
 }
 
-size_t Archetype::CreateEntity(Entity e) {
+size_t Archetype::Create(Entity e) {
 	size_t idx = RequestBuffer();
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();

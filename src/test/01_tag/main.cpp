@@ -24,7 +24,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<DataSystem>();
 
-	w.entityMngr.CreateEntity<Data>();
+	w.entityMngr.Create<Data>();
 
 	w.Update();
 

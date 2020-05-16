@@ -42,7 +42,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	w.entityMngr.CreateEntity<A, B>();
+	w.entityMngr.Create<A, B>();
 
 	w.Update();
 	w.Update();

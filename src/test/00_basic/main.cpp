@@ -15,6 +15,6 @@ struct MoverSystem {
 int main() {
 	Ubpa::World w;
 	w.systemMngr.Register<MoverSystem>();
-	w.entityMngr.CreateEntity<Position, Velocity>();
+	w.entityMngr.Create<Position, Velocity>();
 	w.Update();
 }

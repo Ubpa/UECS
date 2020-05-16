@@ -5,6 +5,7 @@
 #include "EntityMngr.h"
 
 namespace Ubpa {
+	// SystemMngr + EntityMngr
 	class World {
 	public:
 		World() : schedule{ &entityMngr, &systemMngr } {}

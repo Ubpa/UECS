@@ -7,6 +7,7 @@
 #include <set>
 
 namespace Ubpa {
+	// filter Archetype with All, Any and None
 	class EntityFilter {
 	public:
 		EntityFilter();
@@ -30,6 +31,12 @@ namespace Ubpa {
 		const std::set<CmptType>& AllCmptTypes() const noexcept { return allCmptTypes; }
 		const std::set<CmptType>& AnyCmptTypes() const noexcept { return anyCmptTypes; }
 		const std::set<CmptType>& NoneCmptTypes() const noexcept { return noneCmptTypes; }
+
+		// [API]
+		// <Mode><Type>(Container|CmptTypes...|CmptType*, num)
+		// - <Mode>: Insert | Erase
+		// - <Type>: All | Any | None
+		// - side effect: update hashcode
 
 		void InsertAll(const CmptType* types, size_t num);
 		void InsertAny(const CmptType* types, size_t num);

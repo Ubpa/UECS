@@ -6,17 +6,17 @@
 #include <functional>
 
 namespace Ubpa {
-	// run-time dynamic component traits
+	// run-time dynamic component traits, singleton
 	// size (> 0) is neccessary
 	// optional
-	// - alignment: 8 as default
+	// - alignment: alignof(std::max_align_t) as default, 8 / 16 in most cases
 	// - default constructor: do nothing as default
 	// - copy constructor: memcpy as default
 	// - move constructor: memcpy as default
 	// - destructor: do nothing as default
 	class RTDCmptTraits {
 	public:
-		static constexpr size_t default_alignment = static_cast<size_t>(8);
+		static constexpr size_t default_alignment = alignof(std::max_align_t);
 
 		static RTDCmptTraits& Instance() noexcept {
 			static RTDCmptTraits instance;

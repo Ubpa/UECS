@@ -27,10 +27,10 @@ struct MySystem {
 int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
-	w.entityMngr.CreateEntity<>();
-	w.entityMngr.CreateEntity<A>();
-	w.entityMngr.CreateEntity<B>();
-	w.entityMngr.CreateEntity<A, B>();
+	w.entityMngr.Create<>();
+	w.entityMngr.Create<A>();
+	w.entityMngr.Create<B>();
+	w.entityMngr.Create<A, B>();
 
 	w.Update();
 
