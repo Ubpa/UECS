@@ -3,7 +3,7 @@
 
 ⭐ Star us on GitHub — it helps!
 
-[![repo-size](https://img.shields.io/github/languages/code-size/Ubpa/UECS?style=flat)](https://github.com/Ubpa/UECS/archive/master.zip) 
+[![repo-size](https://img.shields.io/github/languages/code-size/Ubpa/UECS?style=flat)](https://github.com/Ubpa/UECS/archive/master.zip) [![tag](https://img.shields.io/github/v/tag/Ubpa/UECS)](https://github.com/Ubpa/UECS/releases/tag/0.9.0) 
 
 ## Environment
 
