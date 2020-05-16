@@ -3,7 +3,7 @@
 
 ⭐ Star us on GitHub — it helps!
 
-[![repo-size](https://img.shields.io/github/languages/code-size/Ubpa/UECS?style=flat)](https://github.com/Ubpa/UECS/archive/master.zip) [![tag](https://img.shields.io/github/v/tag/Ubpa/UECS)](https://github.com/Ubpa/UECS/releases/tag/0.9.0) [![license](https://img.shields.io/github/license/Ubpa/UECS)](LICENSE) 
+[![repo-size](https://img.shields.io/github/languages/code-size/Ubpa/UECS?style=flat)](https://github.com/Ubpa/UECS/archive/master.zip) [![tag](https://img.shields.io/github/v/tag/Ubpa/UECS)](https://github.com/Ubpa/UECS/tags) [![license](https://img.shields.io/github/license/Ubpa/UECS)](LICENSE) 
 
 ## Environment
 
@@ -11,9 +11,11 @@
 - C++ 17
 - CMake 16.3 +
 
-## Document
+## Documentation
 
-> TODO
+- [API](doc/API.md) 
+- [Comparison with Unity3D ECS](doc/comparison.md) 
+- [TODO](doc/todo.md) 
 
 ## Example
 
@@ -50,16 +52,6 @@ int main() {
 - [parrallel with `None` filter](src/test/06_none_parallel/main.cpp) 
 - [system **overload**](src/test/07_overload/main.cpp) 
 - [runtime dynamic component and system](src/test/11_runtime_cmpt/main.cpp) 
-
-## Comparison with Unity ECS
-
-UECS's primary reference project is Unity3D's ECS -- Entities.
-
-Read [comparison.md](comparison.md) for details.
-
-## TODO
-
-Read [todo.md](todo.md) for details.
 
 ## Licensing
 
