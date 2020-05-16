@@ -9,14 +9,12 @@ struct A {};
 struct B {};
 struct C {};
 struct D {};
-struct E {
-	E(float f) :val{ f } {}
-	float val;
-};
+struct E { float val; };
 
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
-		EntityFilter filter(TypeList<A>{}, // all
+		EntityFilter filter(
+			TypeList<A>{}, // all
 			TypeList<B, C>{}, // any
 			TypeList<D>{} // none
 		);

@@ -4,24 +4,24 @@
 
 ### important
 
-- [x] Entity += version
-- [x] CmptTypeSet hash
-- [x] CmptType
-- [x] EntityQuery
+- [x] `Entity` += `version` 
+- [x] `CmptTypeSet` hash
+- [x] `CmptType` 
+- [x] `EntityQuery` 
 - [x] Query Entity
 - [x] alignment
 - [x] `Entity` alias table: `Entity::idx -> (Archetype, idx)` 
 - [x] `Entity` as special `Component` stored in `Chunk` 
 - [x] `None` Parallel
-- [x] System Override (dynamic `None`)
-- [x] Archetype += RuntimeCmptTraits
+- [x] System Overload s(dynamic `None`)
+- [x] `Archetype` += `RuntimeCmptTraits` 
 - [x] empty argument `SystemFunc` as job
-- [x] index in Query
-  - [x] SystemFunc support
+- [x] index in `Query` 
+  - [x] `SystemFunc` support
   - [x] get entity num of query
 - [x] instantiate
-- [x] string/CmptType-driven API
-  - [x] RTDCmptTraits : **R**un-**T**ime **D**ynamic **C**omponent **T**raits
+- [x] string/`CmptType`-driven API
+  - [x] `RTDCmptTraits` : **R**un-**T**ime **D**ynamic **C**omponent **T**raits
   - [x] run-time dynamic `SystemFunc` 
   - [x] C-style API
 
@@ -30,7 +30,7 @@
 - [x] exception: invalid `Entity` 
 - [ ] batch create/instantiate (need benchmark)
 - [x] lock `FilterChange` 
-- [ ] EntityMngr Query-driven API
+- [ ] `EntityMngr` `Query`-driven API
 
 ### maybe deprecate
 
@@ -55,6 +55,6 @@
 - [x] simplify `Schedule` 
 - [ ] parallel `Schedule` 
 - [x] `constexpr SystemFunc::HashCode()` 
-- [x] cache `CmptIDSet`'s hashcode
+- [x] cache `CmptTypeSet`'s hashcode
 - [x] store `EntityMngr` and `SystemMngr` instead `World` in `Schedule` 
 

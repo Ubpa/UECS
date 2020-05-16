@@ -1,6 +1,16 @@
 # UECS
 **U**bpa **E**ntity-**C**omponent-**S**ystem in Unity-style
 
+## Environment
+
+- MSVC 16.5.3 +
+- C++ 17
+- CMake 16.3 +
+
+## Document
+
+> TODO
+
 ## Example
 
 ```c++
@@ -14,7 +24,7 @@ struct MoverSystem {
         schedule.Request(
             [](const Velocity* v, Position* p) {
                 p->val += v->val;
-            }, "MoverSystem");
+            }, "Mover");
     }
 };
 
@@ -37,11 +47,11 @@ int main() {
 - [system **overload**](src/test/07_overload/main.cpp) 
 - [runtime dynamic component and system](src/test/11_runtime_cmpt/main.cpp) 
 
-## Compare with Unity ECS
+## Comparison with Unity ECS
 
-UECS's primary reference project is Unity's ECS.
+UECS's primary reference project is Unity3D's ECS -- Entities.
 
-Read [compare.md](compare.md) for details.
+Read [comparison.md](comparison.md) for details.
 
 ## TODO
 

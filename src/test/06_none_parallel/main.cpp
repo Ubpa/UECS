@@ -10,11 +10,13 @@ struct B {};
 
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
-		EntityFilter filter_w0(TypeList<>{}, // all
+		EntityFilter filter_w0(
+			TypeList<>{}, // all
 			TypeList<>{}, // any
 			TypeList<A>{} // none
 		);
-		EntityFilter filter_w1(TypeList<A>{}, // all
+		EntityFilter filter_w1(
+			TypeList<A>{}, // all
 			TypeList<>{}, // any
 			TypeList<>{} // none
 		);

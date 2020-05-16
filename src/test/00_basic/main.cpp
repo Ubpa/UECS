@@ -8,7 +8,7 @@ struct MoverSystem {
 		schedule.Register(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;
-			}, "MoverSystem");
+			}, "Mover");
 	}
 };
 

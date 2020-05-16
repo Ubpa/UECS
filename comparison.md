@@ -1,4 +1,4 @@
-# Compare with Unity ECS core
+# Comparison with Unity ECS core
 
 > ref: [Unity Entities 0.10.0-preview.6](https://docs.unity3d.com/Packages/com.unity.entities@0.10/manual/index.html) 
 >
@@ -73,7 +73,7 @@ needless, you can use any type (e.g. `std::vector`) in Component
 
 ## 3. Systems
 
-no instantiation, just use static function `OnUpdate(Schedule&)`，you can regist `SystemFunc`，set update order, dynamic change filter, etc.
+no instantiation, just use static function `OnUpdate(Schedule&)`，you can register `SystemFunc`，set update order, dynamic change filter, etc.
 
 ### 3.1 Creating systems
 
@@ -94,14 +94,14 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 **special parameters** 
 
 - `[const] Entity` 
-- `size_t int entityInQueryIndex` 
+- `size_t entityInQueryIndex` 
 - (not-support) `size_t nativeThreadIndex` 
 - `const EntityLocator* locator` 
 - `void** cmpts` 
 
 **System kind** 
 
-- components + special parameters : system for each entity
+- components (optional: + `Entity`, `size_t entityInQueryIndex`) : system for each entity
 - empty : job
 - `const EntityLocator* locator` + `void** cmpts`: run-time dynamic system function
 
