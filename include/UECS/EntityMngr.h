@@ -84,6 +84,8 @@ namespace Ubpa {
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		Archetype* GetOrCreateArchetypeOf(CmptTypes...);
 
+		template<typename... Cmpts>
+		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
 		// call AttachWithoutInit(Entity, const CmptType*, size_t)
 		template<typename... CmptTypes,

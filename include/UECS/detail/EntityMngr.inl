@@ -63,6 +63,57 @@ namespace Ubpa {
 		return CreateEntity(typeArr.data(), typeArr.size());
 	}
 
+	template<typename... Cmpts>
+	void EntityMngr::AttachWithoutInit(Entity e) {
+		assert(Exist(e));
+
+		auto& info = entityTable[e.Idx()];
+		Archetype* srcArchetype = info.archetype;
+		size_t srcIdxInArchetype = info.idxInArchetype;
+
+		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
+		auto dstCmptTypeSet = srcCmptTypeSet;
+		dstCmptTypeSet.Insert<Cmpts...>();
+		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+
+		// get dstArchetype
+		Archetype* dstArchetype;
+		auto target = h2a.find(dstCmptTypeSetHashCode);
+		if (target == h2a.end()) {
+			dstArchetype = Archetype::Add<Cmpts...>(srcArchetype);
+			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
+			h2a[dstCmptTypeSetHashCode] = dstArchetype;
+			for (auto& [query, archetypes] : queryCache) {
+				if (dstCmptTypeSet.IsMatch(query))
+					archetypes.insert(dstArchetype);
+			}
+		}
+		else
+			dstArchetype = target->second;
+
+		if (dstArchetype == srcArchetype)
+			return;
+
+		// move src to dst
+		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
+
+		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+		for (auto type : srcCmptTypeSet) {
+			auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
+			auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
+			assert(srcSize == dstSize);
+			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
+		}
+
+		// erase
+		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
+		if (srcMovedEntityIndex != size_t_invalid)
+			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
+
+		info.archetype = dstArchetype;
+		info.idxInArchetype = dstIdxInArchetype;
+	}
+
 	template<typename... CmptTypes, typename>
 	void EntityMngr::AttachWithoutInit(Entity e, CmptTypes... types) {
 		static_assert(sizeof...(CmptTypes) > 0,
@@ -80,7 +131,7 @@ namespace Ubpa {
 		using CmptList = TypeList<Cmpts...>;
 		std::array<bool, sizeof...(Cmpts)> needAttach
 			= { entityTable[e.Idx()].archetype->GetCmptTypeSet().IsNotContain<Cmpts>()... };
-		AttachWithoutInit(e, CmptType::Of<Cmpts>()...);
+		AttachWithoutInit<Cmpts...>(e);
 		const auto& new_info = entityTable[e.Idx()];
 		std::tuple<Cmpts*...> cmpts{ new_info.archetype->At<Cmpts>(new_info.idxInArchetype)... };
 		((std::get<Find_v<CmptList, Cmpts>>(needAttach) ? new(std::get<Cmpts*>(cmpts))Cmpts : nullptr), ...);
@@ -124,7 +175,7 @@ namespace Ubpa {
 
 		bool needAttach = entityTable[e.Idx()].archetype->GetCmptTypeSet().IsNotContain<Cmpt>();
 		if (needAttach) {
-			AttachWithoutInit(e, CmptType::Of<Cmpt>());
+			AttachWithoutInit<Cmpt>(e);
 			const auto& info = entityTable[e.Idx()];
 			Cmpt* cmpt = info.archetype->At<Cmpt>(info.idxInArchetype);
 			return new(cmpt)Cmpt{ std::forward<Args>(args)... };

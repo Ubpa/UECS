@@ -23,10 +23,8 @@ struct RTDSystem {
 					size_t i = 0;
 					for (auto type : locator->CmptTypes()) {
 						if (type == CmptType{ "LuaCmpt" }) {
-							double& v0 = *reinterpret_cast<double*>(cmpts[i]);
-							double& v1 = *(reinterpret_cast<double*>(cmpts[i]) + 1);
-							v0 = 1.;
-							v1 = 2.;
+							double& val = *reinterpret_cast<double*>(cmpts[i]);
+							val = 520.;
 						}
 						i++;
 					}
@@ -36,11 +34,8 @@ struct RTDSystem {
 					size_t i = 0;
 					for (auto type : locator->CmptTypes()) {
 						if (type == CmptType{ "LuaCmpt" }) {
-							const double& v0 = *reinterpret_cast<double*>(cmpts[i]);
-							const double& v1 = *(reinterpret_cast<double*>(cmpts[i]) + 1);
-							cout
-								<< "v0 : " << v0 << endl
-								<< "v1 : " << v1 << endl;
+							const double& val = *reinterpret_cast<double*>(cmpts[i]);
+							cout << "value : " << val << endl;
 						}
 						i++;
 					}
@@ -50,11 +45,10 @@ struct RTDSystem {
 
 int main() {
 	CmptType type("LuaCmpt");
-	// struct LuaCmpt {
-	//   double value0;
-	//   double value1;
+	// LuaCmpt {
+	//   number value;
     // }
-	RTDCmptTraits::Instance().RegisterSize(type, 16);
+	RTDCmptTraits::Instance().RegisterSize(type, 8);
 	RTDCmptTraits::Instance().RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl;});
 	RTDCmptTraits::Instance().RegisterDestructor(type, [](void*) { cout << "destructor" << endl; });
 
@@ -63,8 +57,6 @@ int main() {
 
 	auto [e] = w.entityMngr.CreateEntity();
 	w.entityMngr.Attach(e, type);
-	// C-style API
-	//w.entityMngr.Attach(e, &type, 1);
 
 	w.Update();
 
