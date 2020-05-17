@@ -14,7 +14,7 @@ namespace Ubpa {
 
 	// [description]
 	// system infomation record
-	// - SystemFunc container
+	// - SystemFunc
 	// - orders
 	// - dynamic filter changes
 	// [detail]

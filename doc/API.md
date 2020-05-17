@@ -64,27 +64,49 @@ a no-type pointer of a component.
 
 # `RTDCmptTraits` 
 
-TODO
+runtime component traits for dynamic type
 
-`EntityMngr` 
+it's a singleton class
+
+you can register a dynamic class with 
+
+- size: neccessary, must `> 0` 
+- alignment: optional, `alignof(std::max_align_t)` as default, 8 / 16 in most cases
+- default constructor: optional, do nothing as default
+- copy constructor: optional, `memcpy` as default
+- move constructor: optional, `memcpy` as default
+- destructor: optional, do nothing as default
+
+## Methods
+
+- `static RTDCmptTraits& Instance()`: get the instance of `RTDCmptTraits` 
+- `RTDCmptTraits& RegisterSize(CmptType type, size_t size)` 
+- `RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment)` 
+- `RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f)` 
+- `RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f)` 
+- `RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f)` 
+- `RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f)` 
+- `RTDCmptTraits& Deregister(CmptType type)`: deregister size, alignment, default/copy/move constructor and destructor.
+
+# `EntityMngr` 
 
 The `EntityMngr` manages entities and components in a `World`.
 
 ## Fields
 
-### `std::vector<EntityInfo> entityTable` 
+### `private: std::vector<EntityInfo> entityTable` 
 
 an array to store entities's infomation.
 
 > ```c++
 > struct EntityInfo {
->   Archetype* archetype{ nullptr };
->   size_t idxInArchetype{ size_t_invalid };
->   size_t version{ 0 }; // version
+>     Archetype* archetype{ nullptr };
+>     size_t idxInArchetype{ size_t_invalid };
+>     size_t version{ 0 }; // version
 > };
 > ```
 
-### `std::vector<std::function<void()>> commandBuffer` 
+### `private: std::vector<std::function<void()>> commandBuffer` 
 
 a buffer to store commands added in `World::Update()` for methods which can not run in worker threads.
 
@@ -155,33 +177,118 @@ if `e` is invalid, throw `std::invalid_argument`.
 
 # `CmptTag` 
 
-TODO
+use tag to dstinguish write, read before write and read after write
+
+- `CmptTag::LastFrame<Component>`: read before write
+- `CmptTag::Write<Component>`: write, equal to `<Component> *` 
+- `CmptTag::Latest<Component>`: read after write, equal to `const <Component> *` 
 
 # `EntityLocator` 
 
-TODO
+locate components in function's argument list for Archetype
 
 # `EntityFilter` 
 
-TODO
+filter Archetype with All, Any and None
 
 # `EntityQuery` 
 
-TODO
+`EntityLocator` + `EntityFilter` 
 
 # `SystemFunc` 
 
-TODO
+system function registered by Schedule in `<System>::OnUpdate(Schedule&)` 
+
+name + query + function<...>
+
+name must be unique in global
+
+query.filter can be change dynamically by other `<System>` with Schedule
+
+[system function kind] (distinguish by argument list)
+
+- per entity function: `[[const] Entity e, ] [size_t indexInQuery, ] <Tagged_Component>...` 
+  - tagged component: `CmptTag::{LastFrame|Write|Latest}<Component>` 
+- job: empty argument list
+- runtime dynamic function: `const EntityLocator* locator, void** cmpts` 
+
+## Fields
+
+### `EntityQuery query` 
+
+query
+
+## Methods
+
+- `template<typename Func> SystemFunc(Func&& func, std::string name, EntityFilter filter = EntityFilter{})` 
+- `template<typename Func> SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{})`: run-time dynamic function
+- `const std::string& Name() const` 
+- `static constexpr size_t HashCode(std::string_view name)` 
+- `size_t HashCode() const` 
+- `void operator()(Entity e, size_t entityIndexInQuery, const EntityLocator* locator, void** cmptArr)` 
+- `bool IsJob() const` 
+- `bool operator==(const SystemFunc& func) const` 
 
 # `Schedule` 
 
-TODO
+system infomation record
+
+- `SystemFunc` 
+- orders
+- dynamic filter changes
+
+schedule will be clear at the beginning of the **next** `World::Update()` 
+
+### Methods
+
+- `template<typename Func> Schedule& Register(Func&& func, std::string name, EntityFilter filter = EntityFilter{})` 
+- `template<typename Func> Schedule& Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{})` 
+- `Schedule& LockFilter(std::string_view sys)` 
+- `size_t EntityNumInQuery(std::string_view sys) const` 
+- `EntityMngr* GetEntityMngr() const` 
+- `SystemMngr* GetSystemMngr() const` 
+- `Schedule& Order(std::string_view x, std::string_view y)` 
+- `Schedule& InsertAll(std::string_view sys, CmptType)` 
+- `Schedule& InsertAny(std::string_view sys, CmptType)` 
+- `Schedule& InsertNone(std::string_view sys, CmptType)` 
+- `Schedule& EraseAll(std::string_view sys, CmptType)` 
+- `Schedule& EraseAny(std::string_view sys, CmptType)` 
+- `Schedule& EraseNone(std::string_view sys, CmptType)` 
+- `template<typename Cmpt> Schedule& InsertAll(std::string_view sys)` 
+- `template<typename Cmpt> Schedule& InsertAny(std::string_view sys)` 
+- `template<typename Cmpt> Schedule& InsertNone(std::string_view sys)` 
+- `template<typename Cmpt> Schedule& EraseAll(std::string_view sys)` 
+- `template<typename Cmpt> Schedule& EraseAny(std::string_view sys)` 
+- `template<typename Cmpt> Schedule& EraseNone(std::string_view sys)` 
 
 # `SystemMngr` 
 
-TODO
+System is a struct with specific function
+
+signature: static void OnUpdate(Schedule&)
+
+### Methods
+
+- `template<typename... Systems> void Register()` 
+- `template<typename System> bool IsRegistered() const` 
+- `template<typename System> void Deregister()` 
 
 # `World` 
 
-TODO
+`World` = `EntityMngr` + `SystemMngr` 
 
+## Fields
+
+### `SystemMngr systemMngr` 
+
+manage systems
+
+### `EntityMngr entityMngr` 
+
+manage entities
+
+## Methods
+
+- `void Update()`: schedule -> gen job graph -> run job graph in worker threads -> run commands in main thread
+
+- `std::string DumpUpdateJobGraph() const`: after `Update()`, you can use graphviz to vistualize the graph
