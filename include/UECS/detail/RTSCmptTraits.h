@@ -49,7 +49,7 @@ namespace Ubpa {
 
 		template<typename Cmpt>
 		void Deregister();
-		inline void Deregister(CmptType type);
+		inline void Deregister(CmptType type) noexcept;
 
 	private:
 		std::unordered_map<CmptType, size_t> sizeofs;

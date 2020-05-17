@@ -18,56 +18,33 @@ namespace Ubpa {
 	public:
 		static constexpr size_t default_alignment = alignof(std::max_align_t);
 
-		static RTDCmptTraits& Instance() noexcept {
-			static RTDCmptTraits instance;
-			return instance;
-		}
+		inline static RTDCmptTraits& Instance() noexcept;
 
 		// neccessary
-		RTDCmptTraits& RegisterSize(CmptType type, size_t size) {
-			sizeofs[type] = size;
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterSize(CmptType type, size_t size);
 
 		// optional
-		RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment) {
-			alignments[type] = alignment;
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment);
 
 		// optional
-		RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f) {
-			default_constructors[type] = std::move(f);
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f);
 
 		// optional
-		RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f) {
-			copy_constructors[type] = std::move(f);
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f);
 
 		// optional
-		RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f) {
-			move_constructors[type] = std::move(f);
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f);
 
 		// optional
-		RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f) {
-			destructors[type] = std::move(f);
-			return *this;
-		}
+		inline RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f);
 
-		RTDCmptTraits& Deregister(CmptType type) {
-			sizeofs.erase(type);
-			alignments.erase(type);
-			default_constructors.erase(type);
-			copy_constructors.erase(type);
-			move_constructors.erase(type);
-			destructors.erase(type);
-			return *this;
-		}
+		inline RTDCmptTraits& Deregister(CmptType type) noexcept;
+
+		template<typename Cmpt>
+		void Register();
+
+		template<typename Cmpt>
+		void Deregister();
 
 	private:
 		friend class RTSCmptTraits;
@@ -75,6 +52,7 @@ namespace Ubpa {
 		friend class EntityMngr;
 
 		RTDCmptTraits() = default;
+
 
 		std::unordered_map<CmptType, size_t> sizeofs;
 		std::unordered_map<CmptType, size_t> alignments;
@@ -84,3 +62,5 @@ namespace Ubpa {
 		std::unordered_map<CmptType, std::function<void(void*)>> destructors;
 	};
 }
+
+#include "detail/RTDCmptTraits.inl"
