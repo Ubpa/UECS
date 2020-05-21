@@ -4,16 +4,6 @@
 
 #include <UTemplate/Typelist.h>
 #include <UTemplate/Func.h>
-#include <UTemplate/Concept.h>
-
-namespace Ubpa::detail::EntityMngr_ {
-	template<typename Cmpt, typename... Ts>
-	Concept(IsAggregatableHelper, Cmpt{ std::declval<Ts>()... });
-	template<typename Cmpt, typename... Ts>
-	struct IsAggregatable : IValue<bool, std::is_aggregate_v<Cmpt> && Require<IsAggregatableHelper, Cmpt, Ts...>> {};
-	template<typename Cmpt, typename... Ts>
-	static constexpr bool IsAggregatable_v = IsAggregatable<Cmpt, Ts...>::value;
-}
 
 namespace Ubpa {
 	template<typename... Cmpts>
@@ -125,7 +115,7 @@ namespace Ubpa {
 	template<typename... Cmpts>
 	std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
-			"EntityMngr::Attach: <Cmpts> isn't constructible");
+			"EntityMngr::Attach: <Cmpts> isn't default constructable");
 		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		using CmptList = TypeList<Cmpts...>;
@@ -169,8 +159,8 @@ namespace Ubpa {
 	template<typename Cmpt, typename... Args>
 	Cmpt* EntityMngr::Emplace(Entity e, Args&&... args) {
 		static_assert(std::is_constructible_v<Cmpt, Args...>
-			|| detail::EntityMngr_::IsAggregatable_v<Cmpt, Args...>,
-			"EntityMngr::Emplace: <Cmpt> isn't constructible/aggregatable with <Args...>");
+			|| is_list_initializable_v<Cmpt, Args...>,
+			"EntityMngr::Emplace: <Cmpt> isn't constructible/list_initializable with Args...");
 		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Emplace: Entity is invalid");
 
 		bool needAttach = entityTable[e.Idx()].archetype->GetCmptTypeSet().IsNotContain<Cmpt>();
