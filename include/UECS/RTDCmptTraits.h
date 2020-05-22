@@ -40,6 +40,12 @@ namespace Ubpa {
 
 		inline RTDCmptTraits& Deregister(CmptType type) noexcept;
 
+		// register all for Cmpt
+		// static_assert
+		// - is_default_constructible_v
+		// - is_copy_constructible_v
+		// - is_move_constructible_v
+		// - is_destructible_v
 		template<typename Cmpt>
 		void Register();
 

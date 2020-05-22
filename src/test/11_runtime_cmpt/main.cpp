@@ -50,7 +50,7 @@ int main() {
     // }
 	RTDCmptTraits::Instance().RegisterSize(type, 8);
 	RTDCmptTraits::Instance().RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl;});
-	RTDCmptTraits::Instance().RegisterDestructor(type, [](void*) { cout << "destructor" << endl; });
+	RTDCmptTraits::Instance().RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });
 
 	World w;
 	w.systemMngr.Register<RTDSystem>();
