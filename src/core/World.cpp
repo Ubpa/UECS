@@ -10,8 +10,8 @@ void World::Update() {
 	jobs.clear();
 	jobGraph.clear();
 
-	for (const auto& [id, lifecycle] : systemMngr.lifecycleMap)
-		lifecycle.OnUpdate(schedule);
+	for (const auto& [id, onUpdate] : systemMngr.onUpdateMap)
+		onUpdate(schedule);
 	auto graph = schedule.GenSysFuncGraph();
 
 	unordered_map<SystemFunc*, JobHandle> table;
