@@ -18,6 +18,8 @@ namespace Ubpa {
 		template<typename Cmpt>
 		static constexpr size_t HashCodeOf() noexcept { return TypeID<Cmpt>; }
 
+		static constexpr CmptType Invalid() noexcept { return CmptType{ static_cast<size_t>(-1) }; }
+
 		template<typename Cmpt>
 		bool Is() const noexcept { return hashcode == HashCodeOf<Cmpt>(); }
 

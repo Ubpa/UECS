@@ -15,6 +15,7 @@ namespace Ubpa {
 		CmptType Type() const noexcept { return type; }
 		void* Ptr() const noexcept { return p; }
 
+		// for static Component
 		template<typename Cmpt>
 		Cmpt* As() const noexcept {
 			assert(type.Is<Cmpt>());
@@ -35,6 +36,7 @@ namespace Ubpa {
 		CmptType Type() const noexcept { return type; }
 		const void* Ptr() const noexcept { return p; }
 
+		// for static Component
 		template<typename Cmpt>
 		const Cmpt* As() const noexcept {
 			assert(type.Is<Cmpt>());
