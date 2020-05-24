@@ -294,3 +294,18 @@ manage entities
 - `void Update()`: schedule -> gen job graph -> run job graph in worker threads -> run commands in main thread
 
 - `std::string DumpUpdateJobGraph() const`: after `Update()`, you can use graphviz to vistualize the graph
+
+## `RTDCmptViewer` 
+
+use `RTDCmptViewer::Iterator` to read CmptPtr
+
+no read/write control
+
+### Methods
+
+- `RTDCmptViewer(EntityLocator* locator, void** cmpts)` 
+- `Iterator begin() const` 
+- `Iterator end() const` 
+- `const std::set<CmptType>& CmptTypes() const` 
+- `void* const* Components()` 
+

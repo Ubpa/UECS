@@ -26,19 +26,19 @@ struct Position { float val; };
 struct Velocity { float val; };
 
 struct MoverSystem {
-    static void OnUpdate(Ubpa::Schedule& schedule) {
-        schedule.Request(
-            [](const Velocity* v, Position* p) {
-                p->val += v->val;
-            }, "Mover");
-    }
+  static void OnUpdate(Ubpa::Schedule& schedule) {
+    schedule.Request(
+      [](const Velocity* v, Position* p) {
+        p->val += v->val;
+      }, "Mover");
+  }
 };
 
 int main() {
-    Ubpa::World w;
-    w.systemMngr.Register<MoverSystem>();
-    w.entityMngr.CreateEntity<Position, Velocity>();
-    w.Update();
+  Ubpa::World w;
+  w.systemMngr.Register<MoverSystem>();
+  w.entityMngr.CreateEntity<Position, Velocity>();
+  w.Update();
 }
 ```
 

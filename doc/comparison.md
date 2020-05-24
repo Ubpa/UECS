@@ -96,14 +96,13 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 - `[const] Entity` 
 - `size_t entityInQueryIndex` 
 - (not-support) `size_t nativeThreadIndex` 
-- `const EntityLocator* locator` 
-- `void** cmpts` 
+- `RTDCmptViewer` 
 
 **System kind** 
 
 - components (optional: + `Entity`, `size_t entityInQueryIndex`) : system for each entity
 - empty : job
-- `const EntityLocator* locator` + `void** cmpts`: run-time dynamic system function
+- `RTDCmptViewer`: run-time dynamic system function
 
 ### 3.2 System update order
 

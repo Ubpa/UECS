@@ -7,8 +7,12 @@
 
 namespace Ubpa {
 	class EntityLocator;
+
+	// use RTDCmptViewer::Iterator to read CmptPtr
+	// no read/write control
 	class RTDCmptViewer {
 	public:
+		// forward
 		class Iterator /*: public std::iterator<std::forward_iterator_tag, CmptPtr>*/ {
 		public:
 			using iterator_category = std::forward_iterator_tag;
@@ -17,7 +21,7 @@ namespace Ubpa {
 			using pointer = CmptPtr*;
 			using reference = CmptPtr&;
 
-			Iterator(std::set<CmptType>::iterator typeIter = std::set<CmptType>::iterator{}, void** ptr_cmpt = nullptr)
+			Iterator(std::set<CmptType>::iterator typeIter = std::set<CmptType>::iterator{}, void* const* ptr_cmpt = nullptr)
 				: typeIter(typeIter), ptr_cmpt{ ptr_cmpt } {}
 			bool operator==(const Iterator& rhs) const noexcept {
 				return ptr_cmpt == rhs.ptr_cmpt;
@@ -37,7 +41,7 @@ namespace Ubpa {
 			}
 		private:
 			std::set<CmptType>::iterator typeIter;
-			void** ptr_cmpt;
+			void* const* ptr_cmpt;
 			mutable CmptPtr cmptptr{ CmptType::Invalid(), nullptr };
 		};
 
@@ -52,6 +56,6 @@ namespace Ubpa {
 
 	private:
 		EntityLocator* locator;
-		void** cmpts;
+		void* const* cmpts;
 	};
 }
