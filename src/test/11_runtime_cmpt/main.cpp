@@ -19,19 +19,19 @@ struct RTDSystem {
 		);
 		schedule
 			.Register(
-				[](RTDCmptViewer cmpts) {
-					for (auto cmptptr : cmpts) {
-						if (cmptptr.Type() == CmptType{ "LuaCmpt" }) {
-							double& val = *reinterpret_cast<double*>(cmptptr.Ptr());
+				[](RTDCmptsView cmpts) {
+					for (auto handle : cmpts) {
+						if (handle.GetCmptType() == CmptType{ "LuaCmpt" }) {
+							double& val = *reinterpret_cast<double*>(handle.AsWrite().Ptr());
 							val = 520.;
 						}
 					}
 				}, "write", locator_write)
 			.Register(
-				[](RTDCmptViewer cmpts) {
-					for (auto cmptptr : cmpts) {
-						if (cmptptr.Type() == CmptType{ "LuaCmpt" }) {
-							double& val = *reinterpret_cast<double*>(cmptptr.Ptr());
+				[](RTDCmptsView cmpts) {
+					for (auto handle : cmpts) {
+						if (handle.GetCmptType() == CmptType{ "LuaCmpt" }) {
+							const double& val = *reinterpret_cast<const double*>(handle.AsLatest().Ptr());
 							cout << "value : " << val << endl;
 						}
 					}

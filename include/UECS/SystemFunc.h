@@ -2,7 +2,7 @@
 
 #include "EntityQuery.h"
 #include "Entity.h"
-#include "RTDCmptViewer.h"
+#include "RTDCmptsView.h"
 
 #include <functional>
 
@@ -34,7 +34,7 @@ namespace Ubpa {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(Entity e, size_t entityIndexInQuery, RTDCmptViewer rtdcmpts) {
+		void operator()(Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts) {
 			return func(e, entityIndexInQuery, rtdcmpts);
 		}
 
@@ -46,7 +46,7 @@ namespace Ubpa {
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);
 
-		std::function<void(Entity, size_t, RTDCmptViewer)> func;
+		std::function<void(Entity, size_t, RTDCmptsView)> func;
 
 		std::string name;
 		bool isJob;
