@@ -22,7 +22,7 @@ void World::Update() {
 		if (!func->IsJob())
 			entityMngr.GenJob(job, func);
 		else
-			job->emplace([func = func]() { (*func)(Entity::Invalid(), size_t_invalid, &EntityLocator::InvalidInstance(), nullptr); });
+			job->emplace([func = func]() { (*func)(Entity::Invalid(), size_t_invalid, RTDCmptsView{ nullptr,nullptr }); });
 		table[func] = jobGraph.composed_of(*job);
 	}
 
