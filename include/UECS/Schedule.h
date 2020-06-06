@@ -8,6 +8,10 @@
 
 #include <map>
 
+namespace Ubpa::detail::Schedule_ {
+	struct Compiler;
+}
+
 namespace Ubpa {
 	class EntityMngr;
 	class SystemMngr;
@@ -54,10 +58,19 @@ namespace Ubpa {
 
 	private:
 		template<typename... Args>
-		Schedule& Request(Args&&... args);
+		void Request(Args&&... args);
 
 		Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr);
 		void Clear();
+
+		struct CmptSysFuncs {
+			std::vector<SystemFunc*> lastFrameSysFuncs;
+			std::vector<SystemFunc*> writeSysFuncs;
+			std::vector<SystemFunc*> latestSysFuncs;
+		};
+		friend struct detail::Schedule_::Compiler;
+		std::unordered_map<CmptType, CmptSysFuncs> cmptSysFuncsMap;
+
 		SysFuncGraph GenSysFuncGraph() const;
 
 		// SystemFunc's hashcode to pointer of SystemFunc

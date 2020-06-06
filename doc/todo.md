@@ -40,21 +40,19 @@
 
 ### not sure
 
-- [ ] `Any` influence `EntityLocator` 
 - [ ] ChunkJob
+- [ ] serialize
 
 ## tool
 
-- [ ] SysFuncGraph dump
-- [ ] serialize
-- [ ] doc
+- [x] SysFuncGraph dump
+- [x] doc
 
 ## detial
 
 - [x] remove `EntityMngr::ai2ei` 
 - [x] Archetype share `Pool<Chunk>` 
 - [x] simplify `Schedule` 
-- [ ] parallel `Schedule` 
 - [x] `constexpr SystemFunc::HashCode()` 
 - [x] cache `CmptTypeSet`'s hashcode
 - [x] store `EntityMngr` and `SystemMngr` instead `World` in `Schedule` 

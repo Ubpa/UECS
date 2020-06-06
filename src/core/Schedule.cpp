@@ -8,12 +8,6 @@ using namespace Ubpa;
 using namespace std;
 
 namespace Ubpa::detail::Schedule_ {
-	struct CmptSysFuncs {
-		vector<SystemFunc*> lastFrameSysFuncs;
-		vector<SystemFunc*> writeSysFuncs;
-		vector<SystemFunc*> latestSysFuncs;
-	};
-
 	struct NoneGroup {
 		NoneGroup() = default;
 		NoneGroup(SystemFunc* func)
@@ -41,115 +35,117 @@ namespace Ubpa::detail::Schedule_ {
 		set<SystemFunc*> sysFuncs;
 	};
 
-	void SetPrePostEdge(SysFuncGraph& graph,
-		const CmptSysFuncs& cmptFuncs,
-		const unordered_map<SystemFunc*, NoneGroup>& gMap)
-	{
-		const auto& preReaders = cmptFuncs.lastFrameSysFuncs;
-		const auto& writers = cmptFuncs.writeSysFuncs;
-		const auto& postReaders = cmptFuncs.latestSysFuncs;
+	struct Compiler {
+		static void SetPrePostEdge(SysFuncGraph& graph,
+			const Schedule::CmptSysFuncs& cmptFuncs,
+			const unordered_map<SystemFunc*, NoneGroup>& gMap)
+		{
+			const auto& preReaders = cmptFuncs.lastFrameSysFuncs;
+			const auto& writers = cmptFuncs.writeSysFuncs;
+			const auto& postReaders = cmptFuncs.latestSysFuncs;
 
-		if (!preReaders.empty()) {
-			NoneGroup preGroup{ gMap.find(preReaders.front())->second };
-			for (size_t i = 1; i < preReaders.size(); i++)
-				preGroup += gMap.find(preReaders[i])->second;
+			if (!preReaders.empty()) {
+				NoneGroup preGroup{ gMap.find(preReaders.front())->second };
+				for (size_t i = 1; i < preReaders.size(); i++)
+					preGroup += gMap.find(preReaders[i])->second;
 
-			for (const auto& w : writers) {
-				if (NoneGroup::Parallelable(preGroup, gMap.find(w)->second))
-					continue;
-				for (auto preReader : preReaders)
-					graph.AddEdge(preReader, w);
-			}
-		}
-
-		if (!postReaders.empty()) {
-			NoneGroup postGroup{ gMap.find(postReaders.front())->second };
-			for (size_t i = 1; i < postReaders.size(); i++)
-				postGroup += gMap.find(postReaders[i])->second;
-
-			for (const auto& w : writers) {
-				if (NoneGroup::Parallelable(postGroup, gMap.find(w)->second))
-					continue;
-				for (auto postReader : postReaders)
-					graph.AddEdge(w, postReader);
-			}
-		}
-	}
-
-	vector<NoneGroup> GenSortNoneGroup(SysFuncGraph graph,
-		const CmptSysFuncs& cmptFuncs,
-		const unordered_map<SystemFunc*, NoneGroup>& gMap)
-	{
-		const auto& preReaders = cmptFuncs.lastFrameSysFuncs;
-		const auto& writers = cmptFuncs.writeSysFuncs;
-		const auto& postReaders = cmptFuncs.latestSysFuncs;
-
-		NoneGroup preGroup, postGroup;
-
-		if (!preReaders.empty()) {
-			preGroup = gMap.find(preReaders.front())->second;
-			for (size_t i = 1; i < preReaders.size(); i++)
-				preGroup += gMap.find(preReaders[i])->second;
-		}
-
-		if (!postReaders.empty()) {
-			postGroup = gMap.find(postReaders.front())->second;
-			for (size_t i = 1; i < postReaders.size(); i++)
-				postGroup += gMap.find(postReaders[i])->second;
-		}
-
-		vector<SystemFunc*> funcs;
-		if (!preGroup.sysFuncs.empty())
-			funcs.push_back(*preGroup.sysFuncs.begin());
-		if (!postGroup.sysFuncs.empty())
-			funcs.push_back(*postGroup.sysFuncs.begin());
-		for (auto w : writers)
-			funcs.push_back(w);
-
-		auto subgraph = graph.SubGraph(funcs);
-		auto [success, sortedFuncs] = subgraph.Toposort();
-		assert(success);
-
-		vector<NoneGroup> rst;
-
-		for (auto func : sortedFuncs) {
-			if (!preGroup.sysFuncs.empty() && func == *preGroup.sysFuncs.begin())
-				rst.push_back(move(preGroup));
-			else if (!postGroup.sysFuncs.empty() && func == *postGroup.sysFuncs.begin())
-				rst.push_back(move(postGroup));
-			else // writer
-				rst.push_back(gMap.find(func)->second);
-		}
-
-		for (size_t i = 0; i < rst.size(); i++) {
-			auto& gi = rst[i];
-			for (size_t j = i + 1; j < rst.size(); j++) {
-				const auto& gj = rst[j];
-				if (!NoneGroup::Parallelable(gi, gj))
-					continue;
-
-				bool haveOrder = false;
-				for (auto ifunc : gi.sysFuncs) {
-					for (auto jfunc : gj.sysFuncs) {
-						if (subgraph.HavePath(ifunc, jfunc)
-							|| subgraph.HavePath(jfunc, ifunc)) {
-							haveOrder = true;
-							break;
-						}
-					}
-					if (haveOrder) break;
+				for (const auto& w : writers) {
+					if (NoneGroup::Parallelable(preGroup, gMap.find(w)->second))
+						continue;
+					for (auto preReader : preReaders)
+						graph.AddEdge(preReader, w);
 				}
-				if (haveOrder) continue;
+			}
 
-				gi += gj;
+			if (!postReaders.empty()) {
+				NoneGroup postGroup{ gMap.find(postReaders.front())->second };
+				for (size_t i = 1; i < postReaders.size(); i++)
+					postGroup += gMap.find(postReaders[i])->second;
 
-				rst.erase(rst.begin() + j);
-				j--;
+				for (const auto& w : writers) {
+					if (NoneGroup::Parallelable(postGroup, gMap.find(w)->second))
+						continue;
+					for (auto postReader : postReaders)
+						graph.AddEdge(w, postReader);
+				}
 			}
 		}
 
-		return rst;
-	}
+		static vector<NoneGroup> GenSortNoneGroup(SysFuncGraph graph,
+			const Schedule::CmptSysFuncs& cmptFuncs,
+			const unordered_map<SystemFunc*, NoneGroup>& gMap)
+		{
+			const auto& preReaders = cmptFuncs.lastFrameSysFuncs;
+			const auto& writers = cmptFuncs.writeSysFuncs;
+			const auto& postReaders = cmptFuncs.latestSysFuncs;
+
+			NoneGroup preGroup, postGroup;
+
+			if (!preReaders.empty()) {
+				preGroup = gMap.find(preReaders.front())->second;
+				for (size_t i = 1; i < preReaders.size(); i++)
+					preGroup += gMap.find(preReaders[i])->second;
+			}
+
+			if (!postReaders.empty()) {
+				postGroup = gMap.find(postReaders.front())->second;
+				for (size_t i = 1; i < postReaders.size(); i++)
+					postGroup += gMap.find(postReaders[i])->second;
+			}
+
+			vector<SystemFunc*> funcs;
+			if (!preGroup.sysFuncs.empty())
+				funcs.push_back(*preGroup.sysFuncs.begin());
+			if (!postGroup.sysFuncs.empty())
+				funcs.push_back(*postGroup.sysFuncs.begin());
+			for (auto w : writers)
+				funcs.push_back(w);
+
+			auto subgraph = graph.SubGraph(funcs);
+			auto [success, sortedFuncs] = subgraph.Toposort();
+			assert(success);
+
+			vector<NoneGroup> rst;
+
+			for (auto func : sortedFuncs) {
+				if (!preGroup.sysFuncs.empty() && func == *preGroup.sysFuncs.begin())
+					rst.push_back(move(preGroup));
+				else if (!postGroup.sysFuncs.empty() && func == *postGroup.sysFuncs.begin())
+					rst.push_back(move(postGroup));
+				else // writer
+					rst.push_back(gMap.find(func)->second);
+			}
+
+			for (size_t i = 0; i < rst.size(); i++) {
+				auto& gi = rst[i];
+				for (size_t j = i + 1; j < rst.size(); j++) {
+					const auto& gj = rst[j];
+					if (!NoneGroup::Parallelable(gi, gj))
+						continue;
+
+					bool haveOrder = false;
+					for (auto ifunc : gi.sysFuncs) {
+						for (auto jfunc : gj.sysFuncs) {
+							if (subgraph.HavePath(ifunc, jfunc)
+								|| subgraph.HavePath(jfunc, ifunc)) {
+								haveOrder = true;
+								break;
+							}
+						}
+						if (haveOrder) break;
+					}
+					if (haveOrder) continue;
+
+					gi += gj;
+
+					rst.erase(rst.begin() + j);
+					j--;
+				}
+			}
+
+			return rst;
+		}
+	};
 }
 
 Schedule& Schedule::Order(string_view x, string_view y) {
@@ -227,8 +223,6 @@ void Schedule::Clear() {
 }
 
 SysFuncGraph Schedule::GenSysFuncGraph() const {
-	// TODO : parallel
-
 	// [change func Filter]
 	for (const auto& [hashcode, change] : sysFilterChange) {
 		if (sysLockFilter.find(hashcode) != sysLockFilter.end())
@@ -246,20 +240,6 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		func->query.filter.EraseAll(change.eraseAlls);
 		func->query.filter.EraseAny(change.eraseAnys);
 		func->query.filter.EraseNone(change.eraseNones);
-	}
-
-	// [gen cmptSysFuncsMap]
-	
-	unordered_map<CmptType, detail::Schedule_::CmptSysFuncs> cmptSysFuncsMap;
-
-	for (const auto& [hashcode, sysFunc] : sysFuncs) {
-		const auto& locator = sysFunc->query.locator;
-		for (const auto& type : locator.LastFrameCmptTypes())
-			cmptSysFuncsMap[type].lastFrameSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.WriteCmptTypes())
-			cmptSysFuncsMap[type].writeSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.LatestCmptTypes())
-			cmptSysFuncsMap[type].latestSysFuncs.push_back(sysFunc);
 	}
 
 	// [gen groupMap]
@@ -290,14 +270,14 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 	// [gen graph] - edge - time point
 	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap)
-		detail::Schedule_::SetPrePostEdge(graph, cmptSysFuncs, groupMap);
+		detail::Schedule_::Compiler::SetPrePostEdge(graph, cmptSysFuncs, groupMap);
 
 	// [gen graph] - edge - none group
 	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap) {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
-		auto sortedGroup = detail::Schedule_::GenSortNoneGroup(graph, cmptSysFuncs, groupMap);
+		auto sortedGroup = detail::Schedule_::Compiler::GenSortNoneGroup(graph, cmptSysFuncs, groupMap);
 		
 		for (size_t i = 0; i < sortedGroup.size() - 1; i++) {
 			const auto& gx = sortedGroup[i];

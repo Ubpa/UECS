@@ -3,19 +3,27 @@
 namespace Ubpa {
 	template<typename Func>
 	Schedule& Schedule::Register(Func&& func, std::string name, EntityFilter filter) {
-		return Request(std::forward<Func>(func), std::move(name), std::move(filter));
+		Request(std::forward<Func>(func), std::move(name), std::move(filter));
+		return *this;
 	}
 
 	template<typename Func>
 	Schedule& Schedule::Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter) {
-		return Request(std::forward<Func>(func), std::move(name), std::move(locator), std::move(filter));
+		Request(std::forward<Func>(func), std::move(name), std::move(locator), std::move(filter));
+		return *this;
 	}
 
 	template<typename... Args>
-	Schedule& Schedule::Request(Args&&... args) {
+	void Schedule::Request(Args&&... args) {
 		SystemFunc* sysFunc = sysFuncPool.Request(std::forward<Args>(args)...);
 		sysFuncs.emplace(sysFunc->HashCode(), sysFunc);
-		return *this;
+		const auto& locator = sysFunc->query.locator;
+		for (const auto& type : locator.LastFrameCmptTypes())
+			cmptSysFuncsMap[type].lastFrameSysFuncs.push_back(sysFunc);
+		for (const auto& type : locator.WriteCmptTypes())
+			cmptSysFuncsMap[type].writeSysFuncs.push_back(sysFunc);
+		for (const auto& type : locator.LatestCmptTypes())
+			cmptSysFuncsMap[type].latestSysFuncs.push_back(sysFunc);
 	}
 
 	inline Schedule::Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr)

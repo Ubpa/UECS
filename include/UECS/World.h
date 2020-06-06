@@ -4,6 +4,8 @@
 #include "SystemMngr.h"
 #include "EntityMngr.h"
 
+#include <UGraphviz/UGraphviz.h>
+
 namespace Ubpa {
 	// SystemMngr + EntityMngr
 	class World {
@@ -22,6 +24,10 @@ namespace Ubpa {
 		// after running Update
 		// you can use graphviz to vistualize the graph
 		std::string DumpUpdateJobGraph() const;
+
+		// after running Update
+		// use RTDCmptTraits' registered component name
+		Graphviz::Graph GenUpdateFrameGraph() const;
 
 	private:
 		mutable JobExecutor executor;

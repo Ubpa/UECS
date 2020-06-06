@@ -52,6 +52,7 @@ int main() {
 - [parrallel with `None` filter](src/test/06_none_parallel/main.cpp) 
 - [system **overload**](src/test/07_overload/main.cpp) 
 - [runtime dynamic component and system](src/test/11_runtime_cmpt/main.cpp) 
+- [generate **frame graph** in **Graphviz**](src/test/12_framegraph/main.cpp) 
 
 ## Licensing
 

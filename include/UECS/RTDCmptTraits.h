@@ -14,39 +14,44 @@ namespace Ubpa {
 	// - copy constructor: memcpy as default
 	// - move constructor: memcpy as default
 	// - destructor: do nothing as default
+	// - name
 	class RTDCmptTraits {
 	public:
 		static constexpr size_t default_alignment = alignof(std::max_align_t);
 
-		inline static RTDCmptTraits& Instance() noexcept;
+		static RTDCmptTraits& Instance() noexcept;
 
 		// neccessary
-		inline RTDCmptTraits& RegisterSize(CmptType type, size_t size);
+		RTDCmptTraits& RegisterSize(CmptType type, size_t size);
 
 		// optional
-		inline RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment);
+		RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment);
 
 		// optional
-		inline RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f);
+		RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f);
 
 		// optional
-		inline RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f);
+		RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f);
 
 		// optional
-		inline RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f);
+		RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f);
 
 		// optional
-		inline RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f);
+		RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f);
 
-		inline RTDCmptTraits& Deregister(CmptType type) noexcept;
+		// optional
+		RTDCmptTraits& RegisterName(CmptType type, std::string name);
 
-		// register all for Cmpt
-		// static_assert
-		// - is_default_constructible_v
-		// - is_copy_constructible_v
-		// - is_move_constructible_v
-		// - is_destructible_v
-		template<typename Cmpt>
+		size_t Sizeof(CmptType type) const;
+		size_t Alignof(CmptType type) const;
+		void CopyConstruct(CmptType type, void* dst, void* src) const;
+		void MoveConstruct(CmptType type, void* dst, void* src) const;
+		void Destruct(CmptType type, void* cmpt) const;
+		std::string_view Nameof(CmptType type) const;
+
+		RTDCmptTraits& Deregister(CmptType type) noexcept;
+
+		template<typename... Cmpts>
 		void Register();
 
 		template<typename Cmpt>
@@ -59,12 +64,22 @@ namespace Ubpa {
 
 		RTDCmptTraits() = default;
 
+		// register all for Cmpt
+		// static_assert
+		// - is_default_constructible_v
+		// - is_copy_constructible_v
+		// - is_move_constructible_v
+		// - is_destructible_v
+		template<typename Cmpt>
+		void RegisterOne();
+
 		std::unordered_map<CmptType, size_t> sizeofs;
 		std::unordered_map<CmptType, size_t> alignments;
 		std::unordered_map<CmptType, std::function<void(void*)>> default_constructors; // dst <- src
 		std::unordered_map<CmptType, std::function<void(void*, void*)>> copy_constructors; // dst <- src
 		std::unordered_map<CmptType, std::function<void(void*, void*)>> move_constructors; // dst <- src
 		std::unordered_map<CmptType, std::function<void(void*)>> destructors;
+		std::unordered_map<CmptType, std::string> names;
 	};
 }
 
