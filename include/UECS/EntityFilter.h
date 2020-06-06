@@ -33,7 +33,7 @@ namespace Ubpa {
 		const std::set<CmptType>& NoneCmptTypes() const noexcept { return noneCmptTypes; }
 
 		// [API]
-		// <Mode><Type>(Container|CmptTypes...|CmptType*, num)
+		// <Mode><Type>(CmptTypeContainer|CmptTypes...|CmptType*, num)
 		// - <Mode>: Insert | Erase
 		// - <Type>: All | Any | None
 		// - side effect: update hashcode
@@ -45,12 +45,12 @@ namespace Ubpa {
 		void EraseAny(const CmptType* types, size_t num);
 		void EraseNone(const CmptType* types, size_t num);
 
-		template<typename Container> void InsertAll(const Container&);
-		template<typename Container> void InsertAny(const Container&);
-		template<typename Container> void InsertNone(const Container&);
-		template<typename Container> void EraseAll(const Container&);
-		template<typename Container> void EraseAny(const Container&);
-		template<typename Container> void EraseNone(const Container&);
+		template<typename CmptTypeContainer> void InsertAll(const CmptTypeContainer&);
+		template<typename CmptTypeContainer> void InsertAny(const CmptTypeContainer&);
+		template<typename CmptTypeContainer> void InsertNone(const CmptTypeContainer&);
+		template<typename CmptTypeContainer> void EraseAll(const CmptTypeContainer&);
+		template<typename CmptTypeContainer> void EraseAny(const CmptTypeContainer&);
+		template<typename CmptTypeContainer> void EraseNone(const CmptTypeContainer&);
 
 		template<typename... CmptTypes,
 			// for function overload

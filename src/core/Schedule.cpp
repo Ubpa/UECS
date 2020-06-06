@@ -218,6 +218,8 @@ Schedule& Schedule::EraseNone(string_view sys, CmptType type) {
 }
 
 void Schedule::Clear() {
+	for (const auto& [hash, sysFunc] : sysFuncs)
+		sysFuncPool.Recycle(sysFunc);
 	sysFuncs.clear();
 	sysFuncOrder.clear();
 	sysFilterChange.clear();

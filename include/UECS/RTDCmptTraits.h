@@ -59,7 +59,6 @@ namespace Ubpa {
 
 		RTDCmptTraits() = default;
 
-
 		std::unordered_map<CmptType, size_t> sizeofs;
 		std::unordered_map<CmptType, size_t> alignments;
 		std::unordered_map<CmptType, std::function<void(void*)>> default_constructors; // dst <- src

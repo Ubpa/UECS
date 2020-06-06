@@ -3,13 +3,47 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa {
+	inline size_t RTSCmptTraits::Sizeof(CmptType type) const {
+		assert(sizeofs.find(type) != sizeofs.end());
+		return sizeofs.find(type)->second;
+	}
+
+	inline size_t RTSCmptTraits::Alignof(CmptType type) const {
+		assert(alignments.find(type) != alignments.end());
+		return alignments.find(type)->second;
+	}
+
+	inline void RTSCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
+		auto target = copy_constructors.find(type);
+
+		if (target != copy_constructors.end())
+			target->second(dst, src);
+		else
+			memcpy(dst, src, Sizeof(type));
+	}
+
+	inline void RTSCmptTraits::MoveConstruct(CmptType type, void* dst, void* src) const {
+		auto target = move_constructors.find(type);
+
+		if (target != move_constructors.end())
+			target->second(dst, src);
+		else
+			memcpy(dst, src, Sizeof(type));
+	}
+
+	inline void RTSCmptTraits::Destruct(CmptType type, void* cmpt) const {
+		auto target = destructors.find(type);
+		if (target != destructors.end())
+			target->second(cmpt);
+	}
+
 	template<typename Cmpt>
 	void RTSCmptTraits::Register() {
 		static_assert(std::is_copy_constructible_v<Cmpt>, "<Cmpt> must be copy-constructible");
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
-		constexpr CmptType type = CmptType::Of<Cmpt>();
+		constexpr CmptType type = CmptType::Of<Cmpt>;
 
 		sizeofs[type] = sizeof(Cmpt);
 		alignments[type] = alignof(Cmpt);
@@ -33,7 +67,7 @@ namespace Ubpa {
 
 	template<typename Cmpt>
 	void RTSCmptTraits::Deregister() {
-		constexpr CmptType type = CmptType::Of<Cmpt>();
+		constexpr CmptType type = CmptType::Of<Cmpt>;
 
 		sizeofs.erase(type);
 		alignments.erase(type);

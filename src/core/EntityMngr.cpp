@@ -93,9 +93,8 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 
 	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 	for (auto type : srcCmptTypeSet) {
-		auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
-		auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
-		assert(srcSize == dstSize);
+		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
+		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
 		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
 	}
 
@@ -111,24 +110,38 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
+#ifndef NDEBUG
+	for (size_t i = 0; i < num; i++) {
+		for (size_t j = 1; j < num; j++)
+			assert(types[i] != types[j]);
+	}
+#endif // !NDEBUG
+
 	auto srcArchetype = entityTable[e.Idx()].archetype;
 	AttachWithoutInit(e, types, num);
 	const auto& new_info = entityTable[e.Idx()];
 	const auto& rtdct = RTDCmptTraits::Instance();
 	for (size_t i = 0; i < num; i++) {
 		auto type = types[i];
-		if (srcArchetype->GetCmptTypeSet().IsContain(type))
+		if (srcArchetype->GetCmptTypeSet().Contains(type))
 			continue;
 		auto target = rtdct.default_constructors.find(type);
 		if (target == rtdct.default_constructors.end())
 			continue;
 
-		target->second(get<void*>(new_info.archetype->At(type, new_info.idxInArchetype)));
+		target->second(new_info.archetype->At(type, new_info.idxInArchetype));
 	}
 }
 
 void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
+
+#ifndef NDEBUG
+	for (size_t i = 0; i < num; i++) {
+		for (size_t j = 1; j < num; j++)
+			assert(types[i] != types[j]);
+	}
+#endif // !NDEBUG
 
 	auto& info = entityTable[e.Idx()];
 	Archetype* srcArchetype = info.archetype;
@@ -162,10 +175,9 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 	for (auto type : srcCmptTypeSet) {
-		auto [srcCmpt, srcSize] = srcArchetype->At(type, srcIdxInArchetype);
-		if (dstCmptTypeSet.IsContain(type)) {
-			auto [dstCmpt, dstSize] = dstArchetype->At(type, dstIdxInArchetype);
-			assert(srcSize == dstSize);
+		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
+		if (dstCmptTypeSet.Contains(type)) {
+			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
 			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
 		}
 		else
@@ -186,10 +198,6 @@ vector<CmptPtr> EntityMngr::Components(Entity e) const {
 
 	const auto& info = entityTable[e.Idx()];
 	return info.archetype->Components(info.idxInArchetype);
-}
-
-bool EntityMngr::Exist(Entity e) const {
-	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 }
 
 Entity EntityMngr::Instantiate(Entity srcEntity) {
@@ -267,11 +275,6 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 
 		indexOffsetInQuery += num;
 	}
-}
-
-void EntityMngr::AddCommand(const function<void()>& command) {
-	lock_guard<mutex> guard(commandBufferMutex);
-	commandBuffer.push_back(command);
 }
 
 void EntityMngr::RunCommands() {

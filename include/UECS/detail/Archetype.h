@@ -43,8 +43,6 @@ namespace Ubpa {
 		static Archetype* Add(const Archetype* from, CmptTypes...);
 
 		// auto add Entity
-		template<typename... Cmpts>
-		static Archetype* Remove(const Archetype* from);
 		static Archetype* Remove(const Archetype* from, const CmptType* types, size_t num);
 		template<typename... CmptTypes,
 			// for function overload
@@ -57,7 +55,7 @@ namespace Ubpa {
 		std::tuple<std::vector<Entity*>, std::vector<std::vector<void*>>, std::vector<size_t>>
 		Locate(const std::set<CmptType>& cmptTypes) const;
 		
-		std::tuple<void*, size_t> At(CmptType type, size_t idx) const;
+		void* At(CmptType type, size_t idx) const;
 
 		template<typename Cmpt>
 		Cmpt* At(size_t idx) const;
@@ -98,10 +96,10 @@ namespace Ubpa {
 		template<typename... CmptTypes,
 			// for function overload
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		static size_t HashCode(CmptTypes... types) { return CmptTypeSet{ CmptType::Of<Entity>(), types... }.HashCode(); }
+		static size_t HashCode(CmptTypes... types) { return CmptTypeSet{ CmptType::Of<Entity>, types... }.HashCode(); }
 		static size_t HashCode(const CmptType* types, size_t num) {
 			CmptTypeSet typeset{ types,num };
-			typeset.Insert(CmptType::Of<Entity>());
+			typeset.Insert(CmptType::Of<Entity>);
 			return typeset.HashCode();
 		}
 

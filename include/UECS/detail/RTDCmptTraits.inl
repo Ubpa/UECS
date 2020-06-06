@@ -51,7 +51,7 @@ namespace Ubpa {
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
-		constexpr CmptType type = CmptType::Of<Cmpt>();
+		constexpr CmptType type = CmptType::Of<Cmpt>;
 
 		sizeofs[type] = sizeof(Cmpt);
 		alignments[type] = alignof(Cmpt);
@@ -80,7 +80,7 @@ namespace Ubpa {
 
 	template<typename Cmpt>
 	void RTDCmptTraits::Deregister() {
-		constexpr CmptType type = CmptType::Of<Cmpt>();
+		constexpr CmptType type = CmptType::Of<Cmpt>;
 
 		sizeofs.erase(type);
 		alignments.erase(type);

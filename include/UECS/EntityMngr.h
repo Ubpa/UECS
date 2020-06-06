@@ -61,11 +61,11 @@ namespace Ubpa {
 
 		template<typename Cmpt>
 		bool Have(Entity) const;
-		inline bool Have(Entity, CmptType) const;
+		bool Have(Entity, CmptType) const;
 
 		template<typename Cmpt>
 		Cmpt* Get(Entity) const;
-		inline CmptPtr Get(Entity, CmptType) const;
+		CmptPtr Get(Entity, CmptType) const;
 
 		std::vector<CmptPtr> Components(Entity) const;
 

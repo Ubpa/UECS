@@ -23,7 +23,7 @@ void Archetype::SetLayout() {
 Archetype* Archetype::New(const CmptType* types, size_t num) {
 	auto rst = new Archetype;
 	rst->types = CmptTypeSet{ types, num };
-	rst->types.Insert(CmptType::Of<Entity>());
+	rst->types.Insert(CmptType::Of<Entity>);
 	rst->cmptTraits.Register<Entity>();
 	for (size_t i = 0; i < num; i++)
 		rst->cmptTraits.Register(types[i]);
@@ -32,8 +32,10 @@ Archetype* Archetype::New(const CmptType* types, size_t num) {
 }
 
 Archetype* Archetype::Add(const Archetype* from, const CmptType* types, size_t num) {
+#ifndef NDEBUG
 	for (size_t i = 0; i < num; i++)
-		assert(from->types.IsNotContain(types[i]));
+		assert(!from->types.Contains(types[i]));
+#endif // !NDEBUG
 
 	Archetype* rst = new Archetype;
 
@@ -51,7 +53,7 @@ Archetype* Archetype::Add(const Archetype* from, const CmptType* types, size_t n
 
 Archetype* Archetype::Remove(const Archetype* from, const CmptType* types, size_t num) {
 	for (size_t i = 0; i < num; i++)
-		assert(from->types.IsContain(types[i]));
+		assert(from->types.Contains(types[i]));
 
 	Archetype* rst = new Archetype;
 
@@ -116,16 +118,16 @@ size_t Archetype::RequestBuffer() {
 	return entityNum++;
 }
 
-tuple<void*, size_t> Archetype::At(CmptType type, size_t idx) const {
+void* Archetype::At(CmptType type, size_t idx) const {
 	assert(idx < entityNum);
-	assert(types.IsContain(type));
+	assert(types.Contains(type));
 	
 	size_t size = cmptTraits.Sizeof(type);
 	size_t offset = Offsetof(type);
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
-	return { buffer + offset + idxInChunk * size,size };
+	return buffer + offset + idxInChunk * size;
 }
 
 size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
@@ -157,7 +159,7 @@ size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
 }
 
 tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(const set<CmptType>& cmptTypes) const {
-	assert(types.IsContain(cmptTypes));
+	assert(types.Contains(cmptTypes));
 	vector<vector<void*>> chunkCmpts(chunks.size());
 	vector<Entity*> chunkEntity;
 
@@ -165,7 +167,7 @@ tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(
 		auto data = chunks[i]->Data();
 		for (const auto& type : cmptTypes)
 			chunkCmpts[i].push_back(data + Offsetof(type));
-		chunkEntity.push_back(reinterpret_cast<Entity*>(data + Offsetof(CmptType::Of<Entity>())));
+		chunkEntity.push_back(reinterpret_cast<Entity*>(data + Offsetof(CmptType::Of<Entity>)));
 	}
 
 	vector<size_t> sizes;
@@ -230,8 +232,7 @@ vector<CmptPtr> Archetype::Components(size_t idx) const {
 	for (const auto& type : types) {
 		if (type.Is<Entity>())
 			continue;
-		auto [cmpt, size] = At(type, idx);
-		rst.emplace_back(type, cmpt);
+		rst.emplace_back(type, At(type, idx));
 	}
 
 	return rst;
