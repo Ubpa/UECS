@@ -1,11 +1,11 @@
 Ubpa_AddTarget(
   MODE STATIC
   SOURCE
-    "${PROJECT_SOURCE_DIR}/include/UECS" 
+    "${PROJECT_SOURCE_DIR}/include/UECS"
   LIB
     Ubpa::UTemplate_core
     Ubpa::UContainer_core
     Ubpa::UGraphviz_core
   INC
-    "include"
+    "${PROJECT_SOURCE_DIR}/include"
 )
