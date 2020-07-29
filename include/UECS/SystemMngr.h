@@ -5,6 +5,8 @@
 #include <UContainer/xSTL/xMap.h>
 
 namespace Ubpa{
+	class IListener;
+
 	// System Manager
 	// System is a struct with specific function
 	// signature: static void OnUpdate(Schedule&)
@@ -27,6 +29,7 @@ namespace Ubpa{
 		template<typename... Systems>
 		void Deregister() noexcept;
 
+		void Accept(IListener* listener) const;
 
 	private:
 		template<typename System>

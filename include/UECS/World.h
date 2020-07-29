@@ -7,6 +7,8 @@
 #include <UGraphviz/UGraphviz.h>
 
 namespace Ubpa {
+	class IListener;
+
 	// SystemMngr + EntityMngr
 	class World {
 	public:
@@ -28,6 +30,8 @@ namespace Ubpa {
 		// after running Update
 		// use RTDCmptTraits' registered component name
 		Graphviz::Graph GenUpdateFrameGraph() const;
+
+		void Accept(IListener* listener) const;
 
 	private:
 		mutable JobExecutor executor;

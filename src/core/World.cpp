@@ -1,5 +1,7 @@
 #include <UECS/World.h>
 
+#include <UECS/IListener.h>
+
 using namespace Ubpa;
 using namespace std;
 
@@ -158,4 +160,11 @@ Graphviz::Graph World::GenUpdateFrameGraph() const {
 	}
 
 	return graph;
+}
+
+void World::Accept(IListener* listener) const {
+	listener->EnterWorld(this);
+	systemMngr.Accept(listener);
+	entityMngr.Accept(listener);
+	listener->ExistWorld(this);
 }
