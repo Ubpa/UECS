@@ -53,6 +53,8 @@ int main() {
 - [system **overload**](src/test/07_overload/main.cpp) 
 - [runtime dynamic component and system](src/test/11_runtime_cmpt/main.cpp) 
 - [generate **frame graph** in **Graphviz**](src/test/12_framegraph/main.cpp) 
+- [performance test](src/test/13_performance/main.cpp) 
+- [serialize](src/test/14_serialize/main.cpp) 
 
 ## Licensing
 
