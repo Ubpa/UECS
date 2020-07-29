@@ -129,6 +129,18 @@ class Dumper : public IListener {
 		indent++;
 		PrintIndent();
 		cout << "\"type\" : \"" << RTDCmptTraits::Instance().Nameof(cmpt->Type()) << "\"";
+		if (cmpt->Type().Is<Velocity>()) {
+			auto v = cmpt->As<Velocity>();
+			cout << "," << endl;
+			PrintIndent();
+			cout << "\"val\" : " << v->val;
+		}
+		else if (cmpt->Type().Is<Position>()) {
+			auto p = cmpt->As<Position>();
+			cout << "," << endl;
+			PrintIndent();
+			cout << "\"val\" : " << p->val;
+		}
 	}
 
 	virtual void ExistCmptPtr(const CmptPtr* cmpt) override {
