@@ -18,11 +18,11 @@ namespace Ubpa::UECS {
 		static constexpr CmptType Invalid() noexcept { return CmptType{ static_cast<size_t>(-1) }; }
 
 		template<typename Cmpt>
-		bool Is() const noexcept { return hashcode == TypeID<Cmpt>; }
+		constexpr bool Is() const noexcept { return hashcode == TypeID<Cmpt>; }
 
-		bool operator<(const CmptType& rhs) const noexcept { return hashcode < rhs.hashcode; }
-		bool operator==(const CmptType& rhs) const noexcept { return hashcode == rhs.hashcode; }
-		bool operator!=(const CmptType& rhs) const noexcept { return hashcode != rhs.hashcode; }
+		constexpr bool operator<(const CmptType& rhs) const noexcept { return hashcode < rhs.hashcode; }
+		constexpr bool operator==(const CmptType& rhs) const noexcept { return hashcode == rhs.hashcode; }
+		constexpr bool operator!=(const CmptType& rhs) const noexcept { return hashcode != rhs.hashcode; }
 	private:
 		size_t hashcode;
 	};

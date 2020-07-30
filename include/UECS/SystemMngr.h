@@ -18,8 +18,8 @@ namespace Ubpa::UECS{
 		bool IsRegister(std::string_view name) const {
 			return onUpdateMap.find(name) != onUpdateMap.end();
 		}
-		void Deregister(const std::string& name) {
-			onUpdateMap.erase(name);
+		void Deregister(std::string_view name) {
+			onUpdateMap.erase(onUpdateMap.find(name));
 		}
 
 		template<typename... Systems>

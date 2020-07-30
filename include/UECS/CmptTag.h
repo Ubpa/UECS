@@ -16,7 +16,7 @@ namespace Ubpa::UECS {
 	class LastFrame {
 	public:
 		LastFrame(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		const Cmpt* get() const noexcept { return cmpt; }
+		const Cmpt* Get() const noexcept { return cmpt; }
 		operator const Cmpt* () const noexcept { return cmpt; }
 		const Cmpt* operator->() const noexcept { return cmpt; }
 	private:
