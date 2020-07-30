@@ -6,7 +6,7 @@
 
 #include <set>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// filter Archetype with All, Any and None
 	class EntityFilter {
 	public:

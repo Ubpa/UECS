@@ -5,7 +5,7 @@
 #include <tuple>
 #include <vector>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	using byte = uint8_t;
 	static_assert(sizeof(byte) == 1);
 	struct alignas(128) Chunk {

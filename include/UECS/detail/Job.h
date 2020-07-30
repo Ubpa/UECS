@@ -2,7 +2,7 @@
 
 #include "_deps/taskflow/taskflow.hpp"
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	using Job = tf::Taskflow;
 	using JobHandle = tf::Task;
 

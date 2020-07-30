@@ -8,7 +8,7 @@
 
 #include <set>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class CmptTypeSet : std::set<CmptType> {
 	public:
 		CmptTypeSet() : hashcode{ TypeID<CmptTypeSet> } {}

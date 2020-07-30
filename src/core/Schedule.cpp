@@ -4,10 +4,10 @@
 
 #include <UECS/World.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
-namespace Ubpa::detail::Schedule_ {
+namespace Ubpa::UECS::detail::Schedule_ {
 	struct NoneGroup {
 		NoneGroup() = default;
 		NoneGroup(SystemFunc* func)

@@ -5,8 +5,8 @@ namespace std {
 	struct hash;
 
 	template<>
-	struct hash<Ubpa::CmptType> {
-		constexpr size_t operator()(const Ubpa::CmptType& t) const noexcept {
+	struct hash<Ubpa::UECS::CmptType> {
+		constexpr size_t operator()(const Ubpa::UECS::CmptType& t) const noexcept {
 			return t.HashCode();
 		}
 	};

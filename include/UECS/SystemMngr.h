@@ -4,7 +4,7 @@
 
 #include <UContainer/xSTL/xMap.h>
 
-namespace Ubpa{
+namespace Ubpa::UECS{
 	class IListener;
 
 	// System Manager

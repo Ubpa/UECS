@@ -2,6 +2,7 @@
 
 #include <UECS/IListener.h>
 
+using namespace Ubpa::UECS;
 using namespace Ubpa;
 using namespace std;
 

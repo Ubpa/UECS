@@ -2,7 +2,7 @@
 
 #include <UTemplate/TypeID.h>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// Component Type
 	// use a hashcode to distinguish different type
 	class CmptType {

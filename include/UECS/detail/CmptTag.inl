@@ -2,12 +2,12 @@
 
 #include <type_traits>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class Entity;
 	class EntityLocator;
 }
 
-namespace Ubpa::CmptTag {
+namespace Ubpa::UECS::CmptTag {
 	template<typename Cmpt> struct RemoveTag<const Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<LastFrame<Cmpt>> : IType<Cmpt> {};

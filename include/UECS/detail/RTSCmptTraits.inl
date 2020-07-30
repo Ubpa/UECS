@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	inline size_t RTSCmptTraits::Sizeof(CmptType type) const {
 		assert(sizeofs.find(type) != sizeofs.end());
 		return sizeofs.find(type)->second;

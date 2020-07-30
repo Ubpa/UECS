@@ -2,7 +2,7 @@
 
 #include <UECS/IListener.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 EntityMngr::~EntityMngr() {

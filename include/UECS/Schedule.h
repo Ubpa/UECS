@@ -8,11 +8,11 @@
 
 #include <map>
 
-namespace Ubpa::detail::Schedule_ {
+namespace Ubpa::UECS::detail::Schedule_ {
 	struct Compiler;
 }
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class EntityMngr;
 	class SystemMngr;
 

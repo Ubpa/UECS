@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename System>
 	void SystemMngr::RegisterOne() {
 		Register(std::string{ nameof::nameof_type<System>() }, &System::OnUpdate);

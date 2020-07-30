@@ -5,7 +5,7 @@
 #include <UTemplate/Typelist.h>
 #include <UTemplate/Func.h>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype* EntityMngr::GetOrCreateArchetypeOf() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,

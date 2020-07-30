@@ -2,7 +2,7 @@
 
 #include "detail/Util.h"
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// index + version
 	class Entity {
 	public:

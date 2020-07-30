@@ -1,6 +1,6 @@
 #include <UECS/EntityFilter.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 
 EntityFilter::EntityFilter()
 	: allHashCode{ TypeID<EntityFilter> },

@@ -6,7 +6,7 @@
 
 #include <set>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// locate components in function's argument list for Archetype
 	class EntityLocator {
 	public:

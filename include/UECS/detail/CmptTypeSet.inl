@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	inline CmptTypeSet::CmptTypeSet(const CmptType* types, size_t num) {
 		assert(types != nullptr && num != 0);
 		for (size_t i = 0; i < num; i++)
@@ -106,8 +106,8 @@ namespace Ubpa {
 
 namespace std {
 	template<>
-	struct hash<Ubpa::CmptTypeSet> {
-		size_t operator()(const Ubpa::CmptTypeSet& types) const noexcept {
+	struct hash<Ubpa::UECS::CmptTypeSet> {
+		size_t operator()(const Ubpa::UECS::CmptTypeSet& types) const noexcept {
 			return types.HashCode();
 		}
 	};

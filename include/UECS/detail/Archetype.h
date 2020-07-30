@@ -14,7 +14,7 @@
 
 #include <map>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class EntityMngr;
 
 	// Entity is a special Component

@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// CmptType + void*
 	class CmptPtr {
 	public:

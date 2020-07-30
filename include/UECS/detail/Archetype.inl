@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype::Archetype(TypeList<Cmpts...>)
 		: types(TypeList<Entity, Cmpts...>{})

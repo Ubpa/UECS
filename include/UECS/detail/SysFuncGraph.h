@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class SystemFunc;
 	class SysFuncGraph {
 	public:

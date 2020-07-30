@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 bool SysFuncGraph::HaveVertex(SystemFunc* x) const {

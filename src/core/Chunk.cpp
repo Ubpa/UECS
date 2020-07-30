@@ -2,7 +2,7 @@
 
 #include <UECS/detail/Chunk.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 Chunk::Layout Chunk::GenLayout(const vector<size_t>& alignments, const vector<size_t>& sizes) noexcept {

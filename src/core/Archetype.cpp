@@ -1,6 +1,6 @@
 #include <UECS/detail/Archetype.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 void Archetype::SetLayout() {

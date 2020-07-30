@@ -2,12 +2,12 @@
 
 #include <_deps/nameof.hpp>
 
-namespace Ubpa::detail::System_ {
+namespace Ubpa::UECS::detail::System_ {
 	template<typename Func>
 	auto Pack(Func&& func) noexcept;
 }
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename Func>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter)
 		: isJob{ IsEmpty_v<FuncTraits_ArgList<Func>> },
@@ -40,7 +40,7 @@ namespace Ubpa {
 	}
 }
 
-namespace Ubpa::detail::System_ {
+namespace Ubpa::UECS::detail::System_ {
 	template<typename DecayedArgList, typename SortedCmptList>
 	struct Packer;
 

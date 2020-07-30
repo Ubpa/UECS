@@ -6,7 +6,7 @@
 
 #include <UTemplate/Func.h>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename TaggedCmptList>
 	EntityLocator::EntityLocator(TaggedCmptList)
 		: EntityLocator{ Filter_t<TaggedCmptList, CmptTag::IsLastFrame>{},

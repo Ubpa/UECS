@@ -6,7 +6,7 @@
 
 #include <functional>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// [description]
 	// system function registered by Schedule in <System>::OnUpdate(Schedule&)
 	// name + query + function<...>

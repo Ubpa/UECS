@@ -2,7 +2,7 @@
 
 #include <UECS/detail/Util.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 EntityLocator::EntityLocator(set<CmptType> lastFrameCmpts,

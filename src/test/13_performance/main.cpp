@@ -1,5 +1,7 @@
 #include <UECS/World.h>
 
+using namespace Ubpa::UECS;
+
 #include <chrono>
 #include <iostream>
 
@@ -7,7 +9,7 @@ struct A { float val; };
 struct B { float val; };
 
 struct TestSystem {
-	static void OnUpdate(Ubpa::Schedule& schedule) {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.Register(
 			[](const A* a, B* b) {
 				// 256 floating-point operations
@@ -20,7 +22,7 @@ struct TestSystem {
 int main() {
 	size_t numEntities = 65536;
 	size_t numUpdate = 144 * 10;
-	Ubpa::World w;
+	World w;
 	w.systemMngr.Register<TestSystem>();
 
 	auto t0 = std::chrono::steady_clock::now();

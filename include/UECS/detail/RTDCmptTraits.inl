@@ -2,7 +2,7 @@
 
 #include "../RTDCmptTraits.h"
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	inline RTDCmptTraits& RTDCmptTraits::Instance() noexcept {
 		static RTDCmptTraits instance;
 		return instance;

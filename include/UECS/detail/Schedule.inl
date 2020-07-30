@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename Func>
 	Schedule& Schedule::Register(Func&& func, std::string name, EntityFilter filter) {
 		Request(std::forward<Func>(func), std::move(name), std::move(filter));

@@ -6,7 +6,7 @@
 
 #include <UGraphviz/UGraphviz.h>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class IListener;
 
 	// SystemMngr + EntityMngr

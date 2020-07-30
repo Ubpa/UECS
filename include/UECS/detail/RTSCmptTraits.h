@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <functional>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// run-time static component traits
 	class RTSCmptTraits {
 	public:

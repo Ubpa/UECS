@@ -9,7 +9,7 @@
 
 #include <mutex>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class World;
 
 	class IListener;

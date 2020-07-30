@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <functional>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	// run-time dynamic component traits, singleton
 	// size (> 0) is neccessary
 	// optional

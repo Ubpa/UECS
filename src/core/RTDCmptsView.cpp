@@ -2,7 +2,7 @@
 
 #include <UECS/EntityLocator.h>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 RTDCmptsView::Iterator RTDCmptsView::begin() const noexcept {

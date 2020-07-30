@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class World;
 	class SystemMngr;
 	class EntityMngr;

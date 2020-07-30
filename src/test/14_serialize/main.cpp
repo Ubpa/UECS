@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-using namespace Ubpa;
+using namespace Ubpa::UECS;
 using namespace std;
 
 struct Position { float val; };

@@ -2,7 +2,7 @@
 
 #include <UTemplate/Typelist.h>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	namespace CmptTag {
 		// LastFrame -> Write -> Latest
 

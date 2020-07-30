@@ -6,7 +6,7 @@
 
 #include <set>
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	class EntityLocator;
 
 	// use RTDCmptsView::Iterator to read CmptPtr

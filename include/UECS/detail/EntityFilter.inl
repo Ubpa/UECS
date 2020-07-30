@@ -2,7 +2,7 @@
 
 #include "Util.h"
 
-namespace Ubpa {
+namespace Ubpa::UECS {
 	template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts>
 	EntityFilter::EntityFilter(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>)
 		: allCmptTypes{ CmptType::Of<AllCmpts>... },
@@ -125,8 +125,8 @@ namespace std {
 	template<typename T>
 	struct hash;
 	template<>
-	struct hash<Ubpa::EntityFilter> {
-		size_t operator()(const Ubpa::EntityFilter& filter) const noexcept {
+	struct hash<Ubpa::UECS::EntityFilter> {
+		size_t operator()(const Ubpa::UECS::EntityFilter& filter) const noexcept {
 			return filter.HashCode();
 		}
 	};
