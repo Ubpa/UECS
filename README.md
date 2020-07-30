@@ -22,11 +22,13 @@
 ```c++
 #include <UECS/World.h>
 
+using namespace Ubpa::UECS;
+
 struct Position { float val; };
 struct Velocity { float val; };
 
 struct MoverSystem {
-  static void OnUpdate(Ubpa::Schedule& schedule) {
+  static void OnUpdate(Schedule& schedule) {
     schedule.Request(
       [](const Velocity* v, Position* p) {
         p->val += v->val;
@@ -35,7 +37,7 @@ struct MoverSystem {
 };
 
 int main() {
-  Ubpa::World w;
+  World w;
   w.systemMngr.Register<MoverSystem>();
   w.entityMngr.CreateEntity<Position, Velocity>();
   w.Update();
