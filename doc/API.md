@@ -181,9 +181,9 @@ if `e` is invalid, throw `std::invalid_argument`.
 
 use tag to dstinguish write, read before write and read after write
 
-- `CmptTag::LastFrame<Component>`: read before write
-- `CmptTag::Write<Component>`: write, equal to `<Component> *` 
-- `CmptTag::Latest<Component>`: read after write, equal to `const <Component> *` 
+- `LastFrame<Component>`: read before write
+- `Write<Component>`: write, equal to `<Component> *` 
+- `Latest<Component>`: read after write, equal to `const <Component> *` 
 
 ## `EntityLocator` 
 
@@ -210,7 +210,7 @@ query.filter can be change dynamically by other `<System>` with Schedule
 [system function kind] (distinguish by argument list)
 
 - per entity function: `[[const] Entity e, ] [size_t indexInQuery, ] <Tagged_Component>...` 
-  - tagged component: `CmptTag::{LastFrame|Write|Latest}<Component>` 
+  - tagged component: `{LastFrame|Write|Latest}<Component>` 
 - job: empty argument list
 - runtime dynamic function: `const EntityLocator* locator, void** cmpts` 
 

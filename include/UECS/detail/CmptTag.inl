@@ -7,7 +7,7 @@ namespace Ubpa::UECS {
 	class EntityLocator;
 }
 
-namespace Ubpa::UECS::CmptTag {
+namespace Ubpa::UECS {
 	template<typename Cmpt> struct RemoveTag<const Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<LastFrame<Cmpt>> : IType<Cmpt> {};

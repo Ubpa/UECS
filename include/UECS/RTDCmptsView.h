@@ -17,28 +17,28 @@ namespace Ubpa::UECS {
 		// for read/write control
 		class CmptHandle {
 		public:
-			CmptHandle(CmptType type, void* cmpt, CmptTag::Mode mode)
+			CmptHandle(CmptType type, void* cmpt, Mode mode)
 				: type{ type }, cmpt{ cmpt }, mode{ mode }{}
 
 			CmptType GetCmptType() const noexcept { return type; }
-			CmptTag::Mode GetMode() const noexcept { return mode; }
+			Mode GetMode() const noexcept { return mode; }
 			
 			CmptCPtr AsLastFrame() const noexcept {
-				assert(mode == CmptTag::Mode::LAST_FRAME);
+				assert(mode == Mode::LAST_FRAME);
 				return { type, cmpt };
 			}
 			CmptPtr AsWrite() const noexcept {
-				assert(mode == CmptTag::Mode::WRITE);
+				assert(mode == Mode::WRITE);
 				return { type, cmpt };
 			}
 			CmptCPtr AsLatest() const noexcept {
-				assert(mode == CmptTag::Mode::LATEST);
+				assert(mode == Mode::LATEST);
 				return { type, cmpt };
 			}
 		private:
 			CmptType type;
 			void* cmpt;
-			CmptTag::Mode mode;
+			Mode mode;
 		};
 
 		// forward
@@ -69,7 +69,7 @@ namespace Ubpa::UECS {
 			EntityLocator* locator;
 			std::set<CmptType>::iterator typeIter;
 			void* const* ptr_cmpt;
-			mutable CmptHandle handle{ CmptType::Invalid(), nullptr, CmptTag::Mode{} };
+			mutable CmptHandle handle{ CmptType::Invalid(), nullptr, Mode{} };
 		};
 
 		RTDCmptsView(EntityLocator* locator, void** cmpts)

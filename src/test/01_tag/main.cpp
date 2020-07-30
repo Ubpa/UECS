@@ -10,8 +10,8 @@ struct Data {};
 struct DataSystem {
 	static void OnUpdate(Schedule& schedule) {
 		schedule
-			.Register([](CmptTag::LastFrame<Data> d) { cout << "lastFrame_sys0" << endl; }, "lastFrame_sys0")
-			.Register([](CmptTag::LastFrame<Data> d) { cout << "lastFrame_sys1" << endl; }, "lastFrame_sys1")
+			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys0" << endl; }, "lastFrame_sys0")
+			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys1" << endl; }, "lastFrame_sys1")
 			.Register([](Data* d) { cout << "writer_sys0" << endl; }, "writer_sys0")
 			.Register([](Data* d) { cout << "writer_sys1" << endl; }, "writer_sys1")
 			.Register([](Data* d) { cout << "writer_sys2" << endl; }, "writer_sys2")

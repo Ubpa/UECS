@@ -23,7 +23,7 @@ struct MySystem {
 		);
 		schedule
 			.Register(
-				[](CmptTag::LastFrame<A> a, CmptTag::Write<B> b, CmptTag::Latest<C> c) {},
+				[](LastFrame<A> a, Write<B> b, Latest<C> c) {},
 				"System Func",
 				filter
 			);
