@@ -41,6 +41,8 @@ namespace Ubpa::UECS {
 	template<typename TaggedCmpt>
 	using DecayTag_t = typename DecayTag<TaggedCmpt>::type;
 
+	// TODO: use IsInstance to simplify Is<some-tag>
+
 	template<typename TaggedCmpt>
 	struct IsLastFrame;
 	template<typename TaggedCmpt>

@@ -27,8 +27,10 @@ namespace Ubpa::UECS {
 	public:
 		template<typename... Cmpts>
 		std::tuple<Entity, Cmpts*...> Create();
+
 		// use RTDCmptTraits
 		Entity Create(const CmptType* types, size_t num);
+
 		// call Create(const CmptType*, size_t)
 		template<typename... CmptTypes,
 			// for function overload
@@ -41,8 +43,11 @@ namespace Ubpa::UECS {
 
 		template<typename... Cmpts>
 		std::tuple<Cmpts*...> Attach(Entity);
+
 		// use RTDCmptTraits
 		void Attach(Entity, const CmptType* types, size_t num);
+
+		// call Attach(Entity, const CmptType*, size_t)
 		template<typename... CmptTypes,
 			// for function overload
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
@@ -53,8 +58,10 @@ namespace Ubpa::UECS {
 
 		template<typename... Cmpts>
 		void Detach(Entity);
+
 		// use RTDCmptTraits
 		void Detach(Entity, const CmptType* types, size_t num);
+
 		// call Detach(Entity, const CmptType*, size_t);
 		template<typename... CmptTypes,
 			// for function overload

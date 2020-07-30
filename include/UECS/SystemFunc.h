@@ -16,7 +16,7 @@ namespace Ubpa::UECS {
 	// 1. per entity function: [[const] Entity e, ] [size_t indexInQuery, ] <Tagged_Component>...
 	// - - tagged component: {LastFrame|Write|Latest}<Component>
 	// 2. job: empty argument list
-	// 3. runtime dynamic function: const EntityLocator* locator, void** cmpts
+	// 3. runtime dynamic function: RTDCmptsView
 	class SystemFunc {
 	public:
 		EntityQuery query;
