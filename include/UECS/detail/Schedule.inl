@@ -17,13 +17,6 @@ namespace Ubpa::UECS {
 	void Schedule::Request(Args&&... args) {
 		SystemFunc* sysFunc = sysFuncPool.Request(std::forward<Args>(args)...);
 		sysFuncs.emplace(sysFunc->HashCode(), sysFunc);
-		const auto& locator = sysFunc->query.locator;
-		for (const auto& type : locator.LastFrameCmptTypes())
-			cmptSysFuncsMap[type].lastFrameSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.WriteCmptTypes())
-			cmptSysFuncsMap[type].writeSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.LatestCmptTypes())
-			cmptSysFuncsMap[type].latestSysFuncs.push_back(sysFunc);
 	}
 
 	inline Schedule::Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr)

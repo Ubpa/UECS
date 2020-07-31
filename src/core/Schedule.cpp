@@ -222,6 +222,61 @@ void Schedule::Clear() {
 	sysLockFilter.clear();
 }
 
+unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {
+	unordered_map<CmptType, Schedule::CmptSysFuncs> rst;
+	for (const auto& [hashcode, sysFunc] : sysFuncs) {
+		const auto& locator = sysFunc->query.locator;
+		for (const auto& type : locator.LastFrameCmptTypes())
+			rst[type].lastFrameSysFuncs.push_back(sysFunc);
+		for (const auto& type : locator.WriteCmptTypes())
+			rst[type].writeSysFuncs.push_back(sysFunc);
+		for (const auto& type : locator.LatestCmptTypes())
+			rst[type].latestSysFuncs.push_back(sysFunc);
+
+		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
+			const auto& filter = sysFunc->query.filter;
+			for (const auto& type : filter.AllCmptTypes()) {
+				auto& cmptSysFuncs = rst[type];
+				switch (type.GetAccessMode())
+				{
+				case Ubpa::UECS::AccessMode::LAST_FRAME:
+					cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
+					break;
+				case Ubpa::UECS::AccessMode::WRITE:
+					cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
+					break;
+				case Ubpa::UECS::AccessMode::LATEST:
+					cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+
+			for (const auto& type : filter.AnyCmptTypes()) {
+				auto& cmptSysFuncs = rst[type];
+				switch (type.GetAccessMode())
+				{
+				case Ubpa::UECS::AccessMode::LAST_FRAME:
+					cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
+					break;
+				case Ubpa::UECS::AccessMode::WRITE:
+					cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
+					break;
+				case Ubpa::UECS::AccessMode::LATEST:
+					cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+		}
+	}
+	return rst;
+}
+
 SysFuncGraph Schedule::GenSysFuncGraph() const {
 	// [change func Filter]
 	for (const auto& [hashcode, change] : sysFilterChange) {
@@ -241,6 +296,8 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		func->query.filter.EraseAny(change.eraseAnys);
 		func->query.filter.EraseNone(change.eraseNones);
 	}
+
+	auto cmptSysFuncsMap = GenCmptSysFuncsMap();
 
 	// [gen groupMap]
 	unordered_map<SystemFunc*, detail::Schedule_::NoneGroup> groupMap;

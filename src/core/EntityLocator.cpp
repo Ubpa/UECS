@@ -30,12 +30,12 @@ bool EntityLocator::operator==(const EntityLocator& locator) const noexcept {
 		&& latestCmptTypes == latestCmptTypes;
 }
 
-Mode  EntityLocator::GetCmptTagMode(CmptType type) const {
+AccessMode  EntityLocator::GetCmptTagMode(CmptType type) const {
 	assert(cmptTypes.find(type) != cmptTypes.end());
 	if (lastFrameCmptTypes.find(type) != lastFrameCmptTypes.end())
-		return Mode::LAST_FRAME;
+		return AccessMode::LAST_FRAME;
 	else if (writeCmptTypes.find(type) != writeCmptTypes.end())
-		return Mode::WRITE;
+		return AccessMode::WRITE;
 	else // lastestCmptTypes.find(type) != lastestCmptTypes.end())
-		return Mode::LATEST;
+		return AccessMode::LATEST;
 }

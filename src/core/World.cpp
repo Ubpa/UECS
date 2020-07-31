@@ -22,10 +22,22 @@ void World::Update() {
 	for (const auto& [func, adjVs] : graph.GetAdjList()) {
 		auto job = jobPool.Request(func->Name());
 		jobs.push_back(job);
-		if (!func->IsJob())
-			entityMngr.GenJob(job, func);
-		else
-			job->emplace([func = func]() { (*func)(Entity::Invalid(), size_t_invalid, RTDCmptsView{ nullptr,nullptr }); });
+		switch (func->GetMode())
+		{
+		case Ubpa::UECS::SystemFunc::Mode::Entity:
+			entityMngr.GenEntityJob(job, func);
+			break;
+		case Ubpa::UECS::SystemFunc::Mode::Chunk:
+			entityMngr.GenChunkJob(job, func);
+			break;
+		case Ubpa::UECS::SystemFunc::Mode::Job:
+			job->emplace([func = func]() {
+				(*func)();
+			});
+			break;
+		default:
+			break;
+		}
 		table[func] = jobGraph.composed_of(*job);
 	}
 
@@ -45,15 +57,15 @@ string World::DumpUpdateJobGraph() const {
 }
 
 // after running Update
-Graphviz::Graph World::GenUpdateFrameGraph() const {
-	Graphviz::Graph graph("Update Frame Graph", true);
+UGraphviz::Graph World::GenUpdateFrameGraph() const {
+	UGraphviz::Graph graph("Update Frame Graph", true);
 
 	graph
 		.RegisterGraphNodeAttr("style", "filled")
 		.RegisterGraphNodeAttr("fontcolor", "white")
 		.RegisterGraphNodeAttr("fontname", "consolas");
 
-	auto& registrar = graph.GetRegistrar();
+	auto& registry = graph.GetRegistry();
 
 	auto& subgraph_cmpt = graph.GenSubgraph("Component Nodes");
 	auto& subgraph_sys = graph.GenSubgraph("System Function Nodes");
@@ -113,49 +125,50 @@ Graphviz::Graph World::GenUpdateFrameGraph() const {
 	}
 
 	for (auto cmptType : cmptTypes) {
-		auto cmptIdx = registrar.RegisterNode(queryCmptName(cmptType));
+		auto cmptIdx = registry.RegisterNode(queryCmptName(cmptType));
 		cmptType2idx[cmptType] = cmptIdx;
 		subgraph_cmpt.AddNode(cmptIdx);
 	}
 
-	for (const auto& [hash, sysFuncs] : schedule.sysFuncs) {
-		auto sysIdx = registrar.RegisterNode(sysFuncs->Name());
+	// TODO: filter
+	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
+		auto sysIdx = registry.RegisterNode(sysFunc->Name());
 		subgraph_sys.AddNode(sysIdx);
 
-		const auto& locator = sysFuncs->query.locator;
+		const auto& locator = sysFunc->query.locator;
 		for (const auto& cmptType : locator.LastFrameCmptTypes()) {
-			auto edgeIdx = registrar.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+			auto edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 			subgraph_lastframe.AddEdge(edgeIdx);
 		}
 		for (const auto& cmptType : locator.WriteCmptTypes()) {
-			auto edgeIdx = registrar.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 			subgraph_write.AddEdge(edgeIdx);
 		}
 		for (const auto& cmptType : locator.LatestCmptTypes()) {
-			auto edgeIdx = registrar.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+			auto edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 			subgraph_latest.AddEdge(edgeIdx);
 		}
 
-		const auto& filter = sysFuncs->query.filter;
+		const auto& filter = sysFunc->query.filter;
 		for (const auto& cmptType : filter.AllCmptTypes()) {
 			auto cmptIdx = cmptType2idx[cmptType];
-			if (registrar.IsRegisteredEdge(sysIdx, cmptIdx))
+			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 				continue;
-			auto edgeIdx = registrar.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 			subgraph_all.AddEdge(edgeIdx);
 		}
 		for (const auto& cmptType : filter.AnyCmptTypes()) {
 			auto cmptIdx = cmptType2idx[cmptType];
-			if (registrar.IsRegisteredEdge(sysIdx, cmptIdx))
+			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 				continue;
-			auto edgeIdx = registrar.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 			subgraph_any.AddEdge(edgeIdx);
 		}
 		for (const auto& cmptType : filter.NoneCmptTypes()) {
 			auto cmptIdx = cmptType2idx[cmptType];
-			if (registrar.IsRegisteredEdge(sysIdx, cmptIdx))
+			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 				continue;
-			auto edgeIdx = registrar.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 			subgraph_none.AddEdge(edgeIdx);
 		}
 	}

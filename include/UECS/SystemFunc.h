@@ -3,6 +3,7 @@
 #include "EntityQuery.h"
 #include "Entity.h"
 #include "RTDCmptsView.h"
+#include "ChunkView.h"
 
 #include <functional>
 
@@ -13,12 +14,18 @@ namespace Ubpa::UECS {
 	// name must be unique in global
 	// query.filter can be change dynamically by other <System> with Schedule
 	// [system function kind] (distinguish by argument list)
-	// 1. per entity function: [[const] Entity e, ] [size_t indexInQuery, ] <Tagged_Component>...
-	// - - tagged component: {LastFrame|Write|Latest}<Component>
-	// 2. job: empty argument list
-	// 3. runtime dynamic function: RTDCmptsView
+	// 1. per entity function: [[const] Entity e] [size_t indexInQuery] [RTDCmptsView] <tagged-component>...
+	// * <tagged-component>: {LastFrame|Write|Latest}<Component>
+	// 2. chunk: ChunkView
+	// 3. job: empty argument list
 	class SystemFunc {
 	public:
+		enum class Mode {
+			Entity,
+			Chunk,
+			Job,
+		};
+
 		EntityQuery query;
 		
 		template<typename Func>
@@ -35,21 +42,46 @@ namespace Ubpa::UECS {
 		size_t HashCode() const noexcept { return hashCode; }
 
 		void operator()(Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts) {
-			return func(e, entityIndexInQuery, rtdcmpts);
+			assert(mode == Mode::Entity);
+			return func(
+				e,
+				entityIndexInQuery,
+				rtdcmpts,
+				ChunkView{nullptr, size_t_invalid, nullptr}
+			);
 		}
 
-		// no arguments <Func>
-		bool IsJob() const noexcept { return isJob; }
+		void operator()(ChunkView chunkView) {
+			assert(mode == Mode::Chunk);
+			return func(
+				Entity::Invalid(),
+				size_t_invalid,
+				RTDCmptsView{nullptr, nullptr},
+				chunkView
+			);
+		}
+
+		void operator()() {
+			assert(mode == Mode::Job);
+			return func(
+				Entity::Invalid(),
+				size_t_invalid,
+				RTDCmptsView{ nullptr, nullptr },
+				ChunkView{nullptr, size_t_invalid, nullptr}
+			);
+		}
+
+		Mode GetMode() const noexcept { return mode; }
 
 		bool operator==(const SystemFunc& func) const noexcept { return name == func.name; }
 	private:
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);
 
-		std::function<void(Entity, size_t, RTDCmptsView)> func;
+		std::function<void(Entity, size_t, RTDCmptsView, ChunkView)> func;
 
 		std::string name;
-		bool isJob;
+		Mode mode;
 		size_t hashCode; // after name
 	};
 }

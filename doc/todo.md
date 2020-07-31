@@ -24,6 +24,8 @@
   - [x] `RTDCmptTraits` : **R**un-**T**ime **D**ynamic **C**omponent **T**raits
   - [x] run-time dynamic `SystemFunc` 
   - [x] C-style API
+- [x] chunk job
+- [x] serialize (`IListner`)
 
 ### unimportant
 
@@ -38,11 +40,6 @@
 
 - [ ] shared component
 - [ ] system group
-
-### not sure
-
-- [ ] ChunkJob
-- [ ] serialize
 
 ## tool
 

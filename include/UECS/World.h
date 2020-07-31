@@ -29,7 +29,7 @@ namespace Ubpa::UECS {
 
 		// after running Update
 		// use RTDCmptTraits' registered component name
-		Graphviz::Graph GenUpdateFrameGraph() const;
+		UGraphviz::Graph GenUpdateFrameGraph() const;
 
 		void Accept(IListener* listener) const;
 

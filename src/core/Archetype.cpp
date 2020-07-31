@@ -179,6 +179,13 @@ tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(
 	return { chunkEntity, chunkCmpts, sizes };
 }
 
+void* Archetype::Locate(size_t chunkIdx, CmptType t) const {
+	assert(types.Contains(t));
+	assert(chunkIdx < chunks.size());
+	auto buffer = chunks[chunkIdx]->Data();
+	return buffer + Offsetof(t);
+}
+
 size_t Archetype::Erase(size_t idx) {
 	assert(idx < entityNum);
 
@@ -236,4 +243,11 @@ vector<CmptPtr> Archetype::Components(size_t idx) const {
 	}
 
 	return rst;
+}
+
+size_t Archetype::EntityNumOfChunk(size_t chunkIdx) const noexcept {
+	if (chunkIdx == chunks.size() - 1)
+		return entityNum - (chunks.size() - 1) * chunkCapacity;
+	else
+		return chunkCapacity;
 }

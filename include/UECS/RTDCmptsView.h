@@ -17,28 +17,28 @@ namespace Ubpa::UECS {
 		// for read/write control
 		class CmptHandle {
 		public:
-			CmptHandle(CmptType type, void* cmpt, Mode mode)
+			CmptHandle(CmptType type, void* cmpt, AccessMode mode)
 				: type{ type }, cmpt{ cmpt }, mode{ mode }{}
 
 			CmptType GetCmptType() const noexcept { return type; }
-			Mode GetMode() const noexcept { return mode; }
+			AccessMode GetMode() const noexcept { return mode; }
 			
 			CmptCPtr AsLastFrame() const noexcept {
-				assert(mode == Mode::LAST_FRAME);
+				assert(mode == AccessMode::LAST_FRAME);
 				return { type, cmpt };
 			}
 			CmptPtr AsWrite() const noexcept {
-				assert(mode == Mode::WRITE);
+				assert(mode == AccessMode::WRITE);
 				return { type, cmpt };
 			}
 			CmptCPtr AsLatest() const noexcept {
-				assert(mode == Mode::LATEST);
+				assert(mode == AccessMode::LATEST);
 				return { type, cmpt };
 			}
 		private:
 			CmptType type;
 			void* cmpt;
-			Mode mode;
+			AccessMode mode;
 		};
 
 		// forward
@@ -69,7 +69,7 @@ namespace Ubpa::UECS {
 			EntityLocator* locator;
 			std::set<CmptType>::iterator typeIter;
 			void* const* ptr_cmpt;
-			mutable CmptHandle handle{ CmptType::Invalid(), nullptr, Mode{} };
+			mutable CmptHandle handle{ CmptType::Invalid(), nullptr, AccessMode{} };
 		};
 
 		RTDCmptsView(EntityLocator* locator, void** cmpts)

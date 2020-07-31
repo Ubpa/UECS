@@ -8,10 +8,10 @@ namespace Ubpa::UECS {
 }
 
 namespace Ubpa::UECS {
+	template<typename Cmpt> struct RemoveTag : IType<Cmpt> {}; // default
 	template<typename Cmpt> struct RemoveTag<const Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<Cmpt*> : IType<Cmpt> {};
 	template<typename Cmpt> struct RemoveTag<LastFrame<Cmpt>> : IType<Cmpt> {};
-	template<> struct RemoveTag<void**> : IType<void**> {};
 
 	template<typename T> struct DecayTag : IType<T> {};
 	// template<typename Cmpt> struct DecayTag<Cmpt*> : IType<Cmpt*> {};

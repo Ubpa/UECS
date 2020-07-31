@@ -6,7 +6,7 @@ namespace Ubpa::UECS {
 
 	// LastFrame -> Write -> Latest
 
-	enum class Mode {
+	enum class AccessMode {
 		LAST_FRAME,
 		WRITE,
 		LATEST
@@ -62,6 +62,15 @@ namespace Ubpa::UECS {
 	struct IsTaggedCmpt : IValue<bool, IsLastFrame_v<T> || IsWrite_v<T> || IsLatest_v<T>> {};
 	template<typename T>
 	static constexpr bool IsTaggedCmpt_v = IsTaggedCmpt<T>::value;
+
+	template<typename T>
+	static constexpr AccessMode AccessModeOf =
+		IsLastFrame_v<T> ? AccessMode::LAST_FRAME : (
+			IsWrite_v<T> ? AccessMode::WRITE : (
+				IsLatest_v<T> ? AccessMode::LAST_FRAME
+				: AccessMode::WRITE // default
+			)
+		);
 }
 
 #include "detail/CmptTag.inl"

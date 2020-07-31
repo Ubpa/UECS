@@ -252,7 +252,9 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
-void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
+void EntityMngr::GenEntityJob(Job* job, SystemFunc* sys) const {
+	assert(sys->GetMode() == SystemFunc::Mode::Entity);
+
 	size_t indexOffsetInQuery = 0;
 	for (Archetype* archetype : QueryArchetypes(sys->query)) {
 		auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->query.locator.CmptTypes());
@@ -276,6 +278,20 @@ void EntityMngr::GenJob(Job* job, SystemFunc* sys) const {
 		}
 
 		indexOffsetInQuery += num;
+	}
+}
+
+void EntityMngr::GenChunkJob(Job* job, SystemFunc* sys) const {
+	assert(sys->GetMode() == SystemFunc::Mode::Chunk);
+
+	for (Archetype* archetype : QueryArchetypes(sys->query)) {
+		size_t chunkNum = archetype->ChunkNum();
+
+		for (size_t i = 0; i < chunkNum; i++) {
+			job->emplace([=]() {
+				(*sys)(ChunkView{ archetype, i, archetype->GetChunk(i) });
+			});
+		}
 	}
 }
 

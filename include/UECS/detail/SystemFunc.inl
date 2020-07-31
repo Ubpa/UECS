@@ -10,7 +10,7 @@ namespace Ubpa::UECS::detail::System_ {
 namespace Ubpa::UECS {
 	template<typename Func>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityLocator locator, EntityFilter filter)
-		: isJob{ IsEmpty_v<FuncTraits_ArgList<Func>> },
+		: mode{ Mode::Entity },
 		func{ detail::System_::Pack(std::forward<Func>(func)) },
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
@@ -18,8 +18,11 @@ namespace Ubpa::UECS {
 	{
 		using ArgList = FuncTraits_ArgList<Func>;
 
-		static_assert(ContainTs_v<ArgList, RTDCmptsView>,
-			"<Func>'s argument must contain RTDCmptsView");
+		static_assert(Contain_v<ArgList, RTDCmptsView>,
+			"(Mode::Entity) <Func>'s argument list must contain RTDCmptsView");
+
+		static_assert(!Contain_v<ArgList, ChunkView>,
+			"(Mode::Entity) <Func>'s argument list must not contain ChunkView");
 	}
 
 	template<typename Func>
@@ -31,12 +34,23 @@ namespace Ubpa::UECS {
 
 	template<typename Func, typename ArgList>
 	SystemFunc::SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList)
-		: isJob{ IsEmpty_v<ArgList> },
+		:
 		func{ detail::System_::Pack(std::forward<Func>(func)) }, 
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
 		query{ std::move(filter), EntityLocator{Filter_t<ArgList, IsTaggedCmpt>{}} }
 	{
+		static_assert(!Contain_v<ArgList, RTDCmptsView>,
+			"<Func>'s argument list contains RTDCmptsView, so you should use the constructor of the run-time dynamic version");
+		if constexpr (IsEmpty_v<ArgList>)
+			mode = Mode::Job;
+		else if constexpr (std::is_same_v<ArgList, TypeList<ChunkView>>)
+			mode = Mode::Chunk;
+		else {
+			static_assert(!Contain_v<ArgList, ChunkView>,
+				"(Mode::Entity) <Func>'s argument list must not contain ChunkView");
+			mode = Mode::Entity;
+		}
 	}
 }
 
@@ -46,11 +60,16 @@ namespace Ubpa::UECS::detail::System_ {
 
 	template<typename... DecayedArgs, typename... Cmpts>
 	struct Packer<TypeList<DecayedArgs...>, TypeList<Cmpts...>> {
-		using CmptList = TypeList<Cmpts...>;
+		using CmptList = TypeList<Cmpts...>; // sorted
 		template<typename Func>
 		static auto run(Func&& func) noexcept {
-			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts) {
-				auto unsorted_arg_tuple = std::make_tuple(e, entityIndexInQuery, rtdcmpts, reinterpret_cast<Cmpts*>(rtdcmpts.Components()[Find_v<CmptList, Cmpts>])...);
+			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts, ChunkView chunkView) {
+				auto unsorted_arg_tuple = std::make_tuple(
+					e,
+					entityIndexInQuery,
+					rtdcmpts,
+					chunkView,
+					reinterpret_cast<Cmpts*>(rtdcmpts.Components()[Find_v<CmptList, Cmpts>])...);
 				func(std::get<DecayedArgs>(unsorted_arg_tuple)...);
 			};
 		}

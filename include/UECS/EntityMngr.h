@@ -113,7 +113,8 @@ namespace Ubpa::UECS {
 			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
 		void AttachWithoutInit(Entity, CmptTypes...);
 
-		void GenJob(Job* job, SystemFunc* sys) const;
+		void GenEntityJob(Job* job, SystemFunc* sys) const;
+		void GenChunkJob(Job* job, SystemFunc* sys) const;
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
