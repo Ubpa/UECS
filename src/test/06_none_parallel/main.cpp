@@ -9,8 +9,11 @@ using namespace std;
 struct A {};
 struct B {};
 
-struct MySystem {
-	static void OnUpdate(Schedule& schedule) {
+class MySystem : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		EntityFilter filter_w0(
 			TypeList<>{}, // all
 			TypeList<>{}, // any

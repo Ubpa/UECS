@@ -40,8 +40,11 @@ using namespace Ubpa::UECS;
 struct Position { float val; };
 struct Velocity { float val; };
 
-struct MoverSystem {
-  static void OnUpdate(Schedule& schedule) {
+class MoverSystem : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
     schedule.Request(
       [](const Velocity* v, Position* p) {
         p->val += v->val;

@@ -9,14 +9,20 @@ struct P {};
 struct V {};
 struct A {};
 
-struct VP_System {
-	static void OnUpdate(Schedule& schedule) {
+class VP_System : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		schedule.Register([](const V*, P*) {cout << "VP" << endl; }, "VP");
 	}
 };
 
-struct AVP_System {
-	static void OnUpdate(Schedule& schedule) {
+class AVP_System : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		schedule
 			.Register([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP")
 			.InsertNone<A>("VP");

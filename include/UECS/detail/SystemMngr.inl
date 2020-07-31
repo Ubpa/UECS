@@ -1,28 +1,31 @@
 #pragma once
 
 namespace Ubpa::UECS {
-	template<typename System>
+	template<typename DerivedSystem>
 	void SystemMngr::RegisterOne() {
-		Register(std::string{ nameof::nameof_type<System>() }, &System::OnUpdate);
+		static_assert(std::is_base_of_v<System, DerivedSystem> && std::is_constructible_v<DerivedSystem, World*, std::string>,
+			"<DerivedSystem> must be derived form System and constructible with World* and std::string");
+		auto derivedSystem = new DerivedSystem{ world, std::string{ nameof::nameof_type<DerivedSystem>() } };
+		Register(std::unique_ptr<System>{ static_cast<System*>(derivedSystem) });
 	}
 
-	template<typename... Systems>
+	template<typename... DerivedSystems>
 	void SystemMngr::Register() {
-		(RegisterOne<Systems>(), ...);
+		(RegisterOne<DerivedSystems>(), ...);
 	}
 
-	template<typename System>
+	template<typename DerivedSystem>
 	bool SystemMngr::IsRegistered() const {
-		return IsRegistered(nameof::nameof_type<System>());
+		return IsRegistered(nameof::nameof_type<DerivedSystem>());
 	}
 
-	template<typename System>
+	template<typename DerivedSystem>
 	void DeregisterOne() {
-		Deregister(std::string{ nameof::nameof_type<System>() });
+		Deregister(nameof::nameof_type<DerivedSystem>());
 	}
 
-	template<typename... Systems>
+	template<typename... DerivedSystems>
 	void SystemMngr::Deregister() noexcept {
-		(DeregisterOne<Systems>(), ...);
+		(DeregisterOne<DerivedSystems>(), ...);
 	}
 }

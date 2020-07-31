@@ -1,10 +1,9 @@
 #pragma once
 
-#include <string_view>
-
 namespace Ubpa::UECS {
 	class World;
 	class SystemMngr;
+	class System;
 	class EntityMngr;
 	class Entity;
 	class CmptPtr;
@@ -17,8 +16,8 @@ namespace Ubpa::UECS {
 		virtual void EnterSystemMngr(const SystemMngr* sm) = 0;
 		virtual void ExistSystemMngr(const SystemMngr* sm) = 0;
 
-		virtual void EnterSystem(std::string_view s) = 0;
-		virtual void ExistSystem(std::string_view s) = 0;
+		virtual void EnterSystem(const System* s) = 0;
+		virtual void ExistSystem(const System* s) = 0;
 
 		virtual void EnterEntityMngr(const EntityMngr* em) = 0;
 		virtual void ExistEntityMngr(const EntityMngr* em) = 0;

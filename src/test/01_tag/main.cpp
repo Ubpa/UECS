@@ -7,8 +7,11 @@ using namespace std;
 
 struct Data {};
 
-struct DataSystem {
-	static void OnUpdate(Schedule& schedule) {
+class DataSystem : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		schedule
 			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys0" << endl; }, "lastFrame_sys0")
 			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys1" << endl; }, "lastFrame_sys1")

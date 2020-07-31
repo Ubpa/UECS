@@ -55,17 +55,17 @@ class Dumper : public IListener {
 		cout << "}," << endl;
 	}
 
-	virtual void EnterSystem(std::string_view s) override {
+	virtual void EnterSystem(const System* s) override {
 		if (!firstSystem)
 			cout << ",";
 		else
 			firstSystem = false;
 		cout << endl;
 		PrintIndent();
-		cout << "\"" << s << "\"";
+		cout << "\"" << s->GetName() << "\"";
 	}
 
-	virtual void ExistSystem(std::string_view s) override {
+	virtual void ExistSystem(const System* s) override {
 
 	}
 
@@ -151,8 +151,11 @@ class Dumper : public IListener {
 	}
 };
 
-struct MoverSystem {
-	static void OnUpdate(Schedule& schedule) {
+class MoverSystem : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		schedule.Register(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;

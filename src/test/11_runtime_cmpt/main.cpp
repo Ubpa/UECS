@@ -5,8 +5,11 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-struct RTDSystem {
-	static void OnUpdate(Schedule& schedule) {
+class RTDSystem: public System{
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		EntityLocator locator_write(
 			{}, // read: last frame
 			{ CmptType{ "LuaCmpt" } }, // write

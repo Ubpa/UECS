@@ -14,8 +14,11 @@ struct E {};
 struct F {};
 struct G {};
 
-struct MySystem {
-	static void OnUpdate(Schedule& schedule) {
+class MySystem : public System {
+public:
+	using System::System;
+
+	virtual void OnUpdate(Schedule& schedule) override {
 		EntityFilter filter(
 			TypeList<D>{}, // all
 			TypeList<E, F>{}, // any
