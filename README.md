@@ -42,13 +42,15 @@ struct Velocity { float val; };
 
 class MoverSystem : public System {
 public:
-	using System::System;
+  using System::System;
 
-	virtual void OnUpdate(Schedule& schedule) override {
+  virtual void OnUpdate(Schedule& schedule) override {
     schedule.Request(
       [](const Velocity* v, Position* p) {
         p->val += v->val;
-      }, "Mover");
+      },
+      "Mover"
+    );
   }
 };
 
