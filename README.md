@@ -45,7 +45,7 @@ public:
   using System::System;
 
   virtual void OnUpdate(Schedule& schedule) override {
-    schedule.Request(
+    schedule.Register(
       [](const Velocity* v, Position* p) {
         p->val += v->val;
       },
