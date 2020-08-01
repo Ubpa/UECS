@@ -158,19 +158,68 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		}
 
 		const auto& filter = sysFunc->query.filter;
-		for (const auto& cmptType : filter.AllCmptTypes()) {
-			auto cmptIdx = cmptType2idx[cmptType];
-			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
-				continue;
-			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
-			subgraph_all.AddEdge(edgeIdx);
+		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
+			// filter's <All> and <Any> components are treat as r/w
+			for (const auto& cmptType : filter.AllCmptTypes()) {
+				auto cmptIdx = cmptType2idx[cmptType];
+				size_t edgeIdx;
+				switch (cmptType.GetAccessMode())
+				{
+				case Ubpa::UECS::AccessMode::LAST_FRAME:
+					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					subgraph_lastframe.AddEdge(edgeIdx);
+					break;
+				case Ubpa::UECS::AccessMode::WRITE:
+					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+					subgraph_write.AddEdge(edgeIdx);
+					break;
+				case Ubpa::UECS::AccessMode::LATEST:
+					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					subgraph_latest.AddEdge(edgeIdx);
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+			for (const auto& cmptType : filter.AnyCmptTypes()) {
+				auto cmptIdx = cmptType2idx[cmptType];
+				size_t edgeIdx;
+				switch (cmptType.GetAccessMode())
+				{
+				case Ubpa::UECS::AccessMode::LAST_FRAME:
+					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					subgraph_lastframe.AddEdge(edgeIdx);
+					break;
+				case Ubpa::UECS::AccessMode::WRITE:
+					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+					subgraph_write.AddEdge(edgeIdx);
+					break;
+				case Ubpa::UECS::AccessMode::LATEST:
+					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					subgraph_latest.AddEdge(edgeIdx);
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
 		}
-		for (const auto& cmptType : filter.AnyCmptTypes()) {
-			auto cmptIdx = cmptType2idx[cmptType];
-			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
-				continue;
-			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
-			subgraph_any.AddEdge(edgeIdx);
+		else {
+			for (const auto& cmptType : filter.AllCmptTypes()) {
+				auto cmptIdx = cmptType2idx[cmptType];
+				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
+					continue;
+				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+				subgraph_all.AddEdge(edgeIdx);
+			}
+			for (const auto& cmptType : filter.AnyCmptTypes()) {
+				auto cmptIdx = cmptType2idx[cmptType];
+				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
+					continue;
+				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+				subgraph_any.AddEdge(edgeIdx);
+			}
 		}
 		for (const auto& cmptType : filter.NoneCmptTypes()) {
 			auto cmptIdx = cmptType2idx[cmptType];
