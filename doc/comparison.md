@@ -37,7 +37,7 @@ use `schedule.Order(<system-name>, <system-name>)` to set system update order
 
 **Creating entities** 
 
-(TODO) copy
+copy -> `instantiate` 
 
 (TODO) batch create
 
@@ -65,7 +65,7 @@ needless, you can use components constructor, destructor and move comstructor (c
 
 ### 2.4 Dynamic buffer components
 
-needless, you can use any type (e.g. `std::vector`) in Component
+needless, you can use any type (e.g. `std::vector`) in your component
 
 ### 2.5 Chunk components
 
@@ -73,11 +73,11 @@ needless, you can use any type (e.g. `std::vector`) in Component
 
 ## 3. Systems
 
-no instantiation, just use static function `OnUpdate(Schedule&)`，you can register `SystemFunc`，set update order, dynamic change filter, etc.
+like Unity3D
 
 ### 3.1 Creating systems
 
-lifecycle: only support `OnUpdate`, because of no instantiation
+lifecycle: support `OnUpdate`, you can C++'s constructor and desturctor
 
 (TODO) shared component filter
 
@@ -89,7 +89,7 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 
 - `SystemFunc` with `LastFrame<Cmpt>` run before any `SystemFunc` with `CmptTag::Write<Cmpt>` 
 
-- `SystemFunc` with `CmptTag::Write<Cmpt>` run before any `SystemFunc` with `CmptTag::Lastest<Cmpt>` 
+- `SystemFunc` with `Write<Cmpt>` run before any `SystemFunc` with `CmptTag::Lastest<Cmpt>` 
 
 **special parameters** 
 
@@ -97,12 +97,13 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 - `size_t entityInQueryIndex` 
 - (not-support) `size_t nativeThreadIndex` 
 - `RTDCmptViewer` 
+- `ChunkView` 
 
 **System kind** 
 
-- components (optional: + `Entity`, `size_t entityInQueryIndex`) : system for each entity
+- components (optional: `Entity`, `size_t entityInQueryIndex`, `RTDCmptViewer`) : system for each entity
 - empty : job
-- `RTDCmptViewer`: run-time dynamic system function
+- chunk: `ChunkView` 
 
 ### 3.2 System update order
 
@@ -114,7 +115,7 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 
 ### 3.5 Entity command buffers
 
-`World::AddCommand()`，run all commands after Update Graph
+`World::AddCommand()`，run all commands after Update graph
 
 ## 4. Sync points and structural changes
 
@@ -122,9 +123,13 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 
 currently, UECS only has a sync point `World::AddCommand()` 
 
+you can use a job as a syncpoint
+
 ## 5. Component WriteGroups
 
 use `Schedule::{Insert|Erase}{All|Any|None}` to dynamic change a system's filter
+
+Unity's `WriteGroup`  
 
 ## 6. Versions and generations
 

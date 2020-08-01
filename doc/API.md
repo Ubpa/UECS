@@ -1,5 +1,7 @@
 # API
 
+> maybe outmoded, it's better to read [source codes](../include/UECS) directly
+
 ## `Entity` 
 
 Entity = `index` + `version` 
