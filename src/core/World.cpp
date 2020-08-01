@@ -82,6 +82,8 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	auto& subgraph_write = graph.GenSubgraph("Write Edges");
 	auto& subgraph_latest = graph.GenSubgraph("Latest Edges");
 
+	auto& subgraph_order = graph.GenSubgraph("Order Edges");
+
 	auto& subgraph_all = graph.GenSubgraph("All Edges");
 	auto& subgraph_any = graph.GenSubgraph("Any Edges");
 	auto& subgraph_none = graph.GenSubgraph("None Edges");
@@ -97,6 +99,8 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	subgraph_lastframe.RegisterGraphEdgeAttr("color", "#60C5F1");
 	subgraph_write.RegisterGraphEdgeAttr("color", "#F47378");
 	subgraph_latest.RegisterGraphEdgeAttr("color", "#6BD089");
+
+	subgraph_order.RegisterGraphEdgeAttr("color", "#00A2E8");
 
 	subgraph_all
 		.RegisterGraphEdgeAttr("style", "dashed")
@@ -115,6 +119,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 
 	unordered_set<CmptType> cmptTypes;
 	unordered_map<CmptType, size_t> cmptType2idx;
+	unordered_map<size_t, size_t> sysFuncHashcode2idx;
 
 	auto queryCmptName = [](CmptType type) -> string {
 		auto cmptName = RTDCmptTraits::Instance().Nameof(type);
@@ -138,9 +143,10 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		subgraph_cmpt.AddNode(cmptIdx);
 	}
 
-	// TODO: filter
 	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
 		auto sysIdx = registry.RegisterNode(sysFunc->Name());
+		sysFuncHashcode2idx.emplace(hash, sysIdx);
+
 		subgraph_sys.AddNode(sysIdx);
 
 		const auto& locator = sysFunc->query.locator;
@@ -228,6 +234,13 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 			subgraph_none.AddEdge(edgeIdx);
 		}
+	}
+
+	for (const auto& [from, to] : schedule.sysFuncOrder) {
+		auto fromIdx = sysFuncHashcode2idx.find(from)->second;
+		auto toIdx = sysFuncHashcode2idx.find(to)->second;
+		auto edgeIdx = registry.RegisterEdge(fromIdx, toIdx);
+		subgraph_order.AddEdge(edgeIdx);
 	}
 
 	return graph;
