@@ -2,7 +2,7 @@
 
 using namespace Ubpa::UECS;
 
-void SystemFunc::operator()(Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts) {
+void SystemFunc::operator()(Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts) {
 	assert(mode == Mode::Entity);
 	return func(
 		e,
@@ -17,7 +17,7 @@ void SystemFunc::operator()(ChunkView chunkView) {
 	return func(
 		Entity::Invalid(),
 		size_t_invalid,
-		RTDCmptsView{ nullptr, nullptr },
+		CmptsView{ nullptr, nullptr },
 		chunkView
 	);
 }
@@ -27,7 +27,7 @@ void SystemFunc::operator()() {
 	return func(
 		Entity::Invalid(),
 		size_t_invalid,
-		RTDCmptsView{ nullptr, nullptr },
+		CmptsView{ nullptr, nullptr },
 		ChunkView{ nullptr, size_t_invalid, nullptr }
 	);
 }

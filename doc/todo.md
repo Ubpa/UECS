@@ -34,7 +34,7 @@
 - [ ] batch create/instantiate (need benchmark)
 - [x] lock `FilterChange` 
 - [ ] `EntityMngr` `Query`-driven API
-- [x] `RTDCmptsView` = `const EntityLocator* locator + void** cmpts` 
+- [x] `CmptsView` = `const EntityLocator* locator + void** cmpts` 
 - [ ] Filter Builder
 
 ### maybe deprecate

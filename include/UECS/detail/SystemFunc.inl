@@ -18,8 +18,8 @@ namespace Ubpa::UECS {
 	{
 		using ArgList = FuncTraits_ArgList<Func>;
 
-		static_assert(Contain_v<ArgList, RTDCmptsView>,
-			"(Mode::Entity) <Func>'s argument list must contain RTDCmptsView");
+		static_assert(Contain_v<ArgList, CmptsView>,
+			"(Mode::Entity) <Func>'s argument list must contain CmptsView");
 
 		static_assert(!Contain_v<ArgList, ChunkView>,
 			"(Mode::Entity) <Func>'s argument list must not contain ChunkView");
@@ -40,8 +40,8 @@ namespace Ubpa::UECS {
 		hashCode{ HashCode(this->name) },
 		query{ std::move(filter), EntityLocator{Filter_t<ArgList, IsTaggedCmpt>{}} }
 	{
-		static_assert(!Contain_v<ArgList, RTDCmptsView>,
-			"<Func>'s argument list contains RTDCmptsView, so you should use the constructor of the run-time dynamic version");
+		static_assert(!Contain_v<ArgList, CmptsView>,
+			"<Func>'s argument list contains CmptsView, so you should use the constructor of the run-time dynamic version");
 		if constexpr (IsEmpty_v<ArgList>)
 			mode = Mode::Job;
 		else if constexpr (std::is_same_v<ArgList, TypeList<ChunkView>>)
@@ -63,13 +63,14 @@ namespace Ubpa::UECS::detail::System_ {
 		using CmptList = TypeList<Cmpts...>; // sorted
 		template<typename Func>
 		static auto run(Func&& func) noexcept {
-			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, RTDCmptsView rtdcmpts, ChunkView chunkView) {
+			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts, ChunkView chunkView) {
 				auto unsorted_arg_tuple = std::make_tuple(
 					e,
 					entityIndexInQuery,
 					rtdcmpts,
 					chunkView,
-					reinterpret_cast<Cmpts*>(rtdcmpts.Components()[Find_v<CmptList, Cmpts>])...);
+					reinterpret_cast<Cmpts*>(rtdcmpts.Components()[Find_v<CmptList, Cmpts>])...
+				);
 				func(std::get<DecayedArgs>(unsorted_arg_tuple)...);
 			};
 		}
