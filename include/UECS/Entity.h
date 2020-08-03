@@ -8,11 +8,11 @@ namespace Ubpa::UECS {
 	public:
 		size_t Idx() const noexcept { return idx; }
 		size_t Version() const noexcept { return version; }
-		friend bool operator==(const Entity& x, const Entity& y) noexcept {
-			return x.idx == y.idx && x.version == y.version;
+		bool operator==(const Entity& rhs) const noexcept {
+			return idx == rhs.idx && version == rhs.version;
 		}
-		friend bool operator<(const Entity& x, const Entity& y) noexcept {
-			return x.idx < y.idx || (x.idx == y.idx && x.version < y.version);
+		bool operator<(const Entity& rhs) const noexcept {
+			return idx < rhs.idx || (idx == rhs.idx && version < rhs.version);
 		}
 		static constexpr Entity Invalid() noexcept { return { size_t_invalid,size_t_invalid }; }
 	private:
