@@ -175,12 +175,13 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
 			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
 		}
-		else
-			srcCmptTraits.Destruct(type, srcCmpt);
+		// no need to call destructor because we will erase it later
+		/*else
+			srcCmptTraits.Destruct(type, srcCmpt);*/
 	}
 
 	// erase
-	auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
+	auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype); // call destructor
 	if (srcMovedEntityIndex != size_t_invalid)
 		entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
 

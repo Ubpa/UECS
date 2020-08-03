@@ -33,6 +33,11 @@ namespace Ubpa::UECS {
 		return *this;
 	}
 
+	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(CmptType type, std::function<void(void*, void*)> f) {
+		move_assignments[type] = std::move(f);
+		return *this;
+	}
+
 	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(CmptType type, std::function<void(void*)> f) {
 		destructors[type] = std::move(f);
 		return *this;
@@ -71,6 +76,15 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
+	inline void RTDCmptTraits::MoveAssign(CmptType type, void* dst, void* src) const {
+		auto target = move_assignments.find(type);
+
+		if (target != move_assignments.end())
+			target->second(dst, src);
+		else
+			memcpy(dst, src, Sizeof(type));
+	}
+
 	inline void RTDCmptTraits::Destruct(CmptType type, void* cmpt) const {
 		auto target = destructors.find(type);
 		if (target != destructors.end())
@@ -95,6 +109,7 @@ namespace Ubpa::UECS {
 		static_assert(std::is_default_constructible_v<Cmpt>, "<Cmpt> must be default-constructible");
 		static_assert(std::is_copy_constructible_v<Cmpt>, "<Cmpt> must be copy-constructible");
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
+		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
 		constexpr CmptType type = CmptType::Of<Cmpt>;
@@ -118,6 +133,11 @@ namespace Ubpa::UECS {
 				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
 			};
 		}
+		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>) {
+			move_assignments[type] = [](void* dst, void* src) {
+				*reinterpret_cast<Cmpt*>(dst) = std::move(*reinterpret_cast<Cmpt*>(src));
+			};
+		}
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
 			copy_constructors[type] = [](void* dst, void* src) {
 				new(dst)Cmpt(*reinterpret_cast<Cmpt*>(src));
@@ -139,6 +159,8 @@ namespace Ubpa::UECS {
 			destructors.erase(type);
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>)
 			move_constructors.erase(type);
+		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>)
+			move_assignments.erase(type);
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>)
 			copy_constructors.erase(type);
 	}

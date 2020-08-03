@@ -209,8 +209,8 @@ size_t Archetype::Erase(size_t idx) {
 			if (type.Is<Entity>())
 				movedIdx = reinterpret_cast<Entity*>(dst)->Idx();
 
-			cmptTraits.Destruct(type, dst);
-			cmptTraits.MoveConstruct(type, dst, src);
+			cmptTraits.MoveAssign(type, dst, src);
+			cmptTraits.Destruct(type, src);
 		}
 	}
 	else {
