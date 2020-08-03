@@ -18,7 +18,7 @@ public:
 			[em = schedule.GetEntityMngr()](Entity e, const A* a, const B* b) {
 			em->AddCommand(
 					[e, em]() {
-						if (!em->Have<C>(e)) {
+						if (!em->Have(e, CmptType::Of<C>)) {
 							cout << "Attach C" << endl;
 							em->Attach<C>(e);
 						}
@@ -30,9 +30,9 @@ public:
 			[em = schedule.GetEntityMngr()](Entity e, const A* a, const B* b, const C* c) {
 				em->AddCommand(
 					[e, em]() {
-						if (em->Have<C>(e)) {
+						if (em->Have(e, CmptType::Of<C>)) {
 							cout << "Dettach C" << endl;
-							em->Detach<C>(e);
+							em->Detach(e, &CmptType::Of<C>, 1);
 						}
 					}
 				);

@@ -34,6 +34,8 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 }
 
 Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num) {
+	assert(IsSet(types, num));
+
 	size_t hashcode = Archetype::HashCode(types, num);
 	auto target = h2a.find(hashcode);
 	if (target != h2a.end())
@@ -50,6 +52,8 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 }
 
 Entity EntityMngr::Create(const CmptType* types, size_t num) {
+	assert(IsSet(types, num));
+
 	Archetype* archetype = GetOrCreateArchetypeOf(types, num);
 	size_t entityIndex = RequestEntityFreeEntry();
 	EntityInfo& info = entityTable[entityIndex];
@@ -60,7 +64,8 @@ Entity EntityMngr::Create(const CmptType* types, size_t num) {
 }
 
 void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) {
-	assert(Exist(e));
+	assert(IsSet(types, num));
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 	auto& info = entityTable[e.Idx()];
 	Archetype* srcArchetype = info.archetype;
@@ -110,14 +115,8 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 }
 
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
+	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
-
-#ifndef NDEBUG
-	for (size_t i = 0; i < num; i++) {
-		for (size_t j = 1; j < num; j++)
-			assert(types[i] != types[j]);
-	}
-#endif // !NDEBUG
 
 	auto srcArchetype = entityTable[e.Idx()].archetype;
 	AttachWithoutInit(e, types, num);
@@ -136,14 +135,8 @@ void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 }
 
 void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
+	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
-
-#ifndef NDEBUG
-	for (size_t i = 0; i < num; i++) {
-		for (size_t j = 1; j < num; j++)
-			assert(types[i] != types[j]);
-	}
-#endif // !NDEBUG
 
 	auto& info = entityTable[e.Idx()];
 	Archetype* srcArchetype = info.archetype;
@@ -213,6 +206,18 @@ Entity EntityMngr::Instantiate(Entity srcEntity) {
 	dstInfo.archetype = srcInfo.archetype;
 	dstInfo.idxInArchetype = dstIndexInArchetype;
 	return dstEntity;
+}
+
+bool EntityMngr::IsSet(const CmptType* types, size_t num) {
+	assert(types != nullptr);
+
+	for (size_t i = 0; i < num; i++) {
+		for (size_t j = 0; j < i; j++)
+			if (types[i] == types[j])
+				return false;
+	}
+
+	return true;
 }
 
 const set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query) const {

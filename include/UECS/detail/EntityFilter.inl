@@ -76,49 +76,6 @@ namespace Ubpa::UECS {
 		noneHashCode = GenNoneHashCode();
 		combinedHashCode = GenCombinedHashCode();
 	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::InsertAll(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		InsertAll(typeArr.data(), typeArr.size());
-	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::InsertAny(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		InsertAny(typeArr.data(), typeArr.size());
-	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::InsertNone(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		InsertNone(typeArr.data(), typeArr.size());
-	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::EraseAll(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		EraseAll(typeArr.data(), typeArr.size());
-	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::EraseAny(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		EraseAny(typeArr.data(), typeArr.size());
-	}
-
-	template<typename... CmptTypes, typename>
-	void EntityFilter::EraseNone(CmptTypes... types) {
-		static_assert(sizeof...(CmptTypes) > 0);
-		const std::array<CmptType, sizeof...(CmptTypes)> typeArr{ types... };
-		EraseNone(typeArr.data(), typeArr.size());
-	}
-
 }
 
 namespace std {

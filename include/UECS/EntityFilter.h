@@ -22,9 +22,11 @@ namespace Ubpa::UECS {
 		template<typename... NoneCmpts>
 		static EntityFilter CreateNone() { return { TypeList<>{}, TypeList<>{}, TypeList<NoneCmpts...> }; }
 
-		EntityFilter(std::set<CmptType> allCmptTypes,
+		EntityFilter(
+			std::set<CmptType> allCmptTypes,
 			std::set<CmptType> anyCmptTypes = {},
-			std::set<CmptType> noneCmptTypes = {});
+			std::set<CmptType> noneCmptTypes = {}
+		);
 
 		size_t HashCode() const noexcept { return combinedHashCode; }
 
@@ -33,7 +35,7 @@ namespace Ubpa::UECS {
 		const std::set<CmptType>& NoneCmptTypes() const noexcept { return noneCmptTypes; }
 
 		// [API]
-		// <Mode><Type>(CmptTypeContainer|CmptTypes...|CmptType*, num)
+		// <Mode><Type>(CmptTypeContainer|CmptType*, num)
 		// - <Mode>: Insert | Erase
 		// - <Type>: All | Any | None
 		// - side effect: update hashcode
@@ -51,31 +53,6 @@ namespace Ubpa::UECS {
 		template<typename CmptTypeContainer> void EraseAll(const CmptTypeContainer&);
 		template<typename CmptTypeContainer> void EraseAny(const CmptTypeContainer&);
 		template<typename CmptTypeContainer> void EraseNone(const CmptTypeContainer&);
-
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void InsertAll(CmptTypes...);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void InsertAny(CmptTypes...);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void InsertNone(CmptTypes...);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void EraseAll(CmptTypes...);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void EraseAny(CmptTypes...);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void EraseNone(CmptTypes...);
 
 		bool operator==(const EntityFilter& filter) const noexcept;
 

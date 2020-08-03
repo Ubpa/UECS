@@ -31,12 +31,6 @@ namespace Ubpa::UECS {
 		// use RTDCmptTraits
 		Entity Create(const CmptType* types, size_t num);
 
-		// call Create(const CmptType*, size_t)
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		Entity Create(CmptTypes...);
-
 		Entity Instantiate(Entity);
 
 		// TODO: CreateEntities
@@ -47,29 +41,12 @@ namespace Ubpa::UECS {
 		// use RTDCmptTraits
 		void Attach(Entity, const CmptType* types, size_t num);
 
-		// call Attach(Entity, const CmptType*, size_t)
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		std::array<CmptPtr, sizeof...(CmptTypes)> Attach(Entity, CmptTypes...);
-
 		template<typename Cmpt, typename... Args>
 		Cmpt* Emplace(Entity, Args&&...);
-
-		template<typename... Cmpts>
-		void Detach(Entity);
 
 		// use RTDCmptTraits
 		void Detach(Entity, const CmptType* types, size_t num);
 
-		// call Detach(Entity, const CmptType*, size_t);
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void Detach(Entity, CmptTypes...);
-
-		template<typename Cmpt>
-		bool Have(Entity) const;
 		bool Have(Entity, CmptType) const;
 
 		template<typename Cmpt>
@@ -93,25 +70,17 @@ namespace Ubpa::UECS {
 		EntityMngr() = default;
 		~EntityMngr();
 
+		static bool IsSet(const CmptType* types, size_t num);
+
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
 
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
 		Archetype* GetOrCreateArchetypeOf(const CmptType* types, size_t num);
-		// call GetOrCreateArchetypeOf(const CmptType*, size_t)
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		Archetype* GetOrCreateArchetypeOf(CmptTypes...);
 
 		template<typename... Cmpts>
 		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
-		// call AttachWithoutInit(Entity, const CmptType*, size_t)
-		template<typename... CmptTypes,
-			// for function overload
-			typename = std::enable_if_t<(std::is_same_v<CmptTypes, CmptType>&&...)>>
-		void AttachWithoutInit(Entity, CmptTypes...);
 
 		void GenEntityJob(Job* job, SystemFunc* sys) const;
 		void GenChunkJob(Job* job, SystemFunc* sys) const;

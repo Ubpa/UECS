@@ -25,7 +25,7 @@ public:
 	virtual void OnUpdate(Schedule& schedule) override {
 		schedule
 			.Register([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP")
-			.InsertNone<A>("VP");
+			.InsertNone("VP", CmptType::Of<A>);
 	}
 };
 

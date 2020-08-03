@@ -3,17 +3,20 @@
 using namespace Ubpa::UECS;
 
 EntityFilter::EntityFilter()
-	: allHashCode{ TypeID<EntityFilter> },
+	:
+	allHashCode{ TypeID<EntityFilter> },
 	anyHashCode{ TypeID<EntityFilter> },
 	noneHashCode{ TypeID<EntityFilter> },
 	combinedHashCode{ hash_combine(std::array<size_t, 3>{TypeID<EntityFilter>, TypeID<EntityFilter>, TypeID<EntityFilter>}) }
 {
 }
 
-EntityFilter::EntityFilter(std::set<CmptType> allCmptTypes,
+EntityFilter::EntityFilter(
+	std::set<CmptType> allCmptTypes,
 	std::set<CmptType> anyCmptTypes,
 	std::set<CmptType> noneCmptTypes)
-	: allCmptTypes{ move(allCmptTypes) },
+	:
+	allCmptTypes{ move(allCmptTypes) },
 	anyCmptTypes{ move(anyCmptTypes) },
 	noneCmptTypes{ move(noneCmptTypes) },
 	allHashCode{ GenAllHashCode() },

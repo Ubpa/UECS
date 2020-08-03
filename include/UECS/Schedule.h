@@ -49,12 +49,6 @@ namespace Ubpa::UECS {
 		Schedule& EraseAll(std::string_view sys, CmptType);
 		Schedule& EraseAny(std::string_view sys, CmptType);
 		Schedule& EraseNone(std::string_view sys, CmptType);
-		template<typename Cmpt> Schedule& InsertAll(std::string_view sys) { return InsertAll(sys, CmptType::Of<Cmpt>); }
-		template<typename Cmpt> Schedule& InsertAny(std::string_view sys) { return InsertAny(sys, CmptType::Of<Cmpt>); }
-		template<typename Cmpt> Schedule& InsertNone(std::string_view sys) { return InsertNone(sys, CmptType::Of<Cmpt>); }
-		template<typename Cmpt> Schedule& EraseAll(std::string_view sys) { return EraseAll(sys, CmptType::Of<Cmpt>); }
-		template<typename Cmpt> Schedule& EraseAny(std::string_view sys) { return EraseAny(sys, CmptType::Of<Cmpt>); }
-		template<typename Cmpt> Schedule& EraseNone(std::string_view sys) { return EraseNone(sys, CmptType::Of<Cmpt>); }
 
 	private:
 		template<typename... Args>
