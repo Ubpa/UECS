@@ -12,14 +12,13 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		schedule
-			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys0" << endl; }, "lastFrame_sys0")
-			.Register([](LastFrame<Data> d) { cout << "lastFrame_sys1" << endl; }, "lastFrame_sys1")
-			.Register([](Data* d) { cout << "writer_sys0" << endl; }, "writer_sys0")
-			.Register([](Data* d) { cout << "writer_sys1" << endl; }, "writer_sys1")
-			.Register([](Data* d) { cout << "writer_sys2" << endl; }, "writer_sys2")
-			.Register([](const Data* d) { cout << "latest_sys0" << endl; }, "latest_sys0")
-			.Register([](const Data* d) { cout << "latest_sys1" << endl; }, "latest_sys1");
+		schedule.Register([](LastFrame<Data> d) { cout << "lastFrame_sys0" << endl; }, "lastFrame_sys0");
+		schedule.Register([](LastFrame<Data> d) { cout << "lastFrame_sys1" << endl; }, "lastFrame_sys1");
+		schedule.Register([](Data* d) { cout << "writer_sys0" << endl; }, "writer_sys0");
+		schedule.Register([](Data* d) { cout << "writer_sys1" << endl; }, "writer_sys1");
+		schedule.Register([](Data* d) { cout << "writer_sys2" << endl; }, "writer_sys2");
+		schedule.Register([](const Data* d) { cout << "latest_sys0" << endl; }, "latest_sys0");
+		schedule.Register([](const Data* d) { cout << "latest_sys1" << endl; }, "latest_sys1");
 	}
 };
 

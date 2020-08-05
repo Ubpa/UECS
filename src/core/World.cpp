@@ -6,12 +6,7 @@ using namespace Ubpa::UECS;
 using namespace Ubpa;
 using namespace std;
 
-World::World()
-	:
-	schedule{ &entityMngr, &systemMngr },
-	systemMngr{ this }
-{
-}
+World::World() : systemMngr{ this } {}
 
 void World::Update() {
 	schedule.Clear();
@@ -33,14 +28,14 @@ void World::Update() {
 		switch (func->GetMode())
 		{
 		case Ubpa::UECS::SystemFunc::Mode::Entity:
-			entityMngr.GenEntityJob(job, func);
+			entityMngr.GenEntityJob(this, job, func);
 			break;
 		case Ubpa::UECS::SystemFunc::Mode::Chunk:
-			entityMngr.GenChunkJob(job, func);
+			entityMngr.GenChunkJob(this, job, func);
 			break;
 		case Ubpa::UECS::SystemFunc::Mode::Job:
-			job->emplace([func = func]() {
-				(*func)();
+			job->emplace([this, func = func]() {
+				(*func)(this);
 			});
 			break;
 		default:
@@ -57,7 +52,7 @@ void World::Update() {
 
 	executor.run(jobGraph).wait();
 
-	entityMngr.RunCommands();
+	RunCommands();
 }
 
 string World::DumpUpdateJobGraph() const {
@@ -251,4 +246,15 @@ void World::Accept(IListener* listener) const {
 	systemMngr.Accept(listener);
 	entityMngr.Accept(listener);
 	listener->ExistWorld(this);
+}
+
+void World::AddCommand(std::function<void(World*)> command) {
+	std::lock_guard<std::mutex> guard(commandBufferMutex);
+	commandBuffer.push_back(std::move(command));
+}
+
+void World::RunCommands() {
+	for (const auto& command : commandBuffer)
+		command(this);
+	commandBuffer.clear();
 }

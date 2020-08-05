@@ -14,10 +14,14 @@ namespace Ubpa::UECS {
 	// name must be unique in global
 	// query.filter can be change dynamically by other <System> with Schedule
 	// [system function kind] (distinguish by argument list)
-	// 1. per entity function: [[const] Entity e] [size_t indexInQuery] [CmptsView] <tagged-component>...
+	// 1. per entity function
+	// * [[const] World*]
+	// * [[const] Entity]
+	// * [size_t indexInQuery]
+	// * [[const] CmptsView]
 	// * <tagged-component>: {LastFrame|Write|Latest}<Component>
-	// 2. chunk: ChunkView
-	// 3. job: empty argument list
+	// 2. chunk: [[const] World*], [const] ChunkView
+	// 3. job: [[const] World*]
 	class SystemFunc {
 	public:
 		enum class Mode {
@@ -41,9 +45,9 @@ namespace Ubpa::UECS {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts);
-		void operator()(ChunkView chunkView);
-		void operator()();
+		void operator()(World*, Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts);
+		void operator()(World*, ChunkView chunkView);
+		void operator()(World*);
 
 		Mode GetMode() const noexcept { return mode; }
 
@@ -52,7 +56,7 @@ namespace Ubpa::UECS {
 		template<typename Func, typename ArgList>
 		SystemFunc(Func&& func, std::string name, EntityFilter filter, ArgList);
 
-		std::function<void(Entity, size_t, CmptsView, ChunkView)> func;
+		std::function<void(World*, Entity, size_t, CmptsView, ChunkView)> func;
 
 		std::string name;
 		Mode mode;

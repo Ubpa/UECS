@@ -13,11 +13,12 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) noexcept {
+		schedule.Register([](Data1* d1, Data2* d2) { cout << "writer_sys0" << endl; }, "writer_sys0");
+		schedule.Register([](Data1* d) { cout << "writer_sys1" << endl; }, "writer_sys1");
+		schedule.Register([](Data2* d2) { cout << "writer_sys2" << endl; }, "writer_sys2");
+		schedule.Register([](Data1* d, Data2* d2) { cout << "writer_sys3" << endl; }, "writer_sys3");
+
 		schedule
-			.Register([](Data1* d1, Data2* d2) { cout << "writer_sys0" << endl; }, "writer_sys0")
-			.Register([](Data1* d) { cout << "writer_sys1" << endl; }, "writer_sys1")
-			.Register([](Data2* d2) { cout << "writer_sys2" << endl; }, "writer_sys2")
-			.Register([](Data1* d, Data2* d2) { cout << "writer_sys3" << endl; }, "writer_sys3")
 			.Order("writer_sys0", "writer_sys1")
 			.Order("writer_sys1", "writer_sys3");
 	}

@@ -258,7 +258,7 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
-void EntityMngr::GenEntityJob(Job* job, SystemFunc* sys) const {
+void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Entity);
 
 	size_t indexOffsetInQuery = 0;
@@ -276,7 +276,7 @@ void EntityMngr::GenEntityJob(Job* job, SystemFunc* sys) const {
 
 				size_t J = min(chunkCapacity, num - idxOffsetInChunk);
 				for (size_t j = 0; j < J; j++) {
-					(*sys)(entities[j], indexOffsetInQueryChunk + j, { &sys->query.locator, cmpts.data() });
+					(*sys)(w, entities[j], indexOffsetInQueryChunk + j, { &sys->query.locator, cmpts.data() });
 					for (size_t k = 0; k < cmpts.size(); k++)
 						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
 				}
@@ -287,7 +287,7 @@ void EntityMngr::GenEntityJob(Job* job, SystemFunc* sys) const {
 	}
 }
 
-void EntityMngr::GenChunkJob(Job* job, SystemFunc* sys) const {
+void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Chunk);
 
 	for (Archetype* archetype : QueryArchetypes(sys->query)) {
@@ -295,17 +295,10 @@ void EntityMngr::GenChunkJob(Job* job, SystemFunc* sys) const {
 
 		for (size_t i = 0; i < chunkNum; i++) {
 			job->emplace([=]() {
-				(*sys)(ChunkView{ archetype, i, archetype->GetChunk(i) });
+				(*sys)(w, ChunkView{ archetype, i, archetype->GetChunk(i) });
 			});
 		}
 	}
-}
-
-void EntityMngr::RunCommands() {
-	lock_guard<mutex> guard(commandBufferMutex);
-	for (const auto& command : commandBuffer)
-		command();
-	commandBuffer.clear();
 }
 
 void EntityMngr::Accept(IListener* listener) const {

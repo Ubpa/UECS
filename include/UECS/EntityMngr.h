@@ -7,8 +7,6 @@
 
 #include <UContainer/Pool.h>
 
-#include <mutex>
-
 namespace Ubpa::UECS {
 	class World;
 
@@ -61,8 +59,6 @@ namespace Ubpa::UECS {
 
 		size_t EntityNum(const EntityQuery&) const;
 
-		void AddCommand(const std::function<void()>& command);
-
 		void Accept(IListener* listener) const;
 
 	private:
@@ -82,8 +78,8 @@ namespace Ubpa::UECS {
 		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
 
-		void GenEntityJob(Job* job, SystemFunc* sys) const;
-		void GenChunkJob(Job* job, SystemFunc* sys) const;
+		void GenEntityJob(World*, Job*, SystemFunc*) const;
+		void GenChunkJob(World*, Job*, SystemFunc*) const;
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
@@ -98,11 +94,6 @@ namespace Ubpa::UECS {
 		std::unordered_map<size_t, Archetype*> h2a; // archetype's hashcode to archetype
 		
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
-
-		// command
-		std::vector<std::function<void()>> commandBuffer;
-		std::mutex commandBufferMutex;
-		void RunCommands();
 	};
 }
 

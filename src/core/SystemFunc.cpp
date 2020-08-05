@@ -2,9 +2,10 @@
 
 using namespace Ubpa::UECS;
 
-void SystemFunc::operator()(Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts) {
+void SystemFunc::operator()(World* w, Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts) {
 	assert(mode == Mode::Entity);
 	return func(
+		w,
 		e,
 		entityIndexInQuery,
 		rtdcmpts,
@@ -12,9 +13,10 @@ void SystemFunc::operator()(Entity e, size_t entityIndexInQuery, CmptsView rtdcm
 	);
 }
 
-void SystemFunc::operator()(ChunkView chunkView) {
+void SystemFunc::operator()(World* w, ChunkView chunkView) {
 	assert(mode == Mode::Chunk);
 	return func(
+		w,
 		Entity::Invalid(),
 		size_t_invalid,
 		CmptsView{ nullptr, nullptr },
@@ -22,9 +24,10 @@ void SystemFunc::operator()(ChunkView chunkView) {
 	);
 }
 
-void SystemFunc::operator()() {
+void SystemFunc::operator()(World* w) {
 	assert(mode == Mode::Job);
 	return func(
+		w,
 		Entity::Invalid(),
 		size_t_invalid,
 		CmptsView{ nullptr, nullptr },

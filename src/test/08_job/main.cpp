@@ -13,22 +13,22 @@ public:
 
 	virtual void OnUpdate(Schedule& schedule) override {
 		auto buffer = std::make_shared<std::vector<size_t>>();
-		schedule
-			.Register(
-				[buffer](size_t idxInQuery, const Data* data) {
-					buffer->at(idxInQuery) = data->value;
-				}, "system function"
-			)
-			.Register(
-				[buffer]() {
-					size_t sum = 0;
-					for (size_t i : *buffer)
-						sum += i;
-					cout << sum << endl;
-				}, "job"
-			)
-			.Order("system function", "job");
-		size_t num = schedule.EntityNumInQuery("system function");
+		auto f = schedule.Register([buffer](size_t idxInQuery, const Data* data) {
+			buffer->at(idxInQuery) = data->value;
+			},
+			"system function"
+		);
+		schedule.Register([buffer]() {
+			size_t sum = 0;
+			for (size_t i : *buffer)
+				sum += i;
+				cout << sum << endl;
+			},
+			"job"
+		);
+		schedule.Order("system function", "job");
+
+		size_t num = GetWorld()->entityMngr.EntityNum(f->query);
 		buffer->resize(num);
 	}
 };

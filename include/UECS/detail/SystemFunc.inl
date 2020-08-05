@@ -17,12 +17,13 @@ namespace Ubpa::UECS {
 		query{ std::move(filter), std::move(locator) }
 	{
 		using ArgList = FuncTraits_ArgList<Func>;
+		using DecayedArgList = Transform_t<ArgList, DecayTag>;
 
-		static_assert(Contain_v<ArgList, CmptsView>,
-			"(Mode::Entity) <Func>'s argument list must contain CmptsView");
+		static_assert(Contain_v<DecayedArgList, CmptsView>,
+			"(Mode::Entity) <Func>'s argument list must contain [const] CmptsView");
 
-		static_assert(!Contain_v<ArgList, ChunkView>,
-			"(Mode::Entity) <Func>'s argument list must not contain ChunkView");
+		static_assert(!Contain_v<DecayedArgList, ChunkView>,
+			"(Mode::Entity) <Func>'s argument list must not contain [const] ChunkView");
 	}
 
 	template<typename Func>
@@ -40,13 +41,31 @@ namespace Ubpa::UECS {
 		hashCode{ HashCode(this->name) },
 		query{ std::move(filter), EntityLocator{Filter_t<ArgList, IsTaggedCmpt>{}} }
 	{
-		static_assert(!Contain_v<ArgList, CmptsView>,
+		using DecayedArgList = Transform_t<ArgList, DecayTag>;
+
+		static_assert(!Contain_v<DecayedArgList, CmptsView>,
 			"<Func>'s argument list contains CmptsView, so you should use the constructor of the run-time dynamic version");
-		if constexpr (IsEmpty_v<ArgList>)
+
+		if constexpr (
+			IsEmpty_v<DecayedArgList>
+			|| Length_v<DecayedArgList> == 1 && Contain_v<DecayedArgList, World*>
+		) {
+			// [[const] World*]
 			mode = Mode::Job;
-		else if constexpr (std::is_same_v<ArgList, TypeList<ChunkView>>)
+		}
+		else if constexpr (
+			Contain_v<DecayedArgList, ChunkView>
+			&& (
+				Length_v<DecayedArgList> == 1
+				|| Length_v<DecayedArgList> == 2 && Contain_v<DecayedArgList, World*>
+			)
+		) {
+			// [[const] World*]
+			// [const] ChunkView
 			mode = Mode::Chunk;
+		}
 		else {
+			// default
 			static_assert(!Contain_v<ArgList, ChunkView>,
 				"(Mode::Entity) <Func>'s argument list must not contain ChunkView");
 			mode = Mode::Entity;
@@ -63,8 +82,9 @@ namespace Ubpa::UECS::detail::System_ {
 		using CmptList = TypeList<Cmpts...>; // sorted
 		template<typename Func>
 		static auto run(Func&& func) noexcept {
-			return [func = std::forward<Func>(func)](Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts, ChunkView chunkView) {
+			return [func = std::forward<Func>(func)](World* w, Entity e, size_t entityIndexInQuery, CmptsView rtdcmpts, ChunkView chunkView) {
 				auto unsorted_arg_tuple = std::make_tuple(
+					w,
 					e,
 					entityIndexInQuery,
 					rtdcmpts,

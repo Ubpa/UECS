@@ -26,20 +26,13 @@ namespace Ubpa::UECS {
 	class Schedule {
 	public:
 		template<typename Func>
-		Schedule& Register(Func&& func, std::string name, EntityFilter filter = EntityFilter{});
+		const SystemFunc* Register(Func&& func, std::string name, EntityFilter filter = EntityFilter{});
 
 		// run-time dynamic function
 		template<typename Func>
-		Schedule& Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{});
+		const SystemFunc* Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{});
 
 		Schedule& LockFilter(std::string_view sys);
-
-		// if sys is unregistered, return size_t_invalid
-		// call LockFilterChange(std::string_view)
-		size_t EntityNumInQuery(std::string_view sys) const;
-
-		EntityMngr* GetEntityMngr() const noexcept { return entityMngr; }
-		SystemMngr* GetSystemMngr() const noexcept { return systemMngr; }
 
 		Schedule& Order(std::string_view x, std::string_view y);
 
@@ -52,9 +45,8 @@ namespace Ubpa::UECS {
 
 	private:
 		template<typename... Args>
-		void Request(Args&&... args);
+		const SystemFunc* Request(Args&&... args);
 
-		Schedule(EntityMngr* entityMngr, SystemMngr* systemMngr);
 		void Clear();
 
 		struct CmptSysFuncs {
@@ -86,8 +78,6 @@ namespace Ubpa::UECS {
 		std::unordered_set<size_t> sysLockFilter;
 
 		Pool<SystemFunc> sysFuncPool;
-		EntityMngr* entityMngr;
-		SystemMngr* systemMngr;
 		friend class World;
 	};
 }

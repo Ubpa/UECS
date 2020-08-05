@@ -15,28 +15,30 @@ public:
 
 	virtual void OnUpdate(Schedule& schedule) override {
 		schedule.Register(
-			[em = schedule.GetEntityMngr()](Entity e, const A* a, const B* b) {
-			em->AddCommand(
-					[e, em]() {
-						if (!em->Have(e, CmptType::Of<C>)) {
+			[](World* w, Entity e, const A* a, const B* b) {
+				w->AddCommand(
+					[e](World* w) {
+						if (!w->entityMngr.Have(e, CmptType::Of<C>)) {
 							cout << "Attach C" << endl;
-							em->Attach<C>(e);
+							w->entityMngr.Attach<C>(e);
 						}
 					}
 				);
-			}, "AB"
+			},
+			"AB"
 		);
 		schedule.Register(
-			[em = schedule.GetEntityMngr()](Entity e, const A* a, const B* b, const C* c) {
-				em->AddCommand(
-					[e, em]() {
-						if (em->Have(e, CmptType::Of<C>)) {
+			[](World* w, Entity e, const A* a, const B* b, const C* c) {
+				w->AddCommand(
+					[e](World* w) {
+						if (w->entityMngr.Have(e, CmptType::Of<C>)) {
 							cout << "Dettach C" << endl;
-							em->Detach(e, &CmptType::Of<C>, 1);
+							w->entityMngr.Detach(e, &CmptType::Of<C>, 1);
 						}
 					}
 				);
-			}, "ABC"
+			},
+			"ABC"
 		);
 	}
 };

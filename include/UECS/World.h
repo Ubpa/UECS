@@ -6,6 +6,8 @@
 
 #include <UGraphviz/UGraphviz.h>
 
+#include <mutex>
+
 namespace Ubpa::UECS {
 	class IListener;
 
@@ -33,6 +35,8 @@ namespace Ubpa::UECS {
 
 		void Accept(IListener* listener) const;
 
+		void AddCommand(std::function<void(World*)> command);
+
 	private:
 		mutable JobExecutor executor;
 		Schedule schedule;
@@ -40,6 +44,11 @@ namespace Ubpa::UECS {
 		Job jobGraph;
 		std::vector<Job*> jobs;
 		Pool<Job> jobPool;
+
+		// command
+		std::vector<std::function<void(World*)>> commandBuffer;
+		std::mutex commandBufferMutex;
+		void RunCommands();
 
 		// ==================================================
 		World(const World& world) = delete;

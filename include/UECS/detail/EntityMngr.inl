@@ -149,9 +149,4 @@ namespace Ubpa::UECS {
 	inline bool EntityMngr::Exist(Entity e) const {
 		return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 	}
-
-	inline void EntityMngr::AddCommand(const std::function<void()>& command) {
-		std::lock_guard<std::mutex> guard(commandBufferMutex);
-		commandBuffer.push_back(command);
-	}
 }

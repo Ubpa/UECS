@@ -96,14 +96,33 @@ use `CmptTag::LastFrame<Cmpt> (like const <Cmpt>*)`, `CmptTag::Write<Cmpt> == <C
 - `[const] Entity` 
 - `size_t entityInQueryIndex` 
 - (not-support) `size_t nativeThreadIndex` 
-- `RTDCmptViewer` 
-- `ChunkView` 
+- `[const] CmptsView` 
+- `[const] ChunkView` 
 
 **System kind** 
 
-- components (optional: `Entity`, `size_t entityInQueryIndex`, `RTDCmptViewer`) : system for each entity
-- empty : job
-- chunk: `ChunkView` 
+- per entity function (default)
+  - [[const] World*]
+  - [[const] Entity]
+  - [size_t indexInQuery]
+  - [[const] CmptsView]
+  - \<tagged-component\>: {LastFrame|Write|Latest}\<Component\> 
+- chunk
+  - [[const] World*]
+  - [[const] ChunkView]
+
+```c++
+// 1. 
+	// * [[const] World*]
+	// * [[const] Entity]
+	// * [size_t indexInQuery]
+	// * [[const] CmptsView]
+	// * <tagged-component>: {LastFrame|Write|Latest}<Component>
+	// 2. chunk: [[const] World*], [const] ChunkView
+	// 3. job: [[const] World*]
+```
+
+
 
 ### 3.2 System update order
 

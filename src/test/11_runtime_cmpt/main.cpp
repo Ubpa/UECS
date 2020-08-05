@@ -24,19 +24,18 @@ public:
 			cmpts_read.data(), cmpts_read.size()
 		);
 
-		schedule
-			.Register(
-				[](CmptsView cmpts) {
-					auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::WRITE });
-					double& val = *reinterpret_cast<double*>(luaCmpt.Ptr());
-					val = 520.;
-				}, "write", locator_write)
-			.Register(
-				[](CmptsView cmpts) {
-					auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::LATEST });
-					const double& val = *reinterpret_cast<const double*>(luaCmpt.Ptr());
-					cout << "value : " << val << endl;
-				}, "read", locator_read);
+		schedule.Register(
+			[](CmptsView cmpts) {
+				auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::WRITE });
+				double& val = *reinterpret_cast<double*>(luaCmpt.Ptr());
+				val = 520.;
+			}, "write", locator_write);
+		schedule.Register(
+			[](CmptsView cmpts) {
+				auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::LATEST });
+				const double& val = *reinterpret_cast<const double*>(luaCmpt.Ptr());
+				cout << "value : " << val << endl;
+			}, "read", locator_read);
 	}
 };
 
