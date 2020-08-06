@@ -192,7 +192,7 @@ size_t Archetype::Erase(size_t idx) {
 	size_t dstIdxInChunk = idx % chunkCapacity;
 	byte* dstBuffer = chunks[idx / chunkCapacity]->Data();
 
-	size_t movedIdx = size_t_invalid;
+	size_t movedIdx;
 	
 	if (idx != entityNum - 1) {
 		size_t movedIdxInArchetype = entityNum - 1;
@@ -207,13 +207,15 @@ size_t Archetype::Erase(size_t idx) {
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
 
 			if (type.Is<Entity>())
-				movedIdx = reinterpret_cast<Entity*>(dst)->Idx();
+				movedIdx = reinterpret_cast<Entity*>(src)->Idx();
 
 			cmptTraits.MoveAssign(type, dst, src);
 			cmptTraits.Destruct(type, src);
 		}
 	}
 	else {
+		movedIdx = size_t_invalid;
+
 		for (auto type : types) {
 			auto size = cmptTraits.Sizeof(type);
 			auto offset = Offsetof(type);

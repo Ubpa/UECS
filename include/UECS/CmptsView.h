@@ -12,7 +12,7 @@ namespace Ubpa::UECS {
 	// use CmptsView::Iterator to read CmptPtr
 	class CmptsView {
 	public:
-		CmptsView(EntityLocator* locator, void** cmpts)
+		CmptsView(const EntityLocator* locator, void** cmpts)
 			: locator{ locator }, cmpts{ cmpts }{}
 
 		// check AccessMode
@@ -35,7 +35,7 @@ namespace Ubpa::UECS {
 
 		void* const* Components() const noexcept { return cmpts; }
 	private:
-		EntityLocator* locator;
+		const EntityLocator* locator;
 		void* const* cmpts;
 	};
 }

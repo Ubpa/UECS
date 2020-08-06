@@ -17,6 +17,7 @@ namespace Ubpa::UECS {
 		void* GetCmptArray(CmptType) const;
 		template<typename Cmpt>
 		Cmpt* GetCmptArray() const { return reinterpret_cast<Cmpt*>(GetCmptArray(CmptType::Of<Cmpt>)); }
+		const Entity* GetEntityArray() const { return GetCmptArray<Entity>(); }
 		size_t EntityNum() const;
 
 	private:
