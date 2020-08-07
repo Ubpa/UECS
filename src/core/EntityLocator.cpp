@@ -6,7 +6,7 @@ using namespace Ubpa::UECS;
 using namespace std;
 
 EntityLocator::EntityLocator(const CmptType* types, size_t num) {
-	assert(types != nullptr);
+	assert(types != nullptr && num > 0);
 	for (size_t i = 0; i < num; i++) {
 		switch (types[i].GetAccessMode())
 		{
@@ -28,6 +28,9 @@ EntityLocator::EntityLocator(const CmptType* types, size_t num) {
 	cmptTypes = SetUnion(cmptTypes, latestCmptTypes);
 	hashCode = GenHashCode();
 }
+
+EntityLocator::EntityLocator()
+	: hashCode{ TypeID<EntityLocator> } {}
 
 size_t EntityLocator::GenHashCode() const noexcept {
 	size_t rst = TypeID<EntityLocator>;

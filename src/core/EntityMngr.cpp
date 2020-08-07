@@ -316,3 +316,34 @@ void EntityMngr::Accept(IListener* listener) const {
 	}
 	listener->ExistEntityMngr(this);
 }
+
+bool EntityMngr::IsSingleton(CmptType t) const {
+	EntityFilter filter{ {t}, {}, {} };
+	EntityQuery query(move(filter));
+	const auto& archetypes = QueryArchetypes(query);
+	if (archetypes.size() != 1)
+		return false;
+	auto archetype = *archetypes.begin();
+	if (archetype->EntityNum() != 1)
+		return false;
+
+	return true;
+}
+
+Entity EntityMngr::GetSingletonEntity(CmptType t) const {
+	assert(IsSingleton(t));
+	EntityFilter filter{ {t}, {}, {} };
+	EntityQuery query(move(filter));
+	const auto& archetypes = QueryArchetypes(query);
+	auto archetype = *archetypes.begin();
+	return *archetype->At<Entity>(0);
+}
+
+CmptPtr EntityMngr::GetSingleton(CmptType t) const {
+	assert(IsSingleton(t));
+	EntityFilter filter{ {t}, {}, {} };
+	EntityQuery query(move(filter));
+	const auto& archetypes = QueryArchetypes(query);
+	auto archetype = *archetypes.begin();
+	return { t, archetype->At(t, 0) };
+}

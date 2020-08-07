@@ -19,6 +19,8 @@ namespace Ubpa::UECS {
 
 		EntityLocator(const CmptType* types, size_t num);
 
+		EntityLocator();
+
 		size_t HashCode() const noexcept { return hashCode; }
 
 		const std::set<CmptType>& LastFrameCmptTypes() const noexcept { return lastFrameCmptTypes; }

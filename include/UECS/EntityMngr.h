@@ -59,6 +59,12 @@ namespace Ubpa::UECS {
 
 		size_t EntityNum(const EntityQuery&) const;
 
+		bool IsSingleton(CmptType) const;
+		Entity GetSingletonEntity(CmptType) const;
+		CmptPtr GetSingleton(CmptType) const;
+		template<typename Cmpt>
+		Cmpt* GetSingleton() const { return GetSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
+
 		void Accept(IListener* listener) const;
 
 	private:
