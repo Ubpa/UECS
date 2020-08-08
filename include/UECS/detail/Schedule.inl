@@ -2,13 +2,35 @@
 
 namespace Ubpa::UECS {
 	template<typename Func>
-	const SystemFunc* Schedule::Register(Func&& func, std::string name, ArchetypeFilter filter) {
-		return Request(std::forward<Func>(func), std::move(name), std::move(filter));
+	const SystemFunc* Schedule::Register(
+		Func&& func,
+		std::string name,
+		ArchetypeFilter filter,
+		SingletonLocator singletonLocator)
+	{
+		return Request(
+			std::forward<Func>(func),
+			std::move(name),
+			std::move(filter),
+			std::move(singletonLocator)
+		);
 	}
 
 	template<typename Func>
-	const SystemFunc* Schedule::Register(Func&& func, std::string name, CmptLocator locator, ArchetypeFilter filter) {
-		return Request(std::forward<Func>(func), std::move(name), std::move(locator), std::move(filter));
+	const SystemFunc* Schedule::Register(
+		Func&& func,
+		std::string name,
+		CmptLocator locator,
+		ArchetypeFilter filter,
+		SingletonLocator singletonLocator
+	) {
+		return Request(
+			std::forward<Func>(func),
+			std::move(name),
+			std::move(locator),
+			std::move(filter),
+			std::move(singletonLocator)
+		);
 	}
 
 	template<typename... Args>

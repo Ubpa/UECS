@@ -13,6 +13,12 @@ namespace Ubpa::UECS {
 
 		SingletonLocator();
 
+		template<typename Func>
+		static SingletonLocator Generate();
+
+		template<typename Func>
+		SingletonLocator& Combine();
+
 		const std::set<CmptType>& LastFrameSingletonTypes() const noexcept { return lastFrameSingletonTypes; }
 		const std::set<CmptType>& WriteSingletonTypes() const noexcept { return writeSingletonTypes; }
 		const std::set<CmptType>& LatestSingletonTypes() const noexcept { return latestSingletonTypes; }
@@ -25,3 +31,5 @@ namespace Ubpa::UECS {
 		std::set<CmptType> singletonTypes;
 	};
 }
+
+#include "detail/SingletonLocator.inl"

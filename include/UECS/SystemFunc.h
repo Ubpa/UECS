@@ -36,7 +36,10 @@ namespace Ubpa::UECS {
 		SingletonLocator singletonLocator;
 
 		template<typename Func>
-		SystemFunc(Func&& func, std::string name, ArchetypeFilter archetypeFilter);
+		SystemFunc(Func&& func, std::string name, ArchetypeFilter archetypeFilter, SingletonLocator singletonLocator);
+
+		template<typename Func>
+		SystemFunc(Func&& func, std::string name, CmptLocator cmptLocator, ArchetypeFilter archetypeFilter, SingletonLocator singletonLocator);
 		
 		const std::string& Name() const noexcept { return name; }
 

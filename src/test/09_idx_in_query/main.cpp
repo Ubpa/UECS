@@ -26,7 +26,7 @@ public:
 			}, "print flag"
 		);
 		schedule.Order("set flag", "print flag");
-		size_t num = GetWorld()->entityMngr.EntityNum(f->query);
+		size_t num = GetWorld()->entityMngr.EntityNum(f->entityQuery);
 		flags->insert(flags->begin(), num, false);
 	}
 };
