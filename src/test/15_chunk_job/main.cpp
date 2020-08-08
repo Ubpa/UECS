@@ -17,7 +17,7 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		EntityFilter filter{
+		ArchetypeFilter filter{
 			TypeList<S>{},                    // all
 			TypeList<Latest<A>, Latest<B>>{}, // any
 			TypeList<>{}                      // none

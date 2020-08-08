@@ -13,9 +13,9 @@ namespace Ubpa::UECS::detail::Schedule_ {
 		NoneGroup(SystemFunc* func)
 			: sysFuncs{ func }
 		{
-			needTypes = SetUnion(func->query.filter.AllCmptTypes(), func->query.filter.AnyCmptTypes());
-			needTypes = SetUnion(needTypes, func->query.locator.CmptTypes());
-			noneTypes = func->query.filter.NoneCmptTypes();
+			needTypes = SetUnion(func->entityQuery.filter.AllCmptTypes(), func->entityQuery.filter.AnyCmptTypes());
+			needTypes = SetUnion(needTypes, func->entityQuery.locator.CmptTypes());
+			noneTypes = func->entityQuery.filter.NoneCmptTypes();
 		}
 
 		static bool Parallelable(const NoneGroup& x, const NoneGroup& y) {
@@ -213,16 +213,24 @@ void Schedule::Clear() {
 unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {
 	unordered_map<CmptType, Schedule::CmptSysFuncs> rst;
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
-		const auto& locator = sysFunc->query.locator;
-		for (const auto& type : locator.LastFrameCmptTypes())
+		const auto& cmptsLocator = sysFunc->entityQuery.locator;
+		for (const auto& type : cmptsLocator.LastFrameCmptTypes())
 			rst[type].lastFrameSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.WriteCmptTypes())
+		for (const auto& type : cmptsLocator.WriteCmptTypes())
 			rst[type].writeSysFuncs.push_back(sysFunc);
-		for (const auto& type : locator.LatestCmptTypes())
+		for (const auto& type : cmptsLocator.LatestCmptTypes())
+			rst[type].latestSysFuncs.push_back(sysFunc);
+
+		const auto& singletonsLocator = sysFunc->singletonLocator;
+		for (const auto& type : singletonsLocator.LastFrameSingletonTypes())
+			rst[type].lastFrameSysFuncs.push_back(sysFunc);
+		for (const auto& type : singletonsLocator.WriteSingletonTypes())
+			rst[type].writeSysFuncs.push_back(sysFunc);
+		for (const auto& type : singletonsLocator.LatestSingletonTypes())
 			rst[type].latestSysFuncs.push_back(sysFunc);
 
 		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
-			const auto& filter = sysFunc->query.filter;
+			const auto& filter = sysFunc->entityQuery.filter;
 			for (const auto& type : filter.AllCmptTypes()) {
 				auto& cmptSysFuncs = rst[type];
 				switch (type.GetAccessMode())
@@ -277,12 +285,12 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 		auto func = target->second;
 
-		func->query.filter.InsertAll(change.insertAlls);
-		func->query.filter.InsertAny(change.insertAnys);
-		func->query.filter.InsertNone(change.insertNones);
-		func->query.filter.EraseAll(change.eraseAlls);
-		func->query.filter.EraseAny(change.eraseAnys);
-		func->query.filter.EraseNone(change.eraseNones);
+		func->entityQuery.filter.InsertAll(change.insertAlls);
+		func->entityQuery.filter.InsertAny(change.insertAnys);
+		func->entityQuery.filter.InsertNone(change.insertNones);
+		func->entityQuery.filter.EraseAll(change.eraseAlls);
+		func->entityQuery.filter.EraseAny(change.eraseAnys);
+		func->entityQuery.filter.EraseNone(change.eraseNones);
 	}
 
 	auto cmptSysFuncsMap = GenCmptSysFuncsMap();

@@ -2,6 +2,7 @@
 
 #include "../Entity.h"
 #include "../CmptPtr.h"
+#include "../CmptLocator.h"
 
 #include "RTSCmptTraits.h"
 #include "CmptTypeSet.h"
@@ -40,8 +41,9 @@ namespace Ubpa::UECS {
 		~Archetype();
 
 		// Entity + Components
-		std::tuple<std::vector<Entity*>, std::vector<std::vector<void*>>, std::vector<size_t>>
-		Locate(const std::set<CmptType>& cmptTypes) const;
+		// without singleton
+		std::tuple<std::vector<Entity*>, std::vector<std::vector<CmptPtr>>, std::vector<size_t>>
+		Locate(const CmptLocator& locator) const;
 
 		void* Locate(size_t chunkIdx, CmptType) const;
 

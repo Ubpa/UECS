@@ -8,21 +8,21 @@
 
 namespace Ubpa::UECS {
 	// filter Archetype with All, Any and None
-	class EntityFilter {
+	class ArchetypeFilter {
 	public:
-		EntityFilter();
+		ArchetypeFilter();
 
 		template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts>
-		EntityFilter(TypeList<AllCmpts...> allList, TypeList<AnyCmpts...> anyList, TypeList<NoneCmpts...> noneList);
+		ArchetypeFilter(TypeList<AllCmpts...> allList, TypeList<AnyCmpts...> anyList, TypeList<NoneCmpts...> noneList);
 
 		template<typename... AllCmpts>
-		static EntityFilter CreateAll() { return { TypeList<AllCmpts...>, TypeList<>{}, TypeList<>{} }; }
+		static ArchetypeFilter CreateAll() { return { TypeList<AllCmpts...>, TypeList<>{}, TypeList<>{} }; }
 		template<typename... AnyCmpts>
-		static EntityFilter CreateAny() { return { TypeList<>{}, TypeList<AnyCmpts...>, TypeList<>{} }; }
+		static ArchetypeFilter CreateAny() { return { TypeList<>{}, TypeList<AnyCmpts...>, TypeList<>{} }; }
 		template<typename... NoneCmpts>
-		static EntityFilter CreateNone() { return { TypeList<>{}, TypeList<>{}, TypeList<NoneCmpts...> }; }
+		static ArchetypeFilter CreateNone() { return { TypeList<>{}, TypeList<>{}, TypeList<NoneCmpts...> }; }
 
-		EntityFilter(
+		ArchetypeFilter(
 			std::set<CmptType> allCmptTypes,
 			std::set<CmptType> anyCmptTypes = {},
 			std::set<CmptType> noneCmptTypes = {}
@@ -54,7 +54,7 @@ namespace Ubpa::UECS {
 		template<typename CmptTypeContainer> void EraseAny(const CmptTypeContainer&);
 		template<typename CmptTypeContainer> void EraseNone(const CmptTypeContainer&);
 
-		bool operator==(const EntityFilter& filter) const noexcept;
+		bool operator==(const ArchetypeFilter& filter) const noexcept;
 
 	private:
 		size_t GenAllHashCode() const noexcept;
@@ -74,4 +74,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/EntityFilter.inl"
+#include "detail/ArchetypeFilter.inl"

@@ -4,7 +4,7 @@
 
 namespace Ubpa::UECS {
 	template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts>
-	EntityFilter::EntityFilter(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>)
+	ArchetypeFilter::ArchetypeFilter(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>)
 		: allCmptTypes{ CmptType::Of<AllCmpts>... },
 		anyCmptTypes{ CmptType::Of<AnyCmpts>... },
 		noneCmptTypes{ CmptType::Of<NoneCmpts>... },
@@ -18,7 +18,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::InsertAll(const CmptTypeContainer& c) {
+	void ArchetypeFilter::InsertAll(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -28,7 +28,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::InsertAny(const CmptTypeContainer& c) {
+	void ArchetypeFilter::InsertAny(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -38,7 +38,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::InsertNone(const CmptTypeContainer& c) {
+	void ArchetypeFilter::InsertNone(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -48,7 +48,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::EraseAll(const CmptTypeContainer& c) {
+	void ArchetypeFilter::EraseAll(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -58,7 +58,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::EraseAny(const CmptTypeContainer& c) {
+	void ArchetypeFilter::EraseAny(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -68,7 +68,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	void EntityFilter::EraseNone(const CmptTypeContainer& c) {
+	void ArchetypeFilter::EraseNone(const CmptTypeContainer& c) {
 		if (c.empty())
 			return;
 		for (const auto& type : c)
@@ -82,8 +82,8 @@ namespace std {
 	template<typename T>
 	struct hash;
 	template<>
-	struct hash<Ubpa::UECS::EntityFilter> {
-		size_t operator()(const Ubpa::UECS::EntityFilter& filter) const noexcept {
+	struct hash<Ubpa::UECS::ArchetypeFilter> {
+		size_t operator()(const Ubpa::UECS::ArchetypeFilter& filter) const noexcept {
 			return filter.HashCode();
 		}
 	};

@@ -17,10 +17,10 @@ public:
 			CmptType{ "LuaCmpt", AccessMode::LATEST }
 		};
 
-		EntityLocator locator_write(
+		CmptLocator locator_write(
 			cmpts_write.data(), cmpts_write.size()
 		);
-		EntityLocator locator_read(
+		CmptLocator locator_read(
 			cmpts_read.data(), cmpts_read.size()
 		);
 

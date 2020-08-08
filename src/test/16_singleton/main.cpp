@@ -5,7 +5,7 @@
 using namespace Ubpa::UECS;
 
 struct Timer {
-	float dt;
+	float dt{ 0.f };
 };
 
 struct Position { float val{ 1.f }; };
@@ -16,22 +16,29 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		float dt = GetWorld()->entityMngr.GetSingleton<Timer>()->dt;
-		schedule.Register([dt](const Velocity* v, Position* p) {
-			p->val += dt * v->val;
+		schedule.Register([](Singleton<Timer> timer) {
+			timer->dt = 0.03f;
+		}, "Timer");
+		schedule.Register([](const Velocity* v, Position* p, Latest<Singleton<Timer>> timer) {
+			p->val += timer->dt * v->val;
 		}, "Mover");
-		schedule.Register([dt](const Position* p) {
+		schedule.Register([](const Position* p) {
 			std::cout << p->val << std::endl;
 		}, "Print");
 	}
 };
 
 int main() {
+	constexpr auto mode = AccessModeOf<const Singleton<Timer>>;
+	RTDCmptTraits::Instance().Register
+		<Timer, Velocity, Position>();
+
 	World w;
 	w.systemMngr.Register<MoverSystem>();
 	w.entityMngr.Create<Position, Velocity>();
-	auto [e_singleton, timer] = w.entityMngr.Create<Timer>();
-	timer->dt = 0.03f;
+	w.entityMngr.Create<Timer>();
 
 	w.Update();
+	std::cout << w.DumpUpdateJobGraph() << std::endl;
+	std::cout << w.GenUpdateFrameGraph().Dump() << std::endl;
 }

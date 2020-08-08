@@ -42,9 +42,9 @@ namespace Ubpa::UECS {
 		template<typename CmptTypeContainer>
 		bool NotContain(const CmptTypeContainer& types) const;
 
-		bool IsMatch(const EntityFilter& filter) const;
+		bool IsMatch(const ArchetypeFilter& filter) const;
 
-		bool IsMatch(const EntityLocator& locator) const;
+		bool IsMatch(const CmptLocator& locator) const;
 
 		bool IsMatch(const EntityQuery& query) const;
 

@@ -62,6 +62,8 @@ namespace Ubpa::UECS {
 		bool IsSingleton(CmptType) const;
 		Entity GetSingletonEntity(CmptType) const;
 		CmptPtr GetSingleton(CmptType) const;
+		// nullptr if not singleton
+		CmptPtr GetIfSingleton(CmptType) const;
 		template<typename Cmpt>
 		Cmpt* GetSingleton() const { return GetSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
 
@@ -84,8 +86,11 @@ namespace Ubpa::UECS {
 		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
 
+		std::tuple<bool, std::vector<CmptPtr>> LocateSingletons(const SingletonLocator& locator) const;
+
 		void GenEntityJob(World*, Job*, SystemFunc*) const;
 		void GenChunkJob(World*, Job*, SystemFunc*) const;
+		void GenJob(World*, Job*, SystemFunc*) const;
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };

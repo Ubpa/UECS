@@ -26,11 +26,11 @@ namespace Ubpa::UECS {
 	class Schedule {
 	public:
 		template<typename Func>
-		const SystemFunc* Register(Func&& func, std::string name, EntityFilter filter = EntityFilter{});
+		const SystemFunc* Register(Func&& func, std::string name, ArchetypeFilter filter = ArchetypeFilter{});
 
 		// run-time dynamic function
 		template<typename Func>
-		const SystemFunc* Register(Func&& func, std::string name, EntityLocator locator, EntityFilter filter = EntityFilter{});
+		const SystemFunc* Register(Func&& func, std::string name, CmptLocator locator, ArchetypeFilter filter = ArchetypeFilter{});
 
 		Schedule& LockFilter(std::string_view sys);
 

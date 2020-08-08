@@ -258,25 +258,48 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
+tuple<bool, vector<CmptPtr>> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
+	size_t numSingletons = 0;
+	vector<CmptPtr> rst;
+	rst.reserve(locator.SingletonTypes().size());
+	for (const auto& t : locator.SingletonTypes()) {
+		auto ptr = GetIfSingleton(t);
+		if (ptr.Ptr() == nullptr)
+			return { false, {} };
+		rst.push_back(ptr);
+	}
+	return { true, rst };
+}
+
 void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Entity);
 
+	auto [success, singletons] = LocateSingletons(sys->singletonLocator);
+	if (!success)
+		return;
+
 	size_t indexOffsetInQuery = 0;
-	for (Archetype* archetype : QueryArchetypes(sys->query)) {
-		auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->query.locator.CmptTypes());
+	for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
+		auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->entityQuery.locator);
 
 		size_t num = archetype->EntityNum();
 		size_t chunkNum = archetype->ChunkNum();
 		size_t chunkCapacity = archetype->ChunkCapacity();
 
 		for (size_t i = 0; i < chunkNum; i++) {
-			job->emplace([=, sizes = sizes, entities = chunkEntity[i], cmpts = move(chunkCmpts[i])]() mutable {
+			job->emplace([=, sizes = sizes, entities = chunkEntity[i], cmpts = move(chunkCmpts[i]), singletons = singletons]() mutable {
 				size_t idxOffsetInChunk = i * chunkCapacity;
 				size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 
 				size_t J = min(chunkCapacity, num - idxOffsetInChunk);
 				for (size_t j = 0; j < J; j++) {
-					(*sys)(w, entities[j], indexOffsetInQueryChunk + j, { &sys->query.locator, cmpts.data() });
+					(*sys)(
+						w,
+						SingletonsView{ singletons.data(), singletons.size() },
+						entities[j],
+						indexOffsetInQueryChunk + j,
+						CmptsView{ cmpts.data(), cmpts.size() }
+					);
 					for (size_t k = 0; k < cmpts.size(); k++)
 						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
 				}
@@ -290,15 +313,38 @@ void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Chunk);
 
-	for (Archetype* archetype : QueryArchetypes(sys->query)) {
+	auto [success, singletons] = LocateSingletons(sys->singletonLocator);
+	if (!success)
+		return;
+
+	for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
 		size_t chunkNum = archetype->ChunkNum();
 
 		for (size_t i = 0; i < chunkNum; i++) {
-			job->emplace([=]() {
-				(*sys)(w, ChunkView{ archetype, i, archetype->GetChunk(i) });
+			job->emplace([=, singletons = singletons]() {
+				(*sys)(
+					w,
+					SingletonsView{ singletons.data(), singletons.size() },
+					ChunkView{ archetype, i, archetype->GetChunk(i) }
+				);
 			});
 		}
 	}
+}
+
+void EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
+	assert(sys->GetMode() == SystemFunc::Mode::Job);
+
+	auto [success, singletons] = LocateSingletons(sys->singletonLocator);
+	if (!success)
+		return;
+
+	job->emplace([=, singletons = std::move(singletons)]() {
+		(*sys)(
+			w,
+			SingletonsView{ singletons.data(), singletons.size() }
+		);
+	});
 }
 
 void EntityMngr::Accept(IListener* listener) const {
@@ -318,7 +364,7 @@ void EntityMngr::Accept(IListener* listener) const {
 }
 
 bool EntityMngr::IsSingleton(CmptType t) const {
-	EntityFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {t}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	if (archetypes.size() != 1)
@@ -332,7 +378,7 @@ bool EntityMngr::IsSingleton(CmptType t) const {
 
 Entity EntityMngr::GetSingletonEntity(CmptType t) const {
 	assert(IsSingleton(t));
-	EntityFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {t}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	auto archetype = *archetypes.begin();
@@ -341,9 +387,22 @@ Entity EntityMngr::GetSingletonEntity(CmptType t) const {
 
 CmptPtr EntityMngr::GetSingleton(CmptType t) const {
 	assert(IsSingleton(t));
-	EntityFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {t}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	auto archetype = *archetypes.begin();
+	return { t, archetype->At(t, 0) };
+}
+
+CmptPtr EntityMngr::GetIfSingleton(CmptType t) const {
+	ArchetypeFilter filter{ {t}, {}, {} };
+	EntityQuery query(move(filter));
+	const auto& archetypes = QueryArchetypes(query);
+	if (archetypes.size() != 1)
+		return { CmptType::Invalid(), nullptr };
+	auto archetype = *archetypes.begin();
+	if (archetype->EntityNum() != 1)
+		return { CmptType::Invalid(), nullptr };
+
 	return { t, archetype->At(t, 0) };
 }

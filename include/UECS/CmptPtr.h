@@ -21,22 +21,22 @@ namespace Ubpa::UECS {
 		template<typename Cmpt>
 		Cmpt* As() const noexcept { return reinterpret_cast<Cmpt*>(p); }
 
-		template<typename Cmpt>
-		LastFrame<Cmpt> AsLastFrame() const noexcept {
-			assert(type.GetAccessMode() == AccessMode::LAST_FRAME);
-			return p;
-		}
-
-		template<typename Cmpt>
-		Write<Cmpt> AsWrite() const noexcept {
-			assert(type.GetAccessMode() == AccessMode::WRITE);
-			return p;
-		}
-
-		template<typename Cmpt>
-		Latest<Cmpt> AsLatest() const noexcept {
-			assert(type.GetAccessMode() == AccessMode::LATEST);
-			return p;
+		template<typename Cmpt, AccessMode mode>
+		auto As() const noexcept {
+			if constexpr (mode == AccessMode::LAST_FRAME)
+				return LastFrame<Cmpt>{p};
+			else if constexpr (mode == AccessMode::WRITE)
+				return Write<Cmpt>(p);
+			else if constexpr (mode == AccessMode::LATEST)
+				return Latest<Cmpt>(p);
+			else if constexpr (mode == AccessMode::LAST_FRAME_SINGLETON)
+				return LastFrame<Singleton<Cmpt>>;
+			else if constexpr (mode == AccessMode::WRITE_SINGLETON)
+				return Write<Singleton<Cmpt>>;
+			else if constexpr (mode == AccessMode::LATEST_SINGLETON)
+				return Latest<Singleton<Cmpt>>;
+			else
+				static_assert(false);
 		}
 	private:
 		CmptType type;

@@ -66,14 +66,18 @@ namespace Ubpa::UECS {
 		return true;
 	}
 
-	inline bool CmptTypeSet::IsMatch(const EntityFilter& filter) const {
+	inline bool CmptTypeSet::IsMatch(const ArchetypeFilter& filter) const {
 		return Contains(filter.AllCmptTypes())
 			&& ContainsAny(filter.AnyCmptTypes())
 			&& NotContain(filter.NoneCmptTypes());
 	}
 
-	inline bool CmptTypeSet::IsMatch(const EntityLocator& locator) const {
-		return Contains(locator.CmptTypes());
+	inline bool CmptTypeSet::IsMatch(const CmptLocator& locator) const {
+		for (const auto& t : locator.CmptTypes()) {
+			if (!Contains(t))
+				return false;
+		}
+		return true;
 	}
 
 	inline bool CmptTypeSet::IsMatch(const EntityQuery& query) const {

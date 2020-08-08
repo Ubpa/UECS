@@ -158,23 +158,24 @@ size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
 	return dstIdx;
 }
 
-tuple<vector<Entity*>, vector<vector<void*>>, vector<size_t>> Archetype::Locate(const set<CmptType>& cmptTypes) const {
-	assert(types.Contains(cmptTypes));
-	vector<vector<void*>> chunkCmpts(chunks.size());
+tuple<vector<Entity*>, vector<vector<CmptPtr>>, vector<size_t>> Archetype::Locate(const CmptLocator& locator) const {
+	assert(types.IsMatch(locator));
+
+	vector<vector<CmptPtr>> chunkCmpts(chunks.size());
 	vector<Entity*> chunkEntity;
 
 	for (size_t i = 0; i < chunks.size(); i++) {
 		auto data = chunks[i]->Data();
-		for (const auto& type : cmptTypes)
-			chunkCmpts[i].push_back(data + Offsetof(type));
+		chunkCmpts[i].reserve(locator.CmptTypes().size());
+		for (const auto& type : locator.CmptTypes())
+			chunkCmpts[i].emplace_back(type, data + Offsetof(type));
 		chunkEntity.push_back(reinterpret_cast<Entity*>(data + Offsetof(CmptType::Of<Entity>)));
 	}
 
 	vector<size_t> sizes;
-
-	for (const auto& type : cmptTypes)
+	sizes.reserve(locator.CmptTypes().size());
+	for (const auto& type : locator.CmptTypes())
 		sizes.push_back(cmptTraits.Sizeof(type));
-
 
 	return { chunkEntity, chunkCmpts, sizes };
 }

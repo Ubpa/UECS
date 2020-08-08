@@ -1,17 +1,17 @@
-#include <UECS/EntityFilter.h>
+#include <UECS/ArchetypeFilter.h>
 
 using namespace Ubpa::UECS;
 
-EntityFilter::EntityFilter()
+ArchetypeFilter::ArchetypeFilter()
 	:
-	allHashCode{ TypeID<EntityFilter> },
-	anyHashCode{ TypeID<EntityFilter> },
-	noneHashCode{ TypeID<EntityFilter> },
-	combinedHashCode{ hash_combine(std::array<size_t, 3>{TypeID<EntityFilter>, TypeID<EntityFilter>, TypeID<EntityFilter>}) }
+	allHashCode{ TypeID<ArchetypeFilter> },
+	anyHashCode{ TypeID<ArchetypeFilter> },
+	noneHashCode{ TypeID<ArchetypeFilter> },
+	combinedHashCode{ hash_combine(std::array<size_t, 3>{TypeID<ArchetypeFilter>, TypeID<ArchetypeFilter>, TypeID<ArchetypeFilter>}) }
 {
 }
 
-EntityFilter::EntityFilter(
+ArchetypeFilter::ArchetypeFilter(
 	std::set<CmptType> allCmptTypes,
 	std::set<CmptType> anyCmptTypes,
 	std::set<CmptType> noneCmptTypes)
@@ -26,7 +26,7 @@ EntityFilter::EntityFilter(
 {
 }
 
-void EntityFilter::InsertAll(const CmptType* types, size_t num) {
+void ArchetypeFilter::InsertAll(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 		allCmptTypes.insert(types[i]);
@@ -34,7 +34,7 @@ void EntityFilter::InsertAll(const CmptType* types, size_t num) {
 	combinedHashCode = GenCombinedHashCode();
 }
 
-void EntityFilter::InsertAny(const CmptType* types, size_t num) {
+void ArchetypeFilter::InsertAny(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 		anyCmptTypes.insert(types[i]);
@@ -42,7 +42,7 @@ void EntityFilter::InsertAny(const CmptType* types, size_t num) {
 	combinedHashCode = GenCombinedHashCode();
 }
 
-void EntityFilter::InsertNone(const CmptType* types, size_t num) {
+void ArchetypeFilter::InsertNone(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 		noneCmptTypes.insert(types[i]);
@@ -50,7 +50,7 @@ void EntityFilter::InsertNone(const CmptType* types, size_t num) {
 	combinedHashCode = GenCombinedHashCode();
 }
 
-void EntityFilter::EraseAll(const CmptType* types, size_t num) {
+void ArchetypeFilter::EraseAll(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 		allCmptTypes.erase(types[i]);
@@ -58,14 +58,14 @@ void EntityFilter::EraseAll(const CmptType* types, size_t num) {
 	combinedHashCode = GenCombinedHashCode();
 }
 
-void EntityFilter::EraseAny(const CmptType* types, size_t num) {
+void ArchetypeFilter::EraseAny(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 	anyHashCode = GenAnyHashCode();
 	combinedHashCode = GenCombinedHashCode();
 }
 
-void EntityFilter::EraseNone(const CmptType* types, size_t num) {
+void ArchetypeFilter::EraseNone(const CmptType* types, size_t num) {
 	assert(types != nullptr);
 	for (size_t i = 0; i < num; i++)
 		noneCmptTypes.erase(types[i]);
@@ -73,35 +73,35 @@ void EntityFilter::EraseNone(const CmptType* types, size_t num) {
 	combinedHashCode = GenCombinedHashCode();
 }
 
-size_t EntityFilter::GenAllHashCode() const noexcept {
-	size_t rst = TypeID<EntityFilter>;
+size_t ArchetypeFilter::GenAllHashCode() const noexcept {
+	size_t rst = TypeID<ArchetypeFilter>;
 	for (auto type : allCmptTypes) {
 		rst = hash_combine(rst, type.HashCode());
 	}
 	return rst;
 }
 
-size_t EntityFilter::GenAnyHashCode() const noexcept {
-	size_t rst = TypeID<EntityFilter>;
+size_t ArchetypeFilter::GenAnyHashCode() const noexcept {
+	size_t rst = TypeID<ArchetypeFilter>;
 	for (auto type : anyCmptTypes) {
 		rst = hash_combine(rst, type.HashCode());
 	}
 	return rst;
 }
 
-size_t EntityFilter::GenNoneHashCode() const noexcept {
-	size_t rst = TypeID<EntityFilter>;
+size_t ArchetypeFilter::GenNoneHashCode() const noexcept {
+	size_t rst = TypeID<ArchetypeFilter>;
 	for (auto type : noneCmptTypes) {
 		rst = hash_combine(rst, type.HashCode());
 	}
 	return rst;
 }
 
-size_t EntityFilter::GenCombinedHashCode() const noexcept {
+size_t ArchetypeFilter::GenCombinedHashCode() const noexcept {
 	return hash_combine(std::array<size_t, 3>{allHashCode, anyHashCode, noneHashCode});
 }
 
-bool EntityFilter::operator==(const EntityFilter& filter) const noexcept {
+bool ArchetypeFilter::operator==(const ArchetypeFilter& filter) const noexcept {
 	return allCmptTypes == filter.allCmptTypes
 		&& anyCmptTypes == filter.anyCmptTypes
 		&& noneCmptTypes == filter.noneCmptTypes;

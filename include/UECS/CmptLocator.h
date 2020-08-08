@@ -9,17 +9,11 @@
 namespace Ubpa::UECS {
 	// locate components in function's argument list for Archetype
 	// TODO: combine with a system function's locator
-	class EntityLocator {
+	class CmptLocator {
 	public:
-		template<typename TaggedCmptList>
-		EntityLocator(TaggedCmptList);
+		CmptLocator(const CmptType* types, size_t num);
 
-		template<typename... LastFrameCmpts, typename... WriteCmpts, typename... LatestCmpts>
-		EntityLocator(TypeList<LastFrameCmpts...>, TypeList<WriteCmpts...>, TypeList<LatestCmpts...>);
-
-		EntityLocator(const CmptType* types, size_t num);
-
-		EntityLocator();
+		CmptLocator();
 
 		size_t HashCode() const noexcept { return hashCode; }
 
@@ -28,9 +22,7 @@ namespace Ubpa::UECS {
 		const std::set<CmptType>& LatestCmptTypes() const noexcept { return latestCmptTypes; }
 		const std::set<CmptType>& CmptTypes() const noexcept { return cmptTypes; }
 
-		AccessMode GetCmptTagMode(CmptType type) const;
-
-		bool operator==(const EntityLocator& locator) const noexcept;
+		bool operator==(const CmptLocator& rhs) const noexcept;
 	private:
 		size_t GenHashCode() const noexcept;
 
@@ -42,5 +34,3 @@ namespace Ubpa::UECS {
 		size_t hashCode;
 	};
 }
-
-#include "detail/EntityLocator.inl"

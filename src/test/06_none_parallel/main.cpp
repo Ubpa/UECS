@@ -14,12 +14,12 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		EntityFilter filter_w0(
+		ArchetypeFilter filter_w0(
 			TypeList<>{}, // all
 			TypeList<>{}, // any
 			TypeList<A>{} // none
 		);
-		EntityFilter filter_w1(
+		ArchetypeFilter filter_w1(
 			TypeList<A>{}, // all
 			TypeList<>{}, // any
 			TypeList<>{} // none

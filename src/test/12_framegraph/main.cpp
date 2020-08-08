@@ -19,7 +19,7 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		EntityFilter filter(
+		ArchetypeFilter filter(
 			TypeList<D>{}, // all
 			TypeList<E, F>{}, // any
 			TypeList<G>{} // none
