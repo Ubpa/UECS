@@ -33,7 +33,7 @@ namespace Ubpa::UECS {
 		// use RTDCmptTraits' registered component name
 		UGraphviz::Graph GenUpdateFrameGraph() const;
 
-		void Accept(IListener* listener) const;
+		void Accept(IListener*) const;
 
 		void AddCommand(std::function<void(World*)> command);
 

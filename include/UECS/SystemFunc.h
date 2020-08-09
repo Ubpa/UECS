@@ -35,11 +35,17 @@ namespace Ubpa::UECS {
 		EntityQuery entityQuery;
 		SingletonLocator singletonLocator;
 
+		// Mode::Entity
 		template<typename Func>
-		SystemFunc(Func&& func, std::string name, ArchetypeFilter archetypeFilter, SingletonLocator singletonLocator);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator);
 
+		// Mode::Chunk
 		template<typename Func>
-		SystemFunc(Func&& func, std::string name, CmptLocator cmptLocator, ArchetypeFilter archetypeFilter, SingletonLocator singletonLocator);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator);
+
+		// Mode::Job
+		template<typename Func>
+		SystemFunc(Func&&, std::string name, SingletonLocator);
 		
 		const std::string& Name() const noexcept { return name; }
 
@@ -47,15 +53,15 @@ namespace Ubpa::UECS {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(World*, SingletonsView singletonsView, Entity e, size_t entityIndexInQuery, CmptsView cmptsView);
-		void operator()(World*, SingletonsView singletonsView, ChunkView chunkView);
-		void operator()(World*, SingletonsView singletonsView);
+		void operator()(World*, SingletonsView, Entity, size_t entityIndexInQuery, CmptsView);
+		void operator()(World*, SingletonsView, ChunkView);
+		void operator()(World*, SingletonsView);
 
 		Mode GetMode() const noexcept { return mode; }
 
-		bool operator==(const SystemFunc& func) const noexcept { return name == func.name; }
+		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
-		std::function<void(World*, SingletonsView singletonsView, Entity, size_t, CmptsView, ChunkView)> func;
+		std::function<void(World*, SingletonsView, Entity, size_t, CmptsView, ChunkView)> func;
 
 		std::string name;
 		Mode mode;

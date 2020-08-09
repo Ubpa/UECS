@@ -25,7 +25,7 @@ public:
 			TypeList<G>{} // none
 		);
 		schedule
-			.Register(
+			.RegisterEntityJob(
 				[](LastFrame<A> a, Write<B> b, Latest<C> c) {},
 				"System Func",
 				filter

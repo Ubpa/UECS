@@ -13,7 +13,7 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		schedule.Register(
+		schedule.RegisterEntityJob(
 			[](const A* a, B* b) {
 				// 256 floating-point operations
 				for (size_t i = 0; i < 256; i++)

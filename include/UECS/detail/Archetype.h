@@ -49,7 +49,7 @@ namespace Ubpa::UECS {
 
 		Chunk* GetChunk(size_t chunkIdx) const { return chunks[chunkIdx]; }
 		
-		void* At(CmptType type, size_t idx) const;
+		void* At(CmptType, size_t idx) const;
 
 		template<typename Cmpt>
 		Cmpt* At(size_t idx) const;
@@ -63,11 +63,11 @@ namespace Ubpa::UECS {
 		// init cmpts, set Entity
 		// size_t: index in archetype
 		template<typename... Cmpts>
-		std::tuple<size_t, std::tuple<Cmpts*...>> Create(Entity e);
-		size_t Create(Entity e);
+		std::tuple<size_t, std::tuple<Cmpts*...>> Create(Entity);
+		size_t Create(Entity);
 
 		// return index in archetype
-		size_t Instantiate(Entity e, size_t srcIdx);
+		size_t Instantiate(Entity, size_t srcIdx);
 
 		// erase idx-th entity
 		// if idx != num-1, back entity will put at idx, return moved Entity's index

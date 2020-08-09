@@ -14,7 +14,7 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		schedule.Register(
+		schedule.RegisterEntityJob(
 			[](World* w, Entity e, const A* a, const B* b) {
 				w->AddCommand(
 					[e](World* w) {
@@ -27,7 +27,7 @@ public:
 			},
 			"AB"
 		);
-		schedule.Register(
+		schedule.RegisterEntityJob(
 			[](World* w, Entity e, const A* a, const B* b, const C* c) {
 				w->AddCommand(
 					[e](World* w) {

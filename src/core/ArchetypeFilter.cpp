@@ -101,8 +101,8 @@ size_t ArchetypeFilter::GenCombinedHashCode() const noexcept {
 	return hash_combine(std::array<size_t, 3>{allHashCode, anyHashCode, noneHashCode});
 }
 
-bool ArchetypeFilter::operator==(const ArchetypeFilter& filter) const noexcept {
-	return allCmptTypes == filter.allCmptTypes
-		&& anyCmptTypes == filter.anyCmptTypes
-		&& noneCmptTypes == filter.noneCmptTypes;
+bool ArchetypeFilter::operator==(const ArchetypeFilter& rhs) const noexcept {
+	return allCmptTypes == rhs.allCmptTypes
+		&& anyCmptTypes == rhs.anyCmptTypes
+		&& noneCmptTypes == rhs.noneCmptTypes;
 }

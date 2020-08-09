@@ -11,7 +11,7 @@ public:
 
 	virtual void OnUpdate(Schedule& schedule) override {
 		schedule
-			.Register(
+			.RegisterEntityJob(
 				[](const Velocity* v, Position* p) {
 					p->val += v->val;
 				},

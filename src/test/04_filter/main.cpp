@@ -22,7 +22,7 @@ public:
 			TypeList<B, C>{}, // any
 			TypeList<D>{} // none
 		);
-		schedule.Register(
+		schedule.RegisterEntityJob(
 			[](const E* e) {
 				cout << e->val << endl;
 			}, "test filter", filter

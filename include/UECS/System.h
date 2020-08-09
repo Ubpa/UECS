@@ -12,7 +12,7 @@ namespace Ubpa::UECS {
 		World* GetWorld() const noexcept { return world; }
 		const std::string& GetName() const noexcept { return name; }
 
-		virtual void OnUpdate(Schedule& schedule) = 0;
+		virtual void OnUpdate(Schedule&) = 0;
 	private:
 		World* world;
 		std::string name;

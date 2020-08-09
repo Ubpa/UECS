@@ -54,7 +54,7 @@ namespace Ubpa::UECS {
 		template<typename CmptTypeContainer> void EraseAny(const CmptTypeContainer&);
 		template<typename CmptTypeContainer> void EraseNone(const CmptTypeContainer&);
 
-		bool operator==(const ArchetypeFilter& filter) const noexcept;
+		bool operator==(const ArchetypeFilter& rhs) const noexcept;
 
 	private:
 		size_t GenAllHashCode() const noexcept;

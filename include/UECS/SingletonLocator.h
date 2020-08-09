@@ -21,6 +21,8 @@ namespace Ubpa::UECS {
 
 		const std::set<CmptType>& SingletonTypes() const noexcept { return singletonTypes; }
 
+		bool HasWriteSingletonType() const noexcept;
+
 	private:
 		std::set<CmptType> singletonTypes;
 	};

@@ -24,8 +24,8 @@ public:
 			TypeList<>{}, // any
 			TypeList<>{} // none
 		);
-		schedule.Register([](B*) {}, "need B, none A", filter_w0);
-		schedule.Register([](B*) {}, "need A, B", filter_w1);;
+		schedule.RegisterEntityJob([](B*) {}, "need B, none A", filter_w0);
+		schedule.RegisterEntityJob([](B*) {}, "need A, B", filter_w1);;
 	}
 };
 

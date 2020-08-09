@@ -59,6 +59,8 @@ namespace Ubpa::UECS {
 
 		size_t EntityNum(const EntityQuery&) const;
 
+		std::tuple<bool, std::vector<CmptPtr>> LocateSingletons(const SingletonLocator&) const;
+
 		bool IsSingleton(CmptType) const;
 		Entity GetSingletonEntity(CmptType) const;
 		CmptPtr GetSingleton(CmptType) const;
@@ -66,6 +68,8 @@ namespace Ubpa::UECS {
 		CmptPtr GetIfSingleton(CmptType) const;
 		template<typename Cmpt>
 		Cmpt* GetSingleton() const { return GetSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
+		template<typename Cmpt>
+		Cmpt* GetIfSingleton() const { return GetIfSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
 
 		void Accept(IListener* listener) const;
 
@@ -85,8 +89,6 @@ namespace Ubpa::UECS {
 		template<typename... Cmpts>
 		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
-
-		std::tuple<bool, std::vector<CmptPtr>> LocateSingletons(const SingletonLocator& locator) const;
 
 		void GenEntityJob(World*, Job*, SystemFunc*) const;
 		void GenChunkJob(World*, Job*, SystemFunc*) const;

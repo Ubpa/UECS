@@ -25,38 +25,38 @@ namespace Ubpa::UECS {
 		RTDCmptTraits& Clear();
 
 		// neccessary
-		RTDCmptTraits& RegisterSize(CmptType type, size_t size);
+		RTDCmptTraits& RegisterSize(CmptType, size_t size);
 
 		// optional
-		RTDCmptTraits& RegisterAlignment(CmptType type, size_t alignment);
+		RTDCmptTraits& RegisterAlignment(CmptType, size_t alignment);
 
 		// optional
-		RTDCmptTraits& RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f);
+		RTDCmptTraits& RegisterDefaultConstructor(CmptType, std::function<void(void*)>);
 
 		// optional
-		RTDCmptTraits& RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f);
+		RTDCmptTraits& RegisterCopyConstructor(CmptType, std::function<void(void*, void*)>);
 
 		// optional
-		RTDCmptTraits& RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f);
+		RTDCmptTraits& RegisterMoveConstructor(CmptType, std::function<void(void*, void*)>);
 
 		// optional
-		RTDCmptTraits& RegisterMoveAssignment(CmptType type, std::function<void(void*, void*)> f);
+		RTDCmptTraits& RegisterMoveAssignment(CmptType, std::function<void(void*, void*)>);
 
 		// optional
-		RTDCmptTraits& RegisterDestructor(CmptType type, std::function<void(void*)> f);
+		RTDCmptTraits& RegisterDestructor(CmptType, std::function<void(void*)>);
 
 		// optional
-		RTDCmptTraits& RegisterName(CmptType type, std::string name);
+		RTDCmptTraits& RegisterName(CmptType, std::string name);
 
-		size_t Sizeof(CmptType type) const;
-		size_t Alignof(CmptType type) const;
-		void CopyConstruct(CmptType type, void* dst, void* src) const;
-		void MoveConstruct(CmptType type, void* dst, void* src) const;
-		void MoveAssign(CmptType type, void* dst, void* src) const;
-		void Destruct(CmptType type, void* cmpt) const;
-		std::string_view Nameof(CmptType type) const;
+		size_t Sizeof(CmptType) const;
+		size_t Alignof(CmptType) const;
+		void CopyConstruct(CmptType, void* dst, void* src) const;
+		void MoveConstruct(CmptType, void* dst, void* src) const;
+		void MoveAssign(CmptType, void* dst, void* src) const;
+		void Destruct(CmptType, void* cmpt) const;
+		std::string_view Nameof(CmptType) const;
 
-		RTDCmptTraits& Deregister(CmptType type) noexcept;
+		RTDCmptTraits& Deregister(CmptType) noexcept;
 
 		template<typename... Cmpts>
 		void Register();

@@ -156,7 +156,7 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		schedule.Register(
+		schedule.RegisterEntityJob(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;
 			}, "Mover");

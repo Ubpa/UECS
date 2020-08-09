@@ -23,7 +23,7 @@ public:
 			TypeList<>{}                      // none
 		};
 
-		schedule.Register([](ChunkView chunk) {
+		schedule.RegisterChunkJob([](ChunkView chunk) {
 			auto arrayS = chunk.GetCmptArray<S>();
 			auto arrayA = chunk.GetCmptArray<A>();
 			auto arrayB = chunk.GetCmptArray<B>();

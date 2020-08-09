@@ -14,3 +14,11 @@ SingletonLocator::SingletonLocator(const CmptType* types, size_t num) {
 }
 
 SingletonLocator::SingletonLocator() {}
+
+bool SingletonLocator::HasWriteSingletonType() const noexcept {
+	for (const auto& type : singletonTypes) {
+		if (type.GetAccessMode() == AccessMode::WRITE_SINGLETON)
+			return true;
+	}
+	return false;
+}

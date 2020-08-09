@@ -13,7 +13,7 @@ namespace Ubpa::UECS {
 		template<typename... AllCmpts, typename... AnyCmpts, typename... NoneCmpts, typename... Cmpts>
 		EntityQuery(TypeList<AllCmpts...>, TypeList<AnyCmpts...>, TypeList<NoneCmpts...>, TypeList<Cmpts...>);
 
-		EntityQuery(ArchetypeFilter filter, CmptLocator locator = {})
+		EntityQuery(ArchetypeFilter filter = {}, CmptLocator locator = {})
 			:filter{ std::move(filter) }, locator{ std::move(locator) } {}
 
 		// without locator's singletons

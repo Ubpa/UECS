@@ -16,13 +16,13 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		schedule.Register([](Singleton<Timer> timer) {
+		schedule.RegisterJob([](Singleton<Timer> timer) {
 			timer->dt = 0.03f;
 		}, "Timer");
-		schedule.Register([](const Velocity* v, Position* p, Latest<Singleton<Timer>> timer) {
+		schedule.RegisterEntityJob([](const Velocity* v, Position* p, Latest<Singleton<Timer>> timer) {
 			p->val += timer->dt * v->val;
 		}, "Mover");
-		schedule.Register([](const Position* p) {
+		schedule.RegisterEntityJob([](const Position* p) {
 			std::cout << p->val << std::endl;
 		}, "Print");
 	}
