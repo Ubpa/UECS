@@ -9,26 +9,8 @@ using namespace std;
 
 SingletonLocator::SingletonLocator(const CmptType* types, size_t num) {
 	assert(types != nullptr && num > 0);
-	for (size_t i = 0; i < num; i++) {
-		switch (types[i].GetAccessMode())
-		{
-		case Ubpa::UECS::AccessMode::LAST_FRAME_SINGLETON:
-			lastFrameSingletonTypes.insert(types[i]);
-			break;
-		case Ubpa::UECS::AccessMode::WRITE_SINGLETON:
-			writeSingletonTypes.insert(types[i]);
-			break;
-		case Ubpa::UECS::AccessMode::LATEST_SINGLETON:
-			latestSingletonTypes.insert(types[i]);
-			break;
-		default:
-			assert(false);
-			break;
-		}
-	}
-
-	singletonTypes = SetUnion(lastFrameSingletonTypes, writeSingletonTypes);
-	singletonTypes = SetUnion(singletonTypes, latestSingletonTypes);
+	for (size_t i = 0; i < num; i++)
+		singletonTypes.insert(types[i]);
 }
 
 SingletonLocator::SingletonLocator() {}

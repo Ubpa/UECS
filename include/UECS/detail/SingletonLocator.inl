@@ -26,9 +26,6 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	SingletonLocator& SingletonLocator::Combine() {
 		SingletonLocator funcLocator = Generate<Func>();
-		lastFrameSingletonTypes = SetUnion(lastFrameSingletonTypes, funcLocator.lastFrameSingletonTypes);
-		writeSingletonTypes = SetUnion(writeSingletonTypes, funcLocator.writeSingletonTypes);
-		latestSingletonTypes = SetUnion(latestSingletonTypes, funcLocator.latestSingletonTypes);
 		singletonTypes = SetUnion(singletonTypes, funcLocator.singletonTypes);
 		return *this;
 	}

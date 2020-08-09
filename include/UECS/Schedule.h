@@ -8,7 +8,7 @@
 
 #include <map>
 
-namespace Ubpa::UECS::detail::Schedule_ {
+namespace Ubpa::UECS::detail {
 	struct Compiler;
 }
 
@@ -64,7 +64,7 @@ namespace Ubpa::UECS {
 			std::vector<SystemFunc*> writeSysFuncs;
 			std::vector<SystemFunc*> latestSysFuncs;
 		};
-		friend struct detail::Schedule_::Compiler;
+		friend struct detail::Compiler;
 		std::unordered_map<CmptType, CmptSysFuncs> GenCmptSysFuncsMap() const;
 
 		SysFuncGraph GenSysFuncGraph() const;

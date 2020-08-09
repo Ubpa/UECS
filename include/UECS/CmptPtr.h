@@ -12,10 +12,12 @@ namespace Ubpa::UECS {
 		template<typename Cmpt>
 		CmptPtr(Cmpt* p) : type{ CmptType::Of<Cmpt> }, p{ p }{}
 
-		CmptType Type() const noexcept { return type; }
-
 		// unchecked
 		void* Ptr() const noexcept { return p; }
+
+		CmptType Type() const noexcept { return type; }
+
+		bool Valid() const noexcept { return p != nullptr; }
 
 		// unchecked
 		template<typename Cmpt>

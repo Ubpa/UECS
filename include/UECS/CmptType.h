@@ -26,6 +26,7 @@ namespace Ubpa::UECS {
 		template<typename Cmpt> // non-tagged
 		constexpr bool Is() const noexcept { return hashcode == TypeID<Cmpt>; }
 
+		// only compare hash
 		constexpr bool operator<(const CmptType& rhs) const noexcept { return hashcode < rhs.hashcode; }
 		constexpr bool operator==(const CmptType& rhs) const noexcept { return hashcode == rhs.hashcode; }
 		constexpr bool operator!=(const CmptType& rhs) const noexcept { return hashcode != rhs.hashcode; }
