@@ -13,9 +13,9 @@ namespace Ubpa::UECS::detail {
 		NoneGroup(SystemFunc* func)
 			: sysFuncs{ func }
 		{
-			needTypes = SetUnion(func->entityQuery.filter.AllCmptTypes(), func->entityQuery.filter.AnyCmptTypes());
+			needTypes = SetUnion(func->entityQuery.filter.all, func->entityQuery.filter.any);
 			needTypes = SetUnion(needTypes, func->entityQuery.locator.CmptTypes());
-			noneTypes = func->entityQuery.filter.NoneCmptTypes();
+			noneTypes = func->entityQuery.filter.none;
 		}
 
 		static bool Parallelable(const NoneGroup& x, const NoneGroup& y) {
@@ -250,7 +250,7 @@ unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() c
 
 		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
 			const auto& filter = sysFunc->entityQuery.filter;
-			for (const auto& type : filter.AllCmptTypes()) {
+			for (const auto& type : filter.all) {
 				auto& cmptSysFuncs = rst[type];
 				switch (type.GetAccessMode())
 				{
@@ -269,7 +269,7 @@ unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() c
 				}
 			}
 
-			for (const auto& type : filter.AnyCmptTypes()) {
+			for (const auto& type : filter.any) {
 				auto& cmptSysFuncs = rst[type];
 				switch (type.GetAccessMode())
 				{
@@ -304,12 +304,18 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 		auto func = target->second;
 
-		func->entityQuery.filter.InsertAll(change.insertAlls);
-		func->entityQuery.filter.InsertAny(change.insertAnys);
-		func->entityQuery.filter.InsertNone(change.insertNones);
-		func->entityQuery.filter.EraseAll(change.eraseAlls);
-		func->entityQuery.filter.EraseAny(change.eraseAnys);
-		func->entityQuery.filter.EraseNone(change.eraseNones);
+		for (const auto& type : change.insertAlls)
+			func->entityQuery.filter.all.insert(type);
+		for (const auto& type : change.insertAnys)
+			func->entityQuery.filter.any.insert(type);
+		for (const auto& type : change.insertNones)
+			func->entityQuery.filter.none.insert(type);
+		for (const auto& type : change.eraseAlls)
+			func->entityQuery.filter.all.erase(type);
+		for (const auto& type : change.eraseAnys)
+			func->entityQuery.filter.any.erase(type);
+		for (const auto& type : change.eraseNones)
+			func->entityQuery.filter.none.erase(type);
 	}
 
 	auto cmptSysFuncsMap = GenCmptSysFuncsMap();

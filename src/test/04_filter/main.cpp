@@ -17,15 +17,17 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		ArchetypeFilter filter(
-			TypeList<A>{}, // all
-			TypeList<B, C>{}, // any
-			TypeList<D>{} // none
-		);
+		ArchetypeFilter filter;
+		filter.all = { CmptType::Of<A> };
+		filter.any = { CmptType::Of<B>, CmptType::Of<C> };
+		filter.none = { CmptType::Of<D> };
+
 		schedule.RegisterEntityJob(
 			[](const E* e) {
 				cout << e->val << endl;
-			}, "test filter", filter
+			},
+			"test filter",
+			filter
 		);
 	}
 };

@@ -14,16 +14,9 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		ArchetypeFilter filter_w0(
-			TypeList<>{}, // all
-			TypeList<>{}, // any
-			TypeList<A>{} // none
-		);
-		ArchetypeFilter filter_w1(
-			TypeList<A>{}, // all
-			TypeList<>{}, // any
-			TypeList<>{} // none
-		);
+		ArchetypeFilter filter_w0, filter_w1;
+		filter_w0.none = { CmptType::Of<A> };
+		filter_w1.all = { CmptType::Of<A> };
 		schedule.RegisterEntityJob([](B*) {}, "need B, none A", filter_w0);
 		schedule.RegisterEntityJob([](B*) {}, "need A, B", filter_w1);;
 	}

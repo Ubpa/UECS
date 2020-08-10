@@ -19,11 +19,10 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		ArchetypeFilter filter(
-			TypeList<D>{}, // all
-			TypeList<E, F>{}, // any
-			TypeList<G>{} // none
-		);
+		ArchetypeFilter filter;
+		filter.all = { CmptType::Of<D> };
+		filter.any = { CmptType::Of<E>, CmptType::Of<F> };
+		filter.none = { CmptType::Of<G> };
 		schedule
 			.RegisterEntityJob(
 				[](LastFrame<A> a, Write<B> b, Latest<C> c) {},

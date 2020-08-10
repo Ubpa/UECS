@@ -17,11 +17,9 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		ArchetypeFilter filter{
-			TypeList<S>{},                    // all
-			TypeList<Latest<A>, Latest<B>>{}, // any
-			TypeList<>{}                      // none
-		};
+		ArchetypeFilter filter;
+		filter.all = { CmptType::Of<Write<S>> };
+		filter.any = { CmptType::Of<Latest<A>>,CmptType::Of<Latest<B>> };
 
 		schedule.RegisterChunkJob([](ChunkView chunk) {
 			auto arrayS = chunk.GetCmptArray<S>();

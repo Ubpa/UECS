@@ -2,6 +2,7 @@
 
 #include "ArchetypeFilter.h"
 #include "CmptLocator.h"
+#include "detail/Util.h"
 
 namespace Ubpa::UECS {
 	// ArchetypeFilter + CmptLocator
@@ -16,7 +17,6 @@ namespace Ubpa::UECS {
 		EntityQuery(ArchetypeFilter filter = {}, CmptLocator locator = {})
 			:filter{ std::move(filter) }, locator{ std::move(locator) } {}
 
-		// without locator's singletons
 		size_t HashCode() const noexcept { return hash_combine(filter.HashCode(), locator.HashCode()); }
 
 		bool operator==(const EntityQuery& query) const noexcept {

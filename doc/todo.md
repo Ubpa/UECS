@@ -36,7 +36,6 @@
 - [x] lock `FilterChange` 
 - [ ] `EntityMngr` `Query`-driven API
 - [x] `CmptsView` = `const EntityLocator* locator + void** cmpts` 
-- [ ] Filter Builder
 
 ### maybe deprecate
 
