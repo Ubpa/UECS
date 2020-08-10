@@ -1,43 +1,23 @@
 #pragma once
 
 namespace Ubpa::UECS {
-	inline CmptTypeSet::CmptTypeSet(const CmptType* types, size_t num) {
-		assert(types != nullptr && num != 0);
+	inline void CmptTypeSet::Insert(const CmptType* types, size_t num) {
 		for (size_t i = 0; i < num; i++)
-			insert(types[i]);
-		hashcode = HashCodeOf(*this);
+			data.insert(types[i]);
 	}
 
-	template<typename... Cmpts>
-	CmptTypeSet::CmptTypeSet(TypeList<Cmpts...>)
-		: std::set<CmptType>{ CmptType::Of<Cmpts>... }, hashcode{ HashCodeOf<Cmpts...>() } {}
-
-	template<typename... Cmpts>
-	constexpr size_t CmptTypeSet::HashCodeOf() noexcept {
-		return HashCodeOf(QuickSort_t<TypeList<Cmpts...>, TypeID_Less>{});
-	}
-
-	template<typename... CmptTypes>
-	void CmptTypeSet::Insert(CmptTypes... types) {
-		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		(insert(types), ...);
-		hashcode = HashCodeOf(*this);
-	}
-
-	template<typename... CmptTypes>
-	void CmptTypeSet::Erase(CmptTypes... types) noexcept {
-		static_assert((std::is_same_v<CmptTypes, CmptType> &&...));
-		(erase(types), ...);
-		hashcode = HashCodeOf(*this);
+	inline void CmptTypeSet::Erase(const CmptType* types, size_t num) {
+		for (size_t i = 0; i < num; i++)
+			data.erase(types[i]);
 	}
 
 	inline bool CmptTypeSet::Contains(CmptType type) const {
-		return find(type) != cend();
+		return data.find(type) != data.end();
 	}
 
 	template<typename CmptTypeContainer>
 	bool CmptTypeSet::Contains(const CmptTypeContainer& types) const {
-		for (auto type : types) {
+		for (const auto& type : types) {
 			if (!Contains(type))
 				return false;
 		}
@@ -49,7 +29,7 @@ namespace Ubpa::UECS {
 		if (types.empty())
 			return true;
 
-		for (auto type : types) {
+		for (const auto& type : types) {
 			if (Contains(type))
 				return true;
 		}
@@ -59,7 +39,7 @@ namespace Ubpa::UECS {
 
 	template<typename CmptTypeContainer>
 	bool CmptTypeSet::NotContain(const CmptTypeContainer& types) const {
-		for (auto type : types) {
+		for (const auto& type : types) {
 			if (Contains(type))
 				return false;
 		}
@@ -84,27 +64,11 @@ namespace Ubpa::UECS {
 		return IsMatch(query.filter) && IsMatch(query.locator);
 	}
 
-	template<typename... Cmpts>
-	bool CmptTypeSet::Is() const {
-		static_assert(IsSet_v<Cmpts>);
-		return sizeof...(Cmpts) == size() && (Contains(CmptType::Of<Cmpts>) &&...);
-	}
-
-	template<typename... Cmpts>
-	static constexpr size_t CmptTypeSet::HashCodeOf(TypeList<Cmpts...>) noexcept {
-		return HashCodeOf(std::array<CmptType, sizeof...(Cmpts)>{CmptType::Of<Cmpts>...});
-	}
-
-	template<typename Container>
-	static constexpr size_t CmptTypeSet::HashCodeOf(const Container& cmpts) noexcept {
+	inline size_t CmptTypeSet::HashCode() const {
 		size_t seed = TypeID<CmptTypeSet>;
-		for (const CmptType& cmpt : cmpts)
-			seed = hash_combine(seed, cmpt.HashCode());
+		for (const auto& t : data)
+			seed = hash_combine(seed, t.HashCode());
 		return seed;
-	}
-
-	inline bool CmptTypeSet::operator==(const CmptTypeSet& rhs) const {
-		return static_cast<const std::set<CmptType>&>(*this) == static_cast<const std::set<CmptType>&>(rhs);
 	}
 }
 

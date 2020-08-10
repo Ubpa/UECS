@@ -75,25 +75,22 @@ void ArchetypeFilter::EraseNone(const CmptType* types, size_t num) {
 
 size_t ArchetypeFilter::GenAllHashCode() const noexcept {
 	size_t rst = TypeID<ArchetypeFilter>;
-	for (auto type : allCmptTypes) {
+	for (const auto& type : allCmptTypes)
 		rst = hash_combine(rst, type.HashCode());
-	}
 	return rst;
 }
 
 size_t ArchetypeFilter::GenAnyHashCode() const noexcept {
 	size_t rst = TypeID<ArchetypeFilter>;
-	for (auto type : anyCmptTypes) {
+	for (const auto& type : anyCmptTypes)
 		rst = hash_combine(rst, type.HashCode());
-	}
 	return rst;
 }
 
 size_t ArchetypeFilter::GenNoneHashCode() const noexcept {
 	size_t rst = TypeID<ArchetypeFilter>;
-	for (auto type : noneCmptTypes) {
+	for (const auto& type : noneCmptTypes)
 		rst = hash_combine(rst, type.HashCode());
-	}
 	return rst;
 }
 

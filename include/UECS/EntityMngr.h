@@ -7,6 +7,8 @@
 
 #include <UContainer/Pool.h>
 
+#include <memory>
+
 namespace Ubpa::UECS {
 	class World;
 
@@ -76,7 +78,6 @@ namespace Ubpa::UECS {
 	private:
 		friend class World;
 		EntityMngr() = default;
-		~EntityMngr();
 
 		static bool IsSet(const CmptType* types, size_t num);
 
@@ -104,7 +105,7 @@ namespace Ubpa::UECS {
 		size_t RequestEntityFreeEntry();
 		void RecycleEntityEntry(Entity e);
 
-		std::unordered_map<size_t, Archetype*> h2a; // archetype's hashcode to archetype
+		std::unordered_map<CmptTypeSet, std::unique_ptr<Archetype>> ts2a; // archetype's CmptTypeSet to archetype
 		
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
 	};

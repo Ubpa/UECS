@@ -5,11 +5,6 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-EntityMngr::~EntityMngr() {
-	for (auto [h, a] : h2a)
-		delete a;
-}
-
 size_t EntityMngr::RequestEntityFreeEntry() {
 	if (entityTableFreeEntry.empty()) {
 		size_t index = entityTable.size();
@@ -36,13 +31,14 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num) {
 	assert(IsSet(types, num));
 
-	size_t hashcode = Archetype::HashCode(types, num);
-	auto target = h2a.find(hashcode);
-	if (target != h2a.end())
-		return target->second;
+	auto typeset = Archetype::GenCmptTypeSet(types, num);
+	auto target = ts2a.find(typeset);
+	if (target != ts2a.end())
+		return target->second.get();
 
 	auto archetype = Archetype::New(types, num);
-	h2a[hashcode] = archetype;
+
+	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
 		if (archetype->GetCmptTypeSet().IsMatch(query))
 			archetypes.insert(archetype);
@@ -64,6 +60,7 @@ Entity EntityMngr::Create(const CmptType* types, size_t num) {
 }
 
 void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) {
+	assert(types != nullptr && num > 0);
 	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
@@ -73,24 +70,22 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 
 	const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 	auto dstCmptTypeSet = srcCmptTypeSet;
-	for (size_t i = 0; i < num; i++)
-		dstCmptTypeSet.Insert(types[i]);
-	size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+	dstCmptTypeSet.Insert(types, num);
 
 	// get dstArchetype
 	Archetype* dstArchetype;
-	auto target = h2a.find(dstCmptTypeSetHashCode);
-	if (target == h2a.end()) {
+	auto target = ts2a.find(dstCmptTypeSet);
+	if (target == ts2a.end()) {
 		dstArchetype = Archetype::Add(srcArchetype, types, num);
 		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
-		h2a[dstCmptTypeSetHashCode] = dstArchetype;
 		for (auto& [query, archetypes] : queryCache) {
 			if (dstCmptTypeSet.IsMatch(query))
 				archetypes.insert(dstArchetype);
 		}
+		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 	}
 	else
-		dstArchetype = target->second;
+		dstArchetype = target->second.get();
 
 	if (dstArchetype == srcArchetype)
 		return;
@@ -99,7 +94,7 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
 	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-	for (auto type : srcCmptTypeSet) {
+	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
 		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
@@ -115,6 +110,7 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 }
 
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
+	assert(types != nullptr && num > 0);
 	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
@@ -123,7 +119,7 @@ void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 	const auto& new_info = entityTable[e.Idx()];
 	const auto& rtdct = RTDCmptTraits::Instance();
 	for (size_t i = 0; i < num; i++) {
-		auto type = types[i];
+		const auto& type = types[i];
 		if (srcArchetype->GetCmptTypeSet().Contains(type))
 			continue;
 		auto target = rtdct.default_constructors.find(type);
@@ -135,6 +131,7 @@ void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 }
 
 void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
+	assert(types != nullptr && num > 0);
 	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
 
@@ -144,24 +141,22 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 
 	const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 	auto dstCmptTypeSet = srcCmptTypeSet;
-	for (size_t i = 0; i < num; i++)
-		dstCmptTypeSet.Erase(types[i]);
-	size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+	dstCmptTypeSet.Erase(types, num);
 
 	// get dstArchetype
 	Archetype* dstArchetype;
-	auto target = h2a.find(dstCmptTypeSetHashCode);
-	if (target == h2a.end()) {
+	auto target = ts2a.find(dstCmptTypeSet);
+	if (target == ts2a.end()) {
 		dstArchetype = Archetype::Remove(srcArchetype, types, num);
 		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
-		h2a[dstCmptTypeSetHashCode] = dstArchetype;
 		for (auto& [query, archetypes] : queryCache) {
 			if (dstCmptTypeSet.IsMatch(query))
 				archetypes.insert(dstArchetype);
 		}
+		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 	}
 	else
-		dstArchetype = target->second;
+		dstArchetype = target->second.get();
 
 	if (dstArchetype == srcArchetype)
 		return;
@@ -169,7 +164,7 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 	// move src to dst
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-	for (auto type : srcCmptTypeSet) {
+	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		if (dstCmptTypeSet.Contains(type)) {
 			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
@@ -210,8 +205,6 @@ Entity EntityMngr::Instantiate(Entity srcEntity) {
 }
 
 bool EntityMngr::IsSet(const CmptType* types, size_t num) {
-	assert(types != nullptr);
-
 	for (size_t i = 0; i < num; i++) {
 		for (size_t j = 0; j < i; j++)
 			if (types[i] == types[j])
@@ -228,9 +221,9 @@ const set<Archetype*>& EntityMngr::QueryArchetypes(const EntityQuery& query) con
 
 	// queryCache is **mutable**
 	set<Archetype*>& archetypes = queryCache[query];
-	for (const auto& [h, a] : h2a) {
+	for (const auto& [ts, a] : ts2a) {
 		if (a->GetCmptTypeSet().IsMatch(query))
-			archetypes.insert(a);
+			archetypes.insert(a.get());
 	}
 
 	return archetypes;
@@ -349,7 +342,7 @@ void EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
 
 void EntityMngr::Accept(IListener* listener) const {
 	listener->EnterEntityMngr(this);
-	for (const auto& [h, a] : h2a) {
+	for (const auto& [ts, a] : ts2a) {
 		for (size_t i = 0; i < a->EntityNum(); i++) {
 			auto e = a->At<Entity>(i);
 			listener->EnterEntity(e);

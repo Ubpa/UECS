@@ -11,13 +11,13 @@ namespace Ubpa::UECS {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"EntityMngr::GetOrCreateArchetypeOf: <Cmpts> must be different");
 
-		constexpr size_t hashcode = Archetype::HashCode<Cmpts...>();
-		auto target = h2a.find(hashcode);
-		if(target != h2a.end())
-			return target->second;
+		const auto typeset = Archetype::GenCmptTypeSet<Cmpts...>();
+		auto target = ts2a.find(typeset);
+		if(target != ts2a.end())
+			return target->second.get();
 
 		auto archetype = new Archetype(TypeList<Cmpts...>{});
-		h2a[hashcode] = archetype;
+		ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 		for (auto& [query, archetypes] : queryCache) {
 			if (archetype->GetCmptTypeSet().IsMatch(query))
 				archetypes.insert(archetype);
@@ -50,23 +50,22 @@ namespace Ubpa::UECS {
 
 		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.Insert(CmptType::Of<Cmpts>...);
-		size_t dstCmptTypeSetHashCode = dstCmptTypeSet.HashCode();
+		dstCmptTypeSet.data.insert(CmptType::Of<Cmpts>...);
 
 		// get dstArchetype
 		Archetype* dstArchetype;
-		auto target = h2a.find(dstCmptTypeSetHashCode);
-		if (target == h2a.end()) {
+		auto target = ts2a.find(dstCmptTypeSet);
+		if (target == ts2a.end()) {
 			dstArchetype = Archetype::Add<Cmpts...>(srcArchetype);
 			assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
-			h2a[dstCmptTypeSetHashCode] = dstArchetype;
 			for (auto& [query, archetypes] : queryCache) {
 				if (dstCmptTypeSet.IsMatch(query))
 					archetypes.insert(dstArchetype);
 			}
+			ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{ dstArchetype });
 		}
 		else
-			dstArchetype = target->second;
+			dstArchetype = target->second.get();
 
 		if (dstArchetype == srcArchetype)
 			return;
@@ -75,7 +74,7 @@ namespace Ubpa::UECS {
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
 		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-		for (auto type : srcCmptTypeSet) {
+		for (const auto& type : srcCmptTypeSet.data) {
 			auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
 			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);

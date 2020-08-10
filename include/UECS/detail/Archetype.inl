@@ -5,7 +5,7 @@
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype::Archetype(TypeList<Cmpts...>)
-		: types(TypeList<Entity, Cmpts...>{})
+		: types(GenCmptTypeSet<Cmpts...>())
 	{
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"Archetype::Archetype: <Cmpts> must be different");
@@ -21,7 +21,7 @@ namespace Ubpa::UECS {
 		Archetype* rst = new Archetype;
 		
 		rst->types = from->types;
-		rst->types.Insert(CmptType::Of<Cmpts>...);
+		rst->types.data.insert(CmptType::Of<Cmpts>...);
 		rst->cmptTraits = from->cmptTraits;
 		(rst->cmptTraits.Register<Cmpts>(), ...);
 
@@ -37,7 +37,7 @@ namespace Ubpa::UECS {
 
 	template<typename... Cmpts>
 	std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::Create(Entity e) {
-		assert((types.Contains(CmptType::Of<Cmpts>) &&...) && types.size() == 1 + sizeof...(Cmpts));
+		assert((types.Contains(CmptType::Of<Cmpts>) &&...) && types.data.size() == 1 + sizeof...(Cmpts));
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"Archetype::Create: <Cmpts> isn't constructible");
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
@@ -52,5 +52,15 @@ namespace Ubpa::UECS {
 		std::tuple<Cmpts*...> cmpts = { new(buffer + Offsetof(CmptType::Of<Cmpts>) + idxInChunk * sizeof(Cmpts))Cmpts... };
 
 		return { idx,cmpts };
+	}
+
+	template<typename... Cmpts>
+	CmptTypeSet Archetype::GenCmptTypeSet() {
+		if constexpr(sizeof...(Cmpts) == 0)
+			return Archetype::GenCmptTypeSet(nullptr, 0);
+		else {
+			constexpr std::array types = { CmptType::Of<Cmpts>... };
+			return Archetype::GenCmptTypeSet(types.data(), types.size());
+		}
 	}
 }
