@@ -9,7 +9,7 @@ namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype* EntityMngr::GetOrCreateArchetypeOf() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::GetOrCreateArchetypeOf: <Cmpts> must be different");
+			"EntityMngr::GetOrCreateArchetypeOf: <Cmpts>... must be different");
 
 		const auto typeset = Archetype::GenCmptTypeSet<Cmpts...>();
 		auto target = ts2a.find(typeset);
@@ -29,7 +29,7 @@ namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	std::tuple<Entity, Cmpts*...> EntityMngr::Create() {
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::Create: <Cmpts> must be different");
+			"EntityMngr::Create: <Cmpts>... must be different");
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		size_t entityIndex = RequestEntityFreeEntry();
 		EntityInfo& info = entityTable[entityIndex];
@@ -42,7 +42,9 @@ namespace Ubpa::UECS {
 
 	template<typename... Cmpts>
 	void EntityMngr::AttachWithoutInit(Entity e) {
-		assert(Exist(e));
+		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
+			"EntityMngr::AttachWithoutInit: <Cmpts>... must be different");
+		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		auto& info = entityTable[e.Idx()];
 		Archetype* srcArchetype = info.archetype;
@@ -91,16 +93,15 @@ namespace Ubpa::UECS {
 
 	template<typename... Cmpts>
 	std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
-		static_assert((std::is_constructible_v<Cmpts> &&...),
+		static_assert((std::is_default_constructible_v<Cmpts> &&...),
 			"EntityMngr::Attach: <Cmpts> isn't default constructible");
-		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		using CmptList = TypeList<Cmpts...>;
 		const auto& cmptTypes = entityTable[e.Idx()].archetype->GetCmptTypeSet();
-		std::array<bool, sizeof...(Cmpts)> needAttach = { !cmptTypes.Contains(CmptType::Of<Cmpts>)... };
+		std::array needAttach = { !cmptTypes.Contains(CmptType::Of<Cmpts>)... };
 		AttachWithoutInit<Cmpts...>(e);
 		const auto& new_info = entityTable[e.Idx()];
-		std::tuple<Cmpts*...> cmpts{ new_info.archetype->At<Cmpts>(new_info.idxInArchetype)... };
+		std::tuple cmpts{ new_info.archetype->At<Cmpts>(new_info.idxInArchetype)... };
 		((std::get<Find_v<CmptList, Cmpts>>(needAttach) ? new(std::get<Cmpts*>(cmpts))Cmpts : nullptr), ...);
 
 		return cmpts;
@@ -111,22 +112,17 @@ namespace Ubpa::UECS {
 		static_assert(std::is_constructible_v<Cmpt, Args...>
 			|| is_list_initializable_v<Cmpt, Args...>,
 			"EntityMngr::Emplace: <Cmpt> isn't constructible/list_initializable with Args...");
-		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Emplace: Entity is invalid");
 
-		bool needAttach = !entityTable[e.Idx()].archetype->GetCmptTypeSet().Contains(CmptType::Of<Cmpt>);
-		if (needAttach) {
+		if (!Have(e, CmptType::Of<Cmpt>)) {
 			AttachWithoutInit<Cmpt>(e);
-			const auto& info = entityTable[e.Idx()];
-			Cmpt* cmpt = info.archetype->At<Cmpt>(info.idxInArchetype);
-			return new(cmpt)Cmpt{ std::forward<Args>(args)... };
+			return new(Get<Cmpt>(e))Cmpt{ std::forward<Args>(args)... };
 		}
-		else {
-			const auto& info = entityTable[e.Idx()];
-			return info.archetype->At<Cmpt>(info.idxInArchetype);
-		}
+		else
+			return Get<Cmpt>(e);
 	}
 
 	inline bool EntityMngr::Have(Entity e, CmptType type) const {
+		assert(!type.Is<Entity>());
 		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Have: Entity is invalid");
 		return entityTable[e.Idx()].archetype->GetCmptTypeSet().Contains(type);
 	}
@@ -134,12 +130,11 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	Cmpt* EntityMngr::Get(Entity e) const {
 		static_assert(!std::is_same_v<Cmpt, Entity>, "EntityMngr::Get: <Cmpt> != Entity");
-		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Get: Entity is invalid");
-		const auto& info = entityTable[e.Idx()];
-		return info.archetype->At<Cmpt>(info.idxInArchetype);
+		return reinterpret_cast<Cmpt*>(Get(e, CmptType::Of<Cmpt>).Ptr());
 	}
 
 	inline CmptPtr EntityMngr::Get(Entity e, CmptType type) const {
+		assert(!type.Is<Entity>());
 		if (!Exist(e)) throw std::invalid_argument("EntityMngr::Get: Entity is invalid");
 		const auto& info = entityTable[e.Idx()];
 		return { type, info.archetype->At(type, info.idxInArchetype) };

@@ -17,10 +17,12 @@ namespace Ubpa::UECS {
 		void Insert(const CmptType* types, size_t num);
 		void Erase(const CmptType* types, size_t num);
 		bool Contains(CmptType type) const;
+		bool Contains(const CmptType* types, size_t num) const;
 
 		template<typename CmptTypeContainer>
 		bool Contains(const CmptTypeContainer& types) const;
 
+		bool ContainsAny(const CmptType* types, size_t num) const;
 		template<typename CmptTypeContainer>
 		bool ContainsAny(const CmptTypeContainer& types) const;
 

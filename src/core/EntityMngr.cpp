@@ -29,8 +29,6 @@ void EntityMngr::RecycleEntityEntry(Entity e) {
 }
 
 Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num) {
-	assert(IsSet(types, num));
-
 	auto typeset = Archetype::GenCmptTypeSet(types, num);
 	auto target = ts2a.find(typeset);
 	if (target != ts2a.end())
@@ -48,8 +46,6 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 }
 
 Entity EntityMngr::Create(const CmptType* types, size_t num) {
-	assert(IsSet(types, num));
-
 	Archetype* archetype = GetOrCreateArchetypeOf(types, num);
 	size_t entityIndex = RequestEntityFreeEntry();
 	EntityInfo& info = entityTable[entityIndex];
@@ -93,7 +89,7 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 	// move src to dst
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
-	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
@@ -110,10 +106,6 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 }
 
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
-	assert(types != nullptr && num > 0);
-	assert(IsSet(types, num));
-	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
-
 	auto srcArchetype = entityTable[e.Idx()].archetype;
 	AttachWithoutInit(e, types, num);
 	const auto& new_info = entityTable[e.Idx()];
@@ -163,7 +155,7 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 
 	// move src to dst
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
-	auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		if (dstCmptTypeSet.Contains(type)) {

@@ -25,6 +25,7 @@ namespace Ubpa::UECS {
 
 		template<typename Cmpt, AccessMode mode>
 		auto As() const noexcept {
+			assert(type.GetAccessMode() == mode);
 			if constexpr (mode == AccessMode::LAST_FRAME)
 				return LastFrame<Cmpt>{p};
 			else if constexpr (mode == AccessMode::WRITE)

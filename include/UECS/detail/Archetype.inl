@@ -8,7 +8,7 @@ namespace Ubpa::UECS {
 		: types(GenCmptTypeSet<Cmpts...>())
 	{
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"Archetype::Archetype: <Cmpts> must be different");
+			"Archetype::Archetype: <Cmpts>... must be different");
 		cmptTraits.Register<Entity>();
 		(cmptTraits.Register<Cmpts>(), ...);
 		SetLayout();
@@ -41,7 +41,7 @@ namespace Ubpa::UECS {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"Archetype::Create: <Cmpts> isn't constructible");
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"Archetype::Create: <Cmpts> must be different");
+			"Archetype::Create: <Cmpts>... must be different");
 
 		size_t idx = RequestBuffer();
 		size_t idxInChunk = idx % chunkCapacity;

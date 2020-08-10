@@ -15,6 +15,14 @@ namespace Ubpa::UECS {
 		return data.find(type) != data.end();
 	}
 
+	inline bool CmptTypeSet::Contains(const CmptType* types, size_t num) const {
+		for (size_t i = 0; i < num; i++) {
+			if (!Contains(types[i]))
+				return false;
+		}
+		return true;
+	}
+
 	template<typename CmptTypeContainer>
 	bool CmptTypeSet::Contains(const CmptTypeContainer& types) const {
 		for (const auto& type : types) {
@@ -22,6 +30,14 @@ namespace Ubpa::UECS {
 				return false;
 		}
 		return true;
+	}
+
+	inline bool CmptTypeSet::ContainsAny(const CmptType* types, size_t num) const {
+		for (size_t i = 0; i < num; i++) {
+			if (Contains(types[i]))
+				return true;
+		}
+		return false;
 	}
 
 	template<typename CmptTypeContainer>

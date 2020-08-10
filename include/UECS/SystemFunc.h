@@ -13,17 +13,21 @@ namespace Ubpa::UECS {
 	// [description]
 	// system function registered by Schedule in <System>::OnUpdate(Schedule&)
 	// name + query + function<...>
-	// name must be unique in global
+	// name('s hashcode) must be unique in global
 	// query.filter can be change dynamically by other <System> with Schedule
 	// [system function kind] (distinguish by argument list)
-	// common : [World*], [{LastFrame|Write|Latest}Singleton<Component>], [SingletonsView]
-	// 1. per entity function
-	// * [Entity]
-	// * [size_t indexInQuery]
-	// * <tagged-component>: {LastFrame|Write|Latest}<Component>
-	// * [CmptsView]
-	// 2. chunk: ChunkView
-	// 3. job
+	// common : World*, SingletonsView
+	// 1. Mode::Entity: per entity function
+	// * {LastFrame|Latest}<Singleton<Cmpt>>
+	// * Entity
+	// * size_t indexInQuery
+	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
+	// * CmptsView
+	// 2. Mode::Chunk
+	// * {LastFrame|Latest}<Singleton<Cmpt>>
+	// * ChunkView (necessary)
+	// 3. Mode::Job
+	// * {LastFrame|Write|Latest}<Singleton<Cmpt>>
 	class SystemFunc {
 	public:
 		enum class Mode {
