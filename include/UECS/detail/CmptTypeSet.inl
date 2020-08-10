@@ -2,11 +2,13 @@
 
 namespace Ubpa::UECS {
 	inline void CmptTypeSet::Insert(const CmptType* types, size_t num) {
+		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++)
 			data.insert(types[i]);
 	}
 
 	inline void CmptTypeSet::Erase(const CmptType* types, size_t num) {
+		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++)
 			data.erase(types[i]);
 	}
@@ -16,6 +18,7 @@ namespace Ubpa::UECS {
 	}
 
 	inline bool CmptTypeSet::Contains(const CmptType* types, size_t num) const {
+		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++) {
 			if (!Contains(types[i]))
 				return false;
@@ -33,6 +36,7 @@ namespace Ubpa::UECS {
 	}
 
 	inline bool CmptTypeSet::ContainsAny(const CmptType* types, size_t num) const {
+		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++) {
 			if (Contains(types[i]))
 				return true;

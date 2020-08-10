@@ -19,6 +19,7 @@ namespace Ubpa::UECS{
 		SystemMngr(World* world) : world { world } {}
 
 		void Register(std::unique_ptr<System> system) {
+			assert(system.get() != nullptr);
 			systems.emplace(system->GetName(), std::move(system));
 		}
 		bool IsRegister(std::string_view name) const {

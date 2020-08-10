@@ -57,28 +57,28 @@ namespace Ubpa::UECS {
 
 		constexpr CmptType type = CmptType::Of<Cmpt>;
 
-		sizeofs[type] = sizeof(Cmpt);
-		alignments[type] = alignof(Cmpt);
+		sizeofs.emplace(type, sizeof(Cmpt));
+		alignments.emplace(type, alignof(Cmpt));
 
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
-			destructors[type] = [](void* cmpt) {
+			destructors.emplace(type, [](void* cmpt) {
 				reinterpret_cast<Cmpt*>(cmpt)->~Cmpt();
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>) {
-			move_constructors[type] = [](void* dst, void* src) {
+			move_constructors.emplace(type, [](void* dst, void* src) {
 				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_copy_assignable_v<Cmpt>) {
-			move_assignments[type] = [](void* dst, void* src) {
+			move_assignments.emplace(type, [](void* dst, void* src) {
 				*reinterpret_cast<Cmpt*>(dst) = std::move(*reinterpret_cast<Cmpt*>(src));
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
-			copy_constructors[type] = [](void* dst, void* src) {
+			copy_constructors.emplace(type, [](void* dst, void* src) {
 				new(dst)Cmpt(*reinterpret_cast<Cmpt*>(src));
-			};
+			});
 		}
 	}
 
@@ -118,13 +118,13 @@ namespace Ubpa::UECS {
 		auto move_assignments_target = rtdct.move_assignments.find(type);
 
 		if (destructor_target != rtdct.destructors.end())
-			destructors[type] = destructor_target->second;
+			destructors.emplace(type, destructor_target->second);
 		if (copy_constructor_target != rtdct.copy_constructors.end())
-			copy_constructors[type] = copy_constructor_target->second;
+			copy_constructors.emplace(type, copy_constructor_target->second);
 		if (move_constructor_target != rtdct.move_constructors.end())
-			move_constructors[type] = move_constructor_target->second;
+			move_constructors.emplace(type, move_constructor_target->second);
 		if (move_assignments_target != rtdct.move_assignments.end())
-			move_assignments[type] = move_assignments_target->second;
+			move_assignments.emplace(type, move_assignments_target->second);
 	}
 
 	inline void RTSCmptTraits::Deregister(CmptType type) noexcept {

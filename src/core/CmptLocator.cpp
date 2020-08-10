@@ -25,6 +25,6 @@ size_t CmptLocator::GenHashCode() const noexcept {
 	return rst;
 }
 
-bool CmptLocator::operator==(const CmptLocator& rhs) const noexcept {
+bool CmptLocator::operator==(const CmptLocator& rhs) const {
 	return cmptTypes == rhs.cmptTypes;
 }

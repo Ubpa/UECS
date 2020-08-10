@@ -9,9 +9,9 @@ namespace Ubpa::UECS {
 	// use a hashcode to distinguish different type
 	class CmptType {
 	public:
-		explicit constexpr CmptType(size_t id, AccessMode mode = AccessMode::WRITE)
+		explicit constexpr CmptType(size_t id, AccessMode mode = AccessMode::WRITE) noexcept
 			: hashcode{ id }, mode{ mode } {}
-		explicit constexpr CmptType(std::string_view type_name, AccessMode mode = AccessMode::WRITE)
+		explicit constexpr CmptType(std::string_view type_name, AccessMode mode = AccessMode::WRITE) noexcept
 			: hashcode{ RuntimeTypeID(type_name) }, mode{ mode } {}
 
 		template<typename TaggedCmpt> // non-tagged component's access mode is AccessMode::WRITE

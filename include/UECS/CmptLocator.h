@@ -25,7 +25,7 @@ namespace Ubpa::UECS {
 
 		const std::set<CmptType>& CmptTypes() const noexcept { return cmptTypes; }
 
-		bool operator==(const CmptLocator& rhs) const noexcept;
+		bool operator==(const CmptLocator& rhs) const;
 	private:
 		size_t GenHashCode() const noexcept;
 

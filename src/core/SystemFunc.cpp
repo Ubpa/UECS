@@ -10,7 +10,7 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, s
 		e,
 		entityIndexInQuery,
 		cmptsView,
-		ChunkView{ nullptr, size_t_invalid, nullptr }
+		ChunkView{ nullptr, size_t_invalid }
 	);
 }
 
@@ -34,6 +34,6 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView) {
 		Entity::Invalid(),
 		size_t_invalid,
 		CmptsView{ nullptr, 0 },
-		ChunkView{ nullptr, size_t_invalid, nullptr }
+		ChunkView{ nullptr, size_t_invalid }
 	);
 }

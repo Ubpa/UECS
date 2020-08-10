@@ -8,12 +8,10 @@ using namespace Ubpa::UECS;
 using namespace std;
 
 SingletonLocator::SingletonLocator(const CmptType* types, size_t num) {
-	assert(types != nullptr && num > 0);
+	assert(types || num == 0);
 	for (size_t i = 0; i < num; i++)
 		singletonTypes.insert(types[i]);
 }
-
-SingletonLocator::SingletonLocator() {}
 
 bool SingletonLocator::HasWriteSingletonType() const noexcept {
 	for (const auto& type : singletonTypes) {

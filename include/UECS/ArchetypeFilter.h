@@ -15,6 +15,6 @@ namespace Ubpa::UECS {
 
 		size_t HashCode() const noexcept;
 
-		bool operator==(const ArchetypeFilter& rhs) const noexcept;
+		bool operator==(const ArchetypeFilter& rhs) const;
 	};
 }

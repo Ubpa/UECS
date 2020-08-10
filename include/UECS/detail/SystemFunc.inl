@@ -37,7 +37,6 @@ namespace Ubpa::UECS {
 			&& !singletonLocator.HasWriteSingletonType());
 	}
 
-
 	// Mode::Chunk
 	template<typename Func>
 	SystemFunc::SystemFunc(

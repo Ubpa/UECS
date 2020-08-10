@@ -10,24 +10,22 @@
 #include <functional>
 
 namespace Ubpa::UECS {
-	// [description]
+	// [- description]
 	// system function registered by Schedule in <System>::OnUpdate(Schedule&)
-	// name + query + function<...>
+	// name + query(archetype filter + component locator) + singleton locator + function<...>
 	// name('s hashcode) must be unique in global
-	// query.filter can be change dynamically by other <System> with Schedule
-	// [system function kind] (distinguish by argument list)
-	// common : World*, SingletonsView
+	// query.filter can be change dynamically by other <System> with <Schedule>
+	// [- system function kind] (distinguish by argument list)
+	// common arguments : World*, SingletonsView, {LastFrame|Latest}<Singleton<Cmpt>>
 	// 1. Mode::Entity: per entity function
-	// * {LastFrame|Latest}<Singleton<Cmpt>>
 	// * Entity
 	// * size_t indexInQuery
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
 	// 2. Mode::Chunk
-	// * {LastFrame|Latest}<Singleton<Cmpt>>
 	// * ChunkView (necessary)
 	// 3. Mode::Job
-	// * {LastFrame|Write|Latest}<Singleton<Cmpt>>
+	// * Write<Singleton<Cmpt>> (only job can write singletons)
 	class SystemFunc {
 	public:
 		enum class Mode {
@@ -53,7 +51,7 @@ namespace Ubpa::UECS {
 		
 		const std::string& Name() const noexcept { return name; }
 
-		static constexpr size_t HashCode(std::string_view name) { return hash_string(name); }
+		static constexpr size_t HashCode(std::string_view name) noexcept { return hash_string(name); }
 
 		size_t HashCode() const noexcept { return hashCode; }
 

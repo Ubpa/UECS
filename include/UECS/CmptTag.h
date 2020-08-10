@@ -198,7 +198,7 @@ namespace Ubpa::UECS {
 		IsLastFrameSingleton_v<T> ? AccessMode::LAST_FRAME_SINGLETON : (
 		IsWriteSingleton_v<T> ? AccessMode::WRITE_SINGLETON : (
 		IsLatestSingleton_v<T> ? AccessMode::LATEST_SINGLETON :
-		AccessMode::WRITE // default, TODO : use static_assert
+		AccessMode::WRITE // default
 		)))));
 }
 

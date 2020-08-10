@@ -16,6 +16,7 @@ namespace Ubpa::UECS {
 
 	template<typename... Cmpts>
 	Archetype* Archetype::Add(const Archetype* from) {
+		static_assert(sizeof...(Cmpts) > 0);
 		assert(((!from->types.Contains(CmptType::Of<Cmpts>)) &&...));
 
 		Archetype* rst = new Archetype;
@@ -28,11 +29,6 @@ namespace Ubpa::UECS {
 		rst->SetLayout();
 		
 		return rst;
-	}
-
-	template<typename Cmpt>
-	Cmpt* Archetype::At(size_t idx) const {
-		return reinterpret_cast<Cmpt*>(At(CmptType::Of<Cmpt>, idx));
 	}
 
 	template<typename... Cmpts>

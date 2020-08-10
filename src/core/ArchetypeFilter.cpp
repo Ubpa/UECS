@@ -15,7 +15,7 @@ size_t ArchetypeFilter::HashCode() const noexcept {
 	return rst;
 }
 
-bool ArchetypeFilter::operator==(const ArchetypeFilter& rhs) const noexcept {
+bool ArchetypeFilter::operator==(const ArchetypeFilter& rhs) const {
 	return all == rhs.all
 		&& any == rhs.any
 		&& none == rhs.none;

@@ -9,42 +9,42 @@ namespace Ubpa::UECS {
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterSize(CmptType type, size_t size) {
-		sizeofs[type] = size;
+		sizeofs.emplace(type, size);
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterAlignment(CmptType type, size_t alignment) {
-		alignments[type] = alignment;
+		alignments.emplace(type, alignment);
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f) {
-		default_constructors[type] = std::move(f);
+		default_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(CmptType type, std::function<void(void*, void*)> f) {
-		copy_constructors[type] = std::move(f);
+		copy_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(CmptType type, std::function<void(void*, void*)> f) {
-		move_constructors[type] = std::move(f);
+		move_constructors.emplace(type, move(f));
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(CmptType type, std::function<void(void*, void*)> f) {
-		move_assignments[type] = std::move(f);
+		move_assignments.emplace(type, std::move(f));
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(CmptType type, std::function<void(void*)> f) {
-		destructors[type] = std::move(f);
+		destructors.emplace(type, std::move(f));
 		return *this;
 	}
 
 	inline RTDCmptTraits& RTDCmptTraits::RegisterName(CmptType type, std::string name) {
-		names[type] = std::move(name);
+		names.emplace(type, std::move(name));
 		return *this;
 	}
 
@@ -114,34 +114,34 @@ namespace Ubpa::UECS {
 
 		constexpr CmptType type = CmptType::Of<Cmpt>;
 
-		sizeofs[type] = sizeof(Cmpt);
-		alignments[type] = alignof(Cmpt);
-		names[type] = std::string{ nameof::nameof_type<Cmpt>() };
+		sizeofs.emplace(type, sizeof(Cmpt));
+		alignments.emplace(type, alignof(Cmpt));
+		names.emplace(type, std::string{ nameof::nameof_type<Cmpt>() });
 
 		if constexpr (!std::is_trivially_default_constructible_v<Cmpt>) {
-			default_constructors[type] = [](void* cmpt) {
+			default_constructors.emplace(type, [](void* cmpt) {
 				new(cmpt)Cmpt;
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
-			destructors[type] = [](void* cmpt) {
+			destructors.emplace(type, [](void* cmpt) {
 				reinterpret_cast<Cmpt*>(cmpt)->~Cmpt();
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>) {
-			move_constructors[type] = [](void* dst, void* src) {
+			move_constructors.emplace(type, [](void* dst, void* src) {
 				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>) {
-			move_assignments[type] = [](void* dst, void* src) {
+			move_assignments.emplace(type, [](void* dst, void* src) {
 				*reinterpret_cast<Cmpt*>(dst) = std::move(*reinterpret_cast<Cmpt*>(src));
-			};
+			});
 		}
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
-			copy_constructors[type] = [](void* dst, void* src) {
+			copy_constructors.emplace(type, [](void* dst, void* src) {
 				new(dst)Cmpt(*reinterpret_cast<Cmpt*>(src));
-			};
+			});
 		}
 	}
 

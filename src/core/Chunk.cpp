@@ -16,9 +16,9 @@ Chunk::Layout Chunk::GenLayout(const vector<size_t>& alignments, const vector<si
 			return alignment < y.alignment;
 		}
 	};
-	vector<Item> items;
+	vector<Item> items(sizes.size());
 	for (size_t i = 0; i < sizes.size(); i++)
-		items.push_back(Item{ alignments[i], i });
+		items[i] = Item{ alignments[i], i };
 	sort(items.begin(), items.end());
 
 	constexpr size_t chunkSize = 16 * 1024;

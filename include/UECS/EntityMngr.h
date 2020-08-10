@@ -41,12 +41,11 @@ namespace Ubpa::UECS {
 		// use RTDCmptTraits
 		void Attach(Entity, const CmptType* types, size_t num);
 
-		// if not exist cmpt, attach with Args...
+		// if not exist cmpt, attach with <Args>...
 		// else return it directly
 		template<typename Cmpt, typename... Args>
 		Cmpt* Emplace(Entity, Args&&...);
 
-		// use RTDCmptTraits
 		void Detach(Entity, const CmptType* types, size_t num);
 
 		bool Have(Entity, CmptType) const;
@@ -81,7 +80,7 @@ namespace Ubpa::UECS {
 		friend class World;
 		EntityMngr() = default;
 
-		static bool IsSet(const CmptType* types, size_t num);
+		static bool IsSet(const CmptType* types, size_t num) noexcept;
 
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
 

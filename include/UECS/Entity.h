@@ -18,7 +18,7 @@ namespace Ubpa::UECS {
 	private:
 		friend class EntityMngr;
 		friend class Archetype;
-		constexpr Entity(size_t idx, size_t version) : idx(idx), version(version) {}
+		constexpr Entity(size_t idx, size_t version) noexcept : idx(idx), version(version) {}
 		size_t idx;
 		size_t version;
 	};

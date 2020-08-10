@@ -196,7 +196,7 @@ Entity EntityMngr::Instantiate(Entity srcEntity) {
 	return dstEntity;
 }
 
-bool EntityMngr::IsSet(const CmptType* types, size_t num) {
+bool EntityMngr::IsSet(const CmptType* types, size_t num) noexcept {
 	for (size_t i = 0; i < num; i++) {
 		for (size_t j = 0; j < i; j++)
 			if (types[i] == types[j])
@@ -310,7 +310,7 @@ void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 				(*sys)(
 					w,
 					SingletonsView{ singletons.data(), singletons.size() },
-					ChunkView{ archetype, i, archetype->GetChunk(i) }
+					ChunkView{ archetype, i }
 				);
 			});
 		}

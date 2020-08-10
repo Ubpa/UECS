@@ -51,7 +51,7 @@ namespace Ubpa::UECS {
 		void* At(CmptType, size_t idx) const;
 
 		template<typename Cmpt>
-		Cmpt* At(size_t idx) const;
+		Cmpt* At(size_t idx) const{ return reinterpret_cast<Cmpt*>(At(CmptType::Of<Cmpt>, idx)); }
 
 		// no Entity
 		std::vector<CmptPtr> Components(size_t idx) const;
@@ -66,7 +66,7 @@ namespace Ubpa::UECS {
 
 		// use RTDCmptTraits's default constructor
 		size_t Create(Entity);
-
+		
 		// return index in archetype
 		size_t Instantiate(Entity, size_t srcIdx);
 
@@ -101,7 +101,7 @@ namespace Ubpa::UECS {
 		void SetLayout();
 
 		size_t Offsetof(CmptType type) const { return type2offset.find(type)->second; }
-		static bool NotContainEntity(const CmptType* types, size_t num);
+		static bool NotContainEntity(const CmptType* types, size_t num) noexcept;
 
 		friend class EntityMngr;
 
