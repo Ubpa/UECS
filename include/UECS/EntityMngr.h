@@ -19,9 +19,10 @@ namespace Ubpa::UECS {
 	// [API]
 	// - Entity: Create, Instantiate, Destroy, Exist
 	// - Component: Attach, Emplace, Detach, Have, Get, Components
+	// - Singleton: IsSingleton, GetSingletonEntity, GetSingleton
 	// - other: EntityNum, AddCommand
 	// [important]
-	// - API with CmptType need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
+	// - some API with CmptType need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
 	// - API with Entity require Entity exist  (throw std::invalid_argument)
 	class EntityMngr {
 	public:
@@ -50,8 +51,10 @@ namespace Ubpa::UECS {
 
 		bool Have(Entity, CmptType) const;
 
+		// nullptr if not singleton
 		template<typename Cmpt>
 		Cmpt* Get(Entity) const;
+		// nullptr if not singleton
 		CmptPtr Get(Entity, CmptType) const;
 
 		std::vector<CmptPtr> Components(Entity) const;
@@ -66,13 +69,10 @@ namespace Ubpa::UECS {
 
 		bool IsSingleton(CmptType) const;
 		Entity GetSingletonEntity(CmptType) const;
-		CmptPtr GetSingleton(CmptType) const;
 		// nullptr if not singleton
-		CmptPtr GetIfSingleton(CmptType) const;
+		CmptPtr GetSingleton(CmptType) const;
 		template<typename Cmpt>
 		Cmpt* GetSingleton() const { return GetSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
-		template<typename Cmpt>
-		Cmpt* GetIfSingleton() const { return GetIfSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
 
 		void Accept(IListener* listener) const;
 
@@ -89,9 +89,10 @@ namespace Ubpa::UECS {
 		// types not contain Entity
 		Archetype* GetOrCreateArchetypeOf(const CmptType* types, size_t num);
 
+		// return original archetype
 		template<typename... Cmpts>
-		void AttachWithoutInit(Entity);
-		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
+		Archetype* AttachWithoutInit(Entity);
+		Archetype* AttachWithoutInit(Entity, const CmptType* types, size_t num);
 
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;

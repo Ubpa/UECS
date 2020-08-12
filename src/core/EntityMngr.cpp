@@ -55,7 +55,7 @@ Entity EntityMngr::Create(const CmptType* types, size_t num) {
 	return e;
 }
 
-void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) {
+Archetype* EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) {
 	assert(types != nullptr && num > 0);
 	assert(IsSet(types, num));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
@@ -80,11 +80,11 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 		}
 		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 	}
-	else
+	else {
 		dstArchetype = target->second.get();
-
-	if (dstArchetype == srcArchetype)
-		return;
+		if (dstArchetype == srcArchetype)
+			return srcArchetype;
+	}
 
 	// move src to dst
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
@@ -103,22 +103,24 @@ void EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t num) 
 
 	info.archetype = dstArchetype;
 	info.idxInArchetype = dstIdxInArchetype;
+
+	return srcArchetype;
 }
 
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
-	auto srcArchetype = entityTable[e.Idx()].archetype;
-	AttachWithoutInit(e, types, num);
-	const auto& new_info = entityTable[e.Idx()];
+	auto origArchetype = AttachWithoutInit(e, types, num);
+	const auto& info = entityTable[e.Idx()];
 	const auto& rtdct = RTDCmptTraits::Instance();
 	for (size_t i = 0; i < num; i++) {
 		const auto& type = types[i];
-		if (srcArchetype->GetCmptTypeSet().Contains(type))
+		if (origArchetype->GetCmptTypeSet().Contains(type))
 			continue;
+
 		auto target = rtdct.default_constructors.find(type);
 		if (target == rtdct.default_constructors.end())
 			continue;
 
-		target->second(new_info.archetype->At(type, new_info.idxInArchetype));
+		target->second(info.archetype->At(type, info.idxInArchetype));
 	}
 }
 
@@ -129,7 +131,6 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 
 	auto& info = entityTable[e.Idx()];
 	Archetype* srcArchetype = info.archetype;
-	size_t srcIdxInArchetype = info.idxInArchetype;
 
 	const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 	auto dstCmptTypeSet = srcCmptTypeSet;
@@ -147,14 +148,16 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 		}
 		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 	}
-	else
+	else {
 		dstArchetype = target->second.get();
-
-	if (dstArchetype == srcArchetype)
-		return;
+		if (dstArchetype == srcArchetype)
+			return;
+	}
 
 	// move src to dst
+	size_t srcIdxInArchetype = info.idxInArchetype;
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
+
 	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
 	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
@@ -197,6 +200,8 @@ Entity EntityMngr::Instantiate(Entity srcEntity) {
 }
 
 bool EntityMngr::IsSet(const CmptType* types, size_t num) noexcept {
+	assert(types || num == 0);
+
 	for (size_t i = 0; i < num; i++) {
 		for (size_t j = 0; j < i; j++)
 			if (types[i] == types[j])
@@ -248,7 +253,7 @@ tuple<bool, vector<CmptPtr>> EntityMngr::LocateSingletons(const SingletonLocator
 	vector<CmptPtr> rst;
 	rst.reserve(locator.SingletonTypes().size());
 	for (const auto& t : locator.SingletonTypes()) {
-		auto ptr = GetIfSingleton(t);
+		auto ptr = GetSingleton(t);
 		if (ptr.Ptr() == nullptr)
 			return { false, {} };
 		rst.push_back(ptr);
@@ -371,15 +376,6 @@ Entity EntityMngr::GetSingletonEntity(CmptType t) const {
 }
 
 CmptPtr EntityMngr::GetSingleton(CmptType t) const {
-	assert(IsSingleton(t));
-	ArchetypeFilter filter{ {t}, {}, {} };
-	EntityQuery query(move(filter));
-	const auto& archetypes = QueryArchetypes(query);
-	auto archetype = *archetypes.begin();
-	return { t, archetype->At(t, 0) };
-}
-
-CmptPtr EntityMngr::GetIfSingleton(CmptType t) const {
 	ArchetypeFilter filter{ {t}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);

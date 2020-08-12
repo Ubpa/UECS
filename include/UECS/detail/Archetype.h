@@ -42,12 +42,15 @@ namespace Ubpa::UECS {
 		std::tuple<std::vector<Entity*>, std::vector<std::vector<CmptPtr>>, std::vector<size_t>>
 		Locate(const CmptLocator& locator) const;
 
+		// nullptr if not contains
 		void* Locate(size_t chunkIdx, CmptType) const;
 
 		Chunk* GetChunk(size_t chunkIdx) const { return chunks[chunkIdx]; }
 		
+		// nullptr if not contains
 		void* At(CmptType, size_t idx) const;
 
+		// nullptr if not contains
 		template<typename Cmpt>
 		Cmpt* At(size_t idx) const{ return reinterpret_cast<Cmpt*>(At(CmptType::Of<Cmpt>, idx)); }
 
@@ -77,9 +80,6 @@ namespace Ubpa::UECS {
 		// Components + Entity
 		const CmptTypeSet& GetCmptTypeSet() const noexcept { return types; }
 		const RTSCmptTraits& GetRTSCmptTraits() const noexcept { return cmptTraits; }
-
-		// no Entity
-		size_t CmptNum() const noexcept { return types.data.size() - 1; }
 
 		size_t EntityNum() const noexcept { return entityNum; }
 		size_t EntityNumOfChunk(size_t chunkIdx) const noexcept;

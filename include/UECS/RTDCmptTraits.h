@@ -50,6 +50,7 @@ namespace Ubpa::UECS {
 
 		size_t Sizeof(CmptType) const;
 		size_t Alignof(CmptType) const;
+		void DefaultConstruct(CmptType, void* cmpt) const;
 		void CopyConstruct(CmptType, void* dst, void* src) const;
 		void MoveConstruct(CmptType, void* dst, void* src) const;
 		void MoveAssign(CmptType, void* dst, void* src) const;

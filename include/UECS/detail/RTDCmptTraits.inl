@@ -58,6 +58,13 @@ namespace Ubpa::UECS {
 		return alignments.find(type)->second;
 	}
 
+	inline void RTDCmptTraits::DefaultConstruct(CmptType type, void* cmpt) const {
+		auto target = default_constructors.find(type);
+
+		if (target != default_constructors.end())
+			target->second(cmpt);
+	}
+
 	inline void RTDCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
 		auto target = copy_constructors.find(type);
 

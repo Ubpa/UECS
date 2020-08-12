@@ -8,9 +8,6 @@
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype* EntityMngr::GetOrCreateArchetypeOf() {
-		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::GetOrCreateArchetypeOf: <Cmpts>... must be different");
-
 		const auto typeset = Archetype::GenCmptTypeSet<Cmpts...>();
 		auto target = ts2a.find(typeset);
 		if(target != ts2a.end())
@@ -28,8 +25,6 @@ namespace Ubpa::UECS {
 
 	template<typename... Cmpts>
 	std::tuple<Entity, Cmpts*...> EntityMngr::Create() {
-		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::Create: <Cmpts>... must be different");
 		Archetype* archetype = GetOrCreateArchetypeOf<Cmpts...>();
 		size_t entityIndex = RequestEntityFreeEntry();
 		EntityInfo& info = entityTable[entityIndex];
@@ -41,18 +36,15 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename... Cmpts>
-	void EntityMngr::AttachWithoutInit(Entity e) {
-		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
-			"EntityMngr::AttachWithoutInit: <Cmpts>... must be different");
+	Archetype* EntityMngr::AttachWithoutInit(Entity e) {
 		if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 		auto& info = entityTable[e.Idx()];
 		Archetype* srcArchetype = info.archetype;
-		size_t srcIdxInArchetype = info.idxInArchetype;
 
 		const auto& srcCmptTypeSet = srcArchetype->GetCmptTypeSet();
 		auto dstCmptTypeSet = srcCmptTypeSet;
-		dstCmptTypeSet.data.insert(CmptType::Of<Cmpts>...);
+		(dstCmptTypeSet.data.insert(CmptType::Of<Cmpts>), ...);
 
 		// get dstArchetype
 		Archetype* dstArchetype;
@@ -66,13 +58,14 @@ namespace Ubpa::UECS {
 			}
 			ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{ dstArchetype });
 		}
-		else
+		else {
 			dstArchetype = target->second.get();
-
-		if (dstArchetype == srcArchetype)
-			return;
+			if (dstArchetype == srcArchetype)
+				return srcArchetype;
+		}
 
 		// move src to dst
+		size_t srcIdxInArchetype = info.idxInArchetype;
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
 		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
@@ -89,17 +82,16 @@ namespace Ubpa::UECS {
 
 		info.archetype = dstArchetype;
 		info.idxInArchetype = dstIdxInArchetype;
+
+		return srcArchetype;
 	}
 
 	template<typename... Cmpts>
 	std::tuple<Cmpts*...> EntityMngr::Attach(Entity e) {
-		static_assert((std::is_default_constructible_v<Cmpts> &&...),
-			"EntityMngr::Attach: <Cmpts> isn't default constructible");
-
 		using CmptList = TypeList<Cmpts...>;
-		const auto& cmptTypes = entityTable[e.Idx()].archetype->GetCmptTypeSet();
+		auto origArchetype = AttachWithoutInit<Cmpts...>(e);
+		const auto& cmptTypes = origArchetype->GetCmptTypeSet();
 		std::array needAttach = { !cmptTypes.Contains(CmptType::Of<Cmpts>)... };
-		AttachWithoutInit<Cmpts...>(e);
 		const auto& new_info = entityTable[e.Idx()];
 		std::tuple cmpts{ new_info.archetype->At<Cmpts>(new_info.idxInArchetype)... };
 		((std::get<Find_v<CmptList, Cmpts>>(needAttach) ? new(std::get<Cmpts*>(cmpts))Cmpts : nullptr), ...);
@@ -111,7 +103,7 @@ namespace Ubpa::UECS {
 	Cmpt* EntityMngr::Emplace(Entity e, Args&&... args) {
 		static_assert(std::is_constructible_v<Cmpt, Args...>
 			|| is_list_initializable_v<Cmpt, Args...>,
-			"EntityMngr::Emplace: <Cmpt> isn't constructible/list_initializable with Args...");
+			"<Cmpt> isn't constructible/list_initializable with Args...");
 
 		if (!Have(e, CmptType::Of<Cmpt>)) {
 			AttachWithoutInit<Cmpt>(e);

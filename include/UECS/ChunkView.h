@@ -13,7 +13,7 @@ namespace Ubpa::UECS {
 
 		bool Contains(CmptType) const;
 
-		// if not contain, return nullptr
+		// nullptr if not contain
 		void* GetCmptArray(CmptType) const;
 		template<typename Cmpt>
 		Cmpt* GetCmptArray() const { return reinterpret_cast<Cmpt*>(GetCmptArray(CmptType::Of<Cmpt>)); }
