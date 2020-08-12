@@ -78,11 +78,11 @@ namespace Ubpa::UECS {
 
 	private:
 		friend class World;
+		friend class Archetype;
+
 		EntityMngr() = default;
 
 		static bool IsSet(const CmptType* types, size_t num) noexcept;
-
-		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
 
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
@@ -92,6 +92,9 @@ namespace Ubpa::UECS {
 		template<typename... Cmpts>
 		void AttachWithoutInit(Entity);
 		void AttachWithoutInit(Entity, const CmptType* types, size_t num);
+
+		const std::set<Archetype*>& QueryArchetypes(const EntityQuery& query) const;
+		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
 
 		void GenEntityJob(World*, Job*, SystemFunc*) const;
 		void GenChunkJob(World*, Job*, SystemFunc*) const;
@@ -108,8 +111,8 @@ namespace Ubpa::UECS {
 		void RecycleEntityEntry(Entity e);
 
 		std::unordered_map<CmptTypeSet, std::unique_ptr<Archetype>> ts2a; // archetype's CmptTypeSet to archetype
-		
-		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
+
+		Pool<Chunk> sharedChunkPool;
 	};
 }
 

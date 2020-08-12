@@ -34,7 +34,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto archetype = Archetype::New(types, num);
+	auto archetype = Archetype::New(this, types, num);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
