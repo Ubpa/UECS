@@ -77,6 +77,8 @@ namespace Ubpa::UECS {
 		void Accept(IListener* listener) const;
 
 	private:
+		Pool<Chunk> sharedChunkPool; // destruct finally
+
 		friend class World;
 		friend class Archetype;
 
@@ -112,8 +114,6 @@ namespace Ubpa::UECS {
 		void RecycleEntityEntry(Entity e);
 
 		std::unordered_map<CmptTypeSet, std::unique_ptr<Archetype>> ts2a; // archetype's CmptTypeSet to archetype
-
-		Pool<Chunk> sharedChunkPool;
 	};
 }
 
