@@ -110,14 +110,13 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t
 void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 	auto origArchetype = AttachWithoutInit(e, types, num);
 	const auto& info = entityTable[e.Idx()];
-	const auto& rtdct = RTDCmptTraits::Instance();
 	for (size_t i = 0; i < num; i++) {
 		const auto& type = types[i];
 		if (origArchetype->GetCmptTypeSet().Contains(type))
 			continue;
 
-		auto target = rtdct.default_constructors.find(type);
-		if (target == rtdct.default_constructors.end())
+		auto target = cmptTraits.default_constructors.find(type);
+		if (target == cmptTraits.default_constructors.end())
 			continue;
 
 		target->second(info.archetype->At(type, info.idxInArchetype));

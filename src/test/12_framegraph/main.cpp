@@ -36,7 +36,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	RTDCmptTraits::Instance()
+	w.entityMngr.cmptTraits
 		.RegisterName(CmptType::Of<A>, "A")
 		.RegisterName(CmptType::Of<B>, "B")
 		.RegisterName(CmptType::Of<C>, "C")

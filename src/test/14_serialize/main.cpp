@@ -14,6 +14,7 @@ class Dumper : public IListener {
 	bool firstSystem{ true };
 	bool firstEntity{ true };
 	bool firstCmpt{ true };
+	const World* w;
 
 	void PrintIndent() {
 		for (size_t i = 0; i < indent; i++)
@@ -26,6 +27,7 @@ class Dumper : public IListener {
 		indent++;
 		PrintIndent();
 		cout << "\"type\" : \"World\"," << endl;
+		this->w = w;
 	}
 
 	virtual void ExistWorld(const World* w) override {
@@ -128,7 +130,7 @@ class Dumper : public IListener {
 		cout << "{" << endl;
 		indent++;
 		PrintIndent();
-		cout << "\"type\" : \"" << RTDCmptTraits::Instance().Nameof(cmpt->Type()) << "\"";
+		cout << "\"type\" : \"" << w->entityMngr.cmptTraits.Nameof(cmpt->Type()) << "\"";
 		if (cmpt->Type().Is<Velocity>()) {
 			auto v = cmpt->As<Velocity>();
 			cout << "," << endl;
@@ -165,7 +167,7 @@ public:
 
 int main() {
 	World w;
-	RTDCmptTraits::Instance().Register<Position, Velocity>();
+	w.entityMngr.cmptTraits.Register<Position, Velocity>();
 	w.systemMngr.Register<MoverSystem>();
 	w.entityMngr.Create<Position, Velocity>();
 	w.entityMngr.Create<Position>();

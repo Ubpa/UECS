@@ -20,8 +20,6 @@ namespace Ubpa::UECS {
 	public:
 		static constexpr size_t default_alignment = alignof(std::max_align_t);
 
-		static RTDCmptTraits& Instance() noexcept;
-
 		RTDCmptTraits& Clear();
 
 		// neccessary
@@ -69,6 +67,7 @@ namespace Ubpa::UECS {
 		friend class RTSCmptTraits;
 		friend class Archetype;
 		friend class EntityMngr;
+		friend class World;
 
 		RTDCmptTraits() = default;
 

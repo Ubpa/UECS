@@ -26,6 +26,8 @@ namespace Ubpa::UECS {
 	// - API with Entity require Entity exist  (throw std::invalid_argument)
 	class EntityMngr {
 	public:
+		RTDCmptTraits cmptTraits;
+
 		template<typename... Cmpts>
 		std::tuple<Entity, Cmpts*...> Create();
 

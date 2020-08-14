@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../RTDCmptTraits.h"
-
 #include <stdexcept>
 
 namespace Ubpa::UECS {
@@ -99,8 +97,7 @@ namespace Ubpa::UECS {
 			move_assignments.erase(type);
 	}
 
-	inline void RTSCmptTraits::Register(CmptType type) {
-		const auto& rtdct = RTDCmptTraits().Instance();
+	inline void RTSCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
 		auto size_target = rtdct.sizeofs.find(type);
 		if (size_target == rtdct.sizeofs.end())
 			throw std::logic_error("RTSCmptTraits::Register: RTDCmptTraits hasn't registered <CmptType>");

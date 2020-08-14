@@ -25,13 +25,13 @@ public:
 };
 
 int main() {
-	RTDCmptTraits::Instance().Register<
+	World w;
+	w.systemMngr.Register<DataSystem>();
+
+	w.entityMngr.cmptTraits.Register<
 		Data1,
 		Data2
 	>();
-
-	World w;
-	w.systemMngr.Register<DataSystem>();
 
 	w.entityMngr.Create<Data1, Data2>();
 

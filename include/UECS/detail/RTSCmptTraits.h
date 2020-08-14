@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../CmptType.h"
+#include "../RTDCmptTraits.h"
 
 #include <unordered_map>
 #include <functional>
@@ -20,7 +21,7 @@ namespace Ubpa::UECS {
 		void Register();
 
 		// use RTDCmptTraits
-		void Register(CmptType type);
+		void Register(const RTDCmptTraits& rtdCmptTraits, CmptType type);
 
 		template<typename Cmpt>
 		void Deregister();

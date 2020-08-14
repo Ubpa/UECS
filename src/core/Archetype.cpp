@@ -58,7 +58,7 @@ Archetype* Archetype::New(EntityMngr* entityMngr, const CmptType* types, size_t 
 	rst->types.data.insert(CmptType::Of<Entity>);
 	rst->cmptTraits.Register<Entity>();
 	for (size_t i = 0; i < num; i++)
-		rst->cmptTraits.Register(types[i]);
+		rst->cmptTraits.Register(entityMngr->cmptTraits, types[i]);
 	rst->SetLayout();
 	return rst;
 }
@@ -73,7 +73,7 @@ Archetype* Archetype::Add(const Archetype* from, const CmptType* types, size_t n
 	rst->cmptTraits = from->cmptTraits;
 	rst->types.Insert(types, num);
 	for (size_t i = 0; i < num; i++)
-		rst->cmptTraits.Register(types[i]);
+		rst->cmptTraits.Register(rst->entityMngr->cmptTraits, types[i]);
 
 	rst->SetLayout();
 
@@ -102,7 +102,7 @@ size_t Archetype::Create(Entity e) {
 	size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
-	const auto& rtdct = RTDCmptTraits::Instance();
+	const auto& rtdct = entityMngr->cmptTraits;
 	for (const auto& type : types.data) {
 		if (type.Is<Entity>()) {
 			constexpr size_t size = sizeof(Entity);

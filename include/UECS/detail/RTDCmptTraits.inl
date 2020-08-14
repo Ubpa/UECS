@@ -3,11 +3,6 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa::UECS {
-	inline RTDCmptTraits& RTDCmptTraits::Instance() noexcept {
-		static RTDCmptTraits instance;
-		return instance;
-	}
-
 	inline RTDCmptTraits& RTDCmptTraits::RegisterSize(CmptType type, size_t size) {
 		sizeofs.emplace(type, size);
 		return *this;

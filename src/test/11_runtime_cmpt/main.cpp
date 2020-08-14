@@ -44,12 +44,13 @@ int main() {
 	// LuaCmpt {
 	//   number value;
     // }
-	RTDCmptTraits::Instance().RegisterSize(type, 8);
-	RTDCmptTraits::Instance().RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl;});
-	RTDCmptTraits::Instance().RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });
 
 	World w;
 	w.systemMngr.Register<RTDSystem>();
+	w.entityMngr.cmptTraits
+		.RegisterSize(type, 8)
+		.RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl; })
+		.RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });
 
 	auto [e] = w.entityMngr.Create();
 	w.entityMngr.Attach(e, &type, 1);
