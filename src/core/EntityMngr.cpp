@@ -386,3 +386,64 @@ CmptPtr EntityMngr::GetSingleton(CmptType t) const {
 
 	return { t, archetype->At(t, 0) };
 }
+
+std::vector<CmptPtr> EntityMngr::GetCmptArray(const ArchetypeFilter& filter, CmptType type) const {
+	assert(filter.all.find(type) != filter.all.end());
+
+	std::vector<CmptPtr> rst;
+
+	const auto& archetypes = QueryArchetypes(filter);
+
+	size_t num = 0;
+	for (const auto& archetype : archetypes)
+		num += archetype->EntityNum();
+
+	rst.reserve(num);
+	for (auto archetype : archetypes) {
+		/*for (size_t i = 0; i < archetype->EntityNum(); i++)
+			rst[idx++] = *archetype->At(type, i);*/
+
+		// speed up
+
+		size_t size = archetype->cmptTraits.Sizeof(type);
+		size_t offset = archetype->Offsetof(type);
+		for (size_t c = 0; c < archetype->chunks.size(); c++) {
+			auto buffer = archetype->chunks[c]->Data();
+			auto beg = buffer + offset;
+			size_t chunkSize = archetype->EntityNumOfChunk(c);
+			for (size_t i = 0; i < chunkSize; i++)
+				rst.emplace_back(type, beg + i * size);
+		}
+	}
+
+	return rst;
+}
+
+std::vector<Entity> EntityMngr::GetEntityArray(const ArchetypeFilter& filter) const {
+	std::vector<Entity> rst;
+
+	const auto& archetypes = QueryArchetypes(filter);
+
+	size_t num = 0;
+	for (const auto& archetype : archetypes)
+		num += archetype->EntityNum();
+
+	rst.reserve(num);
+	for (auto archetype : archetypes) {
+		/*for (size_t i = 0; i < archetype->EntityNum(); i++)
+			rst[idx++] = *archetype->At<Entity>(i);*/
+
+		// speed up
+
+		size_t offset = archetype->Offsetof(CmptType::Of<Entity>);
+		for (size_t c = 0; c < archetype->chunks.size(); c++) {
+			auto buffer = archetype->chunks[c]->Data();
+			auto beg = buffer + offset;
+			size_t chunkSize = archetype->EntityNumOfChunk(c);
+			for (size_t i = 0; i < chunkSize; i++)
+				rst.push_back(*reinterpret_cast<Entity*>(beg + i * sizeof(Entity)));
+		}
+	}
+
+	return rst;
+}

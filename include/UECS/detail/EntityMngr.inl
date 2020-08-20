@@ -135,4 +135,37 @@ namespace Ubpa::UECS {
 	inline bool EntityMngr::Exist(Entity e) const {
 		return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 	}
+
+	template<typename Cmpt>
+	std::vector<Cmpt*> EntityMngr::GetCmptArray(const ArchetypeFilter& filter) const {
+		constexpr auto type = CmptType::Of<Cmpt>;
+		assert(filter.all.find(type) != filter.all.end());
+
+		std::vector<Cmpt*> rst;
+
+		const auto& archetypes = QueryArchetypes(filter);
+		size_t num = 0;
+		for (const auto& archetype : archetypes)
+			num += archetype->EntityNum();
+
+		rst.resize(num);
+		size_t idx = 0;
+		for (auto archetype : archetypes) {
+			/*for (size_t i = 0; i < archetype->EntityNum(); i++)
+				rst[idx++] = archetype->At<CmptType>(i);*/
+
+			// speed up
+
+			size_t offset = archetype->Offsetof(type);
+			for (size_t c = 0; c < archetype->chunks.size(); c++) {
+				auto buffer = archetype->chunks[c]->Data();
+				auto beg = buffer + offset;
+				size_t chunkSize = archetype->EntityNumOfChunk(c);
+				for (size_t i = 0; i < chunkSize; i++)
+					rst[idx++] = reinterpret_cast<Cmpt*>(beg + i * sizeof(Cmpt));
+			}
+		}
+
+		return rst;
+	}
 }
