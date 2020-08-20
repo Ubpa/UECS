@@ -290,7 +290,7 @@ void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 						CmptsView{ cmpts.data(), cmpts.size() }
 					);
 					for (size_t k = 0; k < cmpts.size(); k++)
-						reinterpret_cast<uint8_t*&>(cmpts[k]) += sizes[k];
+						reinterpret_cast<uint8_t*&>(const_cast<void*&>(cmpts[k].Ptr())) += sizes[k];
 				}
 			});
 		}
