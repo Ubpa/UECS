@@ -18,8 +18,8 @@ public:
 
 	virtual void OnUpdate(Schedule& schedule) override {
 		ArchetypeFilter filter;
-		filter.all = { CmptType::Of<Write<S>> };
-		filter.any = { CmptType::Of<Latest<A>>,CmptType::Of<Latest<B>> };
+		filter.all = { CmptAccessType::Of<Write<S>> };
+		filter.any = { CmptAccessType::Of<Latest<A>>, CmptAccessType::Of<Latest<B>> };
 
 		schedule.RegisterChunkJob([](ChunkView chunk) {
 			auto arrayS = chunk.GetCmptArray<S>();

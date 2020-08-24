@@ -111,6 +111,11 @@ namespace Ubpa::UECS {
 		const Cmpt* cmpt;
 	};
 
+	template<typename TaggedCmpt>
+	void* CastToVoidPointer(TaggedCmpt p) {
+		return const_cast<void*>(reinterpret_cast<const void*>(p));
+	}
+
 	// <Cmpt> (without read/write and singleton tag)
 	template<typename TaggedCmpt>
 	struct RemoveTag;
@@ -190,16 +195,19 @@ namespace Ubpa::UECS {
 	template<typename T>
 	static constexpr bool IsTaggedCmpt_v = IsTaggedCmpt<T>::value;
 
-	template<typename T>
-	static constexpr AccessMode AccessModeOf =
+	template<typename T, AccessMode defaultMode>
+	static constexpr AccessMode AccessModeOf_default =
 		IsLastFrame_v<T> ? AccessMode::LAST_FRAME : (
 		IsWrite_v<T> ? AccessMode::WRITE : (
 		IsLatest_v<T> ? AccessMode::LATEST : (
 		IsLastFrameSingleton_v<T> ? AccessMode::LAST_FRAME_SINGLETON : (
 		IsWriteSingleton_v<T> ? AccessMode::WRITE_SINGLETON : (
 		IsLatestSingleton_v<T> ? AccessMode::LATEST_SINGLETON :
-		AccessMode::WRITE // default
+		defaultMode
 		)))));
+
+	template<typename T>
+	static constexpr AccessMode AccessModeOf = AccessModeOf_default<T, AccessMode::LATEST>;
 }
 
 #include "detail/CmptTag.inl"

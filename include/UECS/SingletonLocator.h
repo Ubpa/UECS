@@ -9,7 +9,7 @@
 namespace Ubpa::UECS {
 	class SingletonLocator {
 	public:
-		SingletonLocator(const CmptType* types, size_t num);
+		SingletonLocator(const CmptAccessType* types, size_t num);
 		SingletonLocator() = default;
 
 		template<typename Func>
@@ -18,12 +18,12 @@ namespace Ubpa::UECS {
 		template<typename Func>
 		SingletonLocator& Combine();
 
-		const std::set<CmptType>& SingletonTypes() const noexcept { return singletonTypes; }
+		const std::set<CmptAccessType>& SingletonTypes() const noexcept { return singletonTypes; }
 
 		bool HasWriteSingletonType() const noexcept;
 
 	private:
-		std::set<CmptType> singletonTypes;
+		std::set<CmptAccessType> singletonTypes;
 	};
 }
 

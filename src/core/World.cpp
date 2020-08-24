@@ -115,7 +115,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		.RegisterGraphEdgeAttr("color", "#C785C8")
 		.RegisterGraphEdgeAttr("arrowhead", "odot");
 
-	unordered_set<CmptType> cmptTypes;
+	unordered_set<CmptAccessType> cmptTypes;
 	unordered_map<CmptType, size_t> cmptType2idx;
 	unordered_map<size_t, size_t> sysFuncHashcode2idx;
 
@@ -125,14 +125,14 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	};
 
 	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
-		for (auto cmptType : sysFunc->entityQuery.locator.CmptTypes())
+		for (auto cmptType : sysFunc->entityQuery.locator.CmptAccessTypes())
 			cmptTypes.insert(cmptType);
 		for (auto cmptType : sysFunc->entityQuery.filter.all)
 			cmptTypes.insert(cmptType);
 		for (auto cmptType : sysFunc->entityQuery.filter.any)
 			cmptTypes.insert(cmptType);
 		for (auto cmptType : sysFunc->entityQuery.filter.none)
-			cmptTypes.insert(cmptType);
+			cmptTypes.insert(CmptAccessType{ cmptType });
 		for (auto singleton : sysFunc->singletonLocator.SingletonTypes())
 			cmptTypes.insert(singleton);
 	}
@@ -152,7 +152,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 
 		subgraph_sys.AddNode(sysIdx);
 
-		for (const auto& cmptType : sysFunc->entityQuery.locator.CmptTypes()) {
+		for (const auto& cmptType : sysFunc->entityQuery.locator.CmptAccessTypes()) {
 			size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{

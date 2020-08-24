@@ -247,15 +247,15 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
-tuple<bool, vector<CmptPtr>> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
+tuple<bool, vector<CmptAccessPtr>> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
 	size_t numSingletons = 0;
-	vector<CmptPtr> rst;
+	vector<CmptAccessPtr> rst;
 	rst.reserve(locator.SingletonTypes().size());
 	for (const auto& t : locator.SingletonTypes()) {
 		auto ptr = GetSingleton(t);
 		if (ptr.Ptr() == nullptr)
 			return { false, {} };
-		rst.push_back(ptr);
+		rst.emplace_back(ptr, t.GetAccessMode());
 	}
 	return { true, rst };
 }
@@ -290,7 +290,7 @@ void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 						CmptsView{ cmpts.data(), cmpts.size() }
 					);
 					for (size_t k = 0; k < cmpts.size(); k++)
-						reinterpret_cast<uint8_t*&>(const_cast<void*&>(cmpts[k].Ptr())) += sizes[k];
+						reinterpret_cast<uint8_t*&>(cmpts[k].p) += sizes[k];
 				}
 			});
 		}
@@ -353,7 +353,7 @@ void EntityMngr::Accept(IListener* listener) const {
 }
 
 bool EntityMngr::IsSingleton(CmptType t) const {
-	ArchetypeFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {CmptAccessType{t}}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	if (archetypes.size() != 1)
@@ -367,7 +367,7 @@ bool EntityMngr::IsSingleton(CmptType t) const {
 
 Entity EntityMngr::GetSingletonEntity(CmptType t) const {
 	assert(IsSingleton(t));
-	ArchetypeFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {CmptAccessType{t}}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	auto archetype = *archetypes.begin();
@@ -375,7 +375,7 @@ Entity EntityMngr::GetSingletonEntity(CmptType t) const {
 }
 
 CmptPtr EntityMngr::GetSingleton(CmptType t) const {
-	ArchetypeFilter filter{ {t}, {}, {} };
+	ArchetypeFilter filter{ {CmptAccessType{t}}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
 	if (archetypes.size() != 1)
@@ -388,7 +388,7 @@ CmptPtr EntityMngr::GetSingleton(CmptType t) const {
 }
 
 std::vector<CmptPtr> EntityMngr::GetCmptArray(const ArchetypeFilter& filter, CmptType type) const {
-	assert(filter.all.find(type) != filter.all.end());
+	assert(filter.all.find(CmptAccessType{ type }) != filter.all.end());
 
 	std::vector<CmptPtr> rst;
 

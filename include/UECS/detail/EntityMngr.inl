@@ -105,12 +105,9 @@ namespace Ubpa::UECS {
 			|| is_list_initializable_v<Cmpt, Args...>,
 			"<Cmpt> isn't constructible/list_initializable with Args...");
 
-		if (!Have(e, CmptType::Of<Cmpt>)) {
-			AttachWithoutInit<Cmpt>(e);
-			return new(Get<Cmpt>(e))Cmpt{ std::forward<Args>(args)... };
-		}
-		else
-			return Get<Cmpt>(e);
+		assert(!Have(e, CmptType::Of<Cmpt>));
+		AttachWithoutInit<Cmpt>(e);
+		return new(Get<Cmpt>(e))Cmpt{ std::forward<Args>(args)... };
 	}
 
 	inline bool EntityMngr::Have(Entity e, CmptType type) const {

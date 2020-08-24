@@ -10,11 +10,11 @@ public:
 	using System::System;
 
 	virtual void OnUpdate(Schedule& schedule) override {
-		std::array<CmptType, 1> cmpts_write = {
-			CmptType{ "LuaCmpt", AccessMode::WRITE }
+		std::array cmpts_write = {
+			CmptAccessType{ "LuaCmpt", AccessMode::WRITE }
 		};
-		std::array<CmptType, 1> cmpts_read = {
-			CmptType{ "LuaCmpt", AccessMode::LATEST }
+		std::array cmpts_read = {
+			CmptAccessType{ "LuaCmpt", AccessMode::LATEST }
 		};
 
 		CmptLocator locator_write(
@@ -26,13 +26,13 @@ public:
 
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {
-				auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::WRITE });
+				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::WRITE });
 				double& val = *reinterpret_cast<double*>(luaCmpt.Ptr());
 				val = 520.;
 			}, "write", ArchetypeFilter{}, locator_write);
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {
-				auto luaCmpt = cmpts.GetCmpt(CmptType{ "LuaCmpt", AccessMode::LATEST });
+				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::LATEST });
 				const double& val = *reinterpret_cast<const double*>(luaCmpt.Ptr());
 				cout << "value : " << val << endl;
 			}, "read", ArchetypeFilter{}, locator_read);

@@ -70,11 +70,7 @@ namespace Ubpa::UECS {
 
 		Schedule& LockFilter(std::string_view sys);
 
-		Schedule& InsertAll(std::string_view sys, CmptType);
-		Schedule& InsertAny(std::string_view sys, CmptType);
 		Schedule& InsertNone(std::string_view sys, CmptType);
-		Schedule& EraseAll(std::string_view sys, CmptType);
-		Schedule& EraseAny(std::string_view sys, CmptType);
 		Schedule& EraseNone(std::string_view sys, CmptType);
 
 	private:
@@ -101,11 +97,7 @@ namespace Ubpa::UECS {
 		std::unordered_map<size_t, size_t> sysFuncOrder;
 
 		struct FilterChange {
-			std::set<CmptType> insertAlls;
-			std::set<CmptType> insertAnys;
 			std::set<CmptType> insertNones;
-			std::set<CmptType> eraseAlls;
-			std::set<CmptType> eraseAnys;
 			std::set<CmptType> eraseNones;
 		};
 		std::unordered_map<size_t, FilterChange> sysFilterChange;

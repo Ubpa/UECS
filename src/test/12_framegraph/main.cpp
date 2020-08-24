@@ -20,8 +20,8 @@ public:
 
 	virtual void OnUpdate(Schedule& schedule) override {
 		ArchetypeFilter filter;
-		filter.all = { CmptType::Of<D> };
-		filter.any = { CmptType::Of<E>, CmptType::Of<F> };
+		filter.all = { CmptAccessType::Of<D> };
+		filter.any = { CmptAccessType::Of<E>, CmptAccessType::Of<F> };
 		filter.none = { CmptType::Of<G> };
 		schedule
 			.RegisterEntityJob(

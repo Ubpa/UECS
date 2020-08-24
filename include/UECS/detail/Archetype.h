@@ -39,7 +39,7 @@ namespace Ubpa::UECS {
 		static Archetype* Remove(const Archetype* from, const CmptType* types, size_t num);
 
 		// Entity + Components
-		std::tuple<std::vector<Entity*>, std::vector<std::vector<CmptPtr>>, std::vector<size_t>>
+		std::tuple<std::vector<Entity*>, std::vector<std::vector<CmptAccessPtr>>, std::vector<size_t>>
 		Locate(const CmptLocator& locator) const;
 
 		// nullptr if not contains

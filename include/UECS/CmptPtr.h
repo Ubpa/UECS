@@ -8,25 +8,45 @@ namespace Ubpa::UECS {
 	// CmptType + void*
 	class CmptPtr {
 	public:
-		CmptPtr(CmptType type, void* p) noexcept : type{ type }, p{ p }{}
+		constexpr CmptPtr(CmptType type, void* p) noexcept : type{ type }, p{ p }{}
 		template<typename Cmpt>
-		CmptPtr(Cmpt* p) noexcept : type{ CmptType::Of<Cmpt> }, p{ p }{}
+		constexpr CmptPtr(Cmpt* p) noexcept : type{ CmptType::Of<Cmpt> }, p{ p }{}
 
-		// unchecked
-		void* const& Ptr() const noexcept { return p; }
+		constexpr void* Ptr() const noexcept { return p; }
 
-		CmptType Type() const noexcept { return type; }
+		constexpr CmptType Type() const noexcept { return type; }
 
-		bool Valid() const noexcept { return p != nullptr; }
+		static constexpr CmptPtr Invalid() { return { CmptType::Invalid(), nullptr }; };
+		constexpr bool Valid() const noexcept { return p != nullptr && type.Valid(); }
 
-		// unchecked
 		template<typename Cmpt>
-		Cmpt* As() const noexcept { return reinterpret_cast<Cmpt*>(p); }
+		constexpr Cmpt* As() const noexcept { return reinterpret_cast<Cmpt*>(p); }
+	private:
+		CmptType type;
+		void* p;
+	};
+
+	// CmptAccessType + void*
+	class CmptAccessPtr {
+	public:
+		constexpr CmptAccessPtr(CmptType type, void* p, AccessMode mode) noexcept : accessType{ type, mode }, p{ p } {}
+		constexpr CmptAccessPtr(CmptAccessType accessType, void* p) noexcept : accessType{ accessType }, p{ p } {}
+		constexpr CmptAccessPtr(CmptPtr p, AccessMode mode) noexcept : accessType{ p.Type(), mode }, p{ p.Ptr() } {}
+		template<typename TaggedCmpt>
+		constexpr CmptAccessPtr(TaggedCmpt p) noexcept : accessType{ CmptAccessType::Of<TaggedCmpt> }, p{ CastToVoidPointer(p) } {}
+		explicit constexpr CmptAccessPtr(CmptPtr p) noexcept : CmptAccessPtr{ p, AccessMode::LATEST } {}
+
+		constexpr void* Ptr() const noexcept { return p; }
+
+		constexpr CmptAccessType AccessType() const noexcept { return accessType; }
+
+		static constexpr CmptAccessPtr Invalid() { return { CmptAccessType::Invalid(), nullptr }; };
+		constexpr bool Valid() const noexcept { return p != nullptr && accessType.Valid(); }
 
 		// check: type's access mode must be equal to <mode>
 		template<typename Cmpt, AccessMode mode>
-		auto As() const noexcept {
-			assert(type.GetAccessMode() == mode);
+		constexpr auto As() const noexcept {
+			assert(accessType.GetAccessMode() == mode);
 			if constexpr (mode == AccessMode::LAST_FRAME)
 				return LastFrame<Cmpt>{p};
 			else if constexpr (mode == AccessMode::WRITE)
@@ -43,7 +63,8 @@ namespace Ubpa::UECS {
 				static_assert(false);
 		}
 	private:
-		CmptType type;
+		friend class EntityMngr;
+		CmptAccessType accessType;
 		void* p;
 	};
 }

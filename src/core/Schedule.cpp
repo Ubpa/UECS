@@ -14,13 +14,38 @@ namespace Ubpa::UECS::detail {
 			: sysFuncs{ func }
 		{
 			needTypes = SetUnion(func->entityQuery.filter.all, func->entityQuery.filter.any);
-			needTypes = SetUnion(needTypes, func->entityQuery.locator.CmptTypes());
+			needTypes = SetUnion(needTypes, func->entityQuery.locator.CmptAccessTypes());
 			noneTypes = func->entityQuery.filter.none;
 		}
 
 		static bool Parallelable(const NoneGroup& x, const NoneGroup& y) {
-			return !SetIntersection(x.needTypes, y.noneTypes).empty()
-				|| !SetIntersection(y.needTypes, x.noneTypes).empty();
+			/*return !SetIntersection(x.needTypes, y.noneTypes).empty()
+				|| !SetIntersection(y.needTypes, x.noneTypes).empty();*/
+			{
+				auto x_iter = x.needTypes.begin();
+				auto y_iter = y.noneTypes.begin();
+				while (x_iter != x.needTypes.end() && y_iter != y.noneTypes.end()) {
+					if (x_iter->GetCmptType() < *y_iter)
+						++x_iter;
+					else if (x_iter->GetCmptType() > * y_iter)
+						++y_iter;
+					else // ==
+						return true;
+				}
+			}
+			{
+				auto x_iter = x.noneTypes.begin();
+				auto y_iter = y.needTypes.begin();
+				while (x_iter != x.noneTypes.end() && y_iter != y.needTypes.end()) {
+					if (*x_iter < y_iter->GetCmptType())
+						++x_iter;
+					else if (*x_iter > y_iter->GetCmptType())
+						++y_iter;
+					else // ==
+						return true;
+				}
+			}
+			return false;
 		}
 
 		NoneGroup& operator+=(const NoneGroup& y) {
@@ -30,7 +55,7 @@ namespace Ubpa::UECS::detail {
 			return *this;
 		}
 
-		set<CmptType> needTypes;
+		set<CmptAccessType> needTypes;
 		set<CmptType> noneTypes;
 		set<SystemFunc*> sysFuncs;
 	};
@@ -153,43 +178,11 @@ Schedule& Schedule::Order(string_view x, string_view y) {
 	return *this;
 }
 
-Schedule& Schedule::InsertAll(string_view sys, CmptType type) {
-	size_t hashcode = SystemFunc::HashCode(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseAlls.erase(type);
-	change.insertAlls.insert(type);
-	return *this;
-}
-
-Schedule& Schedule::InsertAny(string_view sys, CmptType type) {
-	size_t hashcode = SystemFunc::HashCode(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseAnys.erase(type);
-	change.insertAnys.insert(type);
-	return *this;
-}
-
 Schedule& Schedule::InsertNone(string_view sys, CmptType type) {
 	size_t hashcode = SystemFunc::HashCode(sys);
 	auto& change = sysFilterChange[hashcode];
 	change.eraseNones.erase(type);
 	change.insertNones.insert(type);
-	return *this;
-}
-
-Schedule& Schedule::EraseAll(string_view sys, CmptType type) {
-	size_t hashcode = SystemFunc::HashCode(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseAlls.insert(type);
-	change.insertAlls.erase(type);
-	return *this;
-}
-
-Schedule& Schedule::EraseAny(string_view sys, CmptType type) {
-	size_t hashcode = SystemFunc::HashCode(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseAnys.insert(type);
-	change.insertAnys.erase(type);
 	return *this;
 }
 
@@ -213,7 +206,7 @@ void Schedule::Clear() {
 unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {
 	unordered_map<CmptType, Schedule::CmptSysFuncs> rst;
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
-		for (const auto& type : sysFunc->entityQuery.locator.CmptTypes()) {
+		for (const auto& type : sysFunc->entityQuery.locator.CmptAccessTypes()) {
 			switch (type.GetAccessMode())
 			{
 			case Ubpa::UECS::AccessMode::LAST_FRAME:
@@ -304,16 +297,8 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 		auto func = target->second;
 
-		for (const auto& type : change.insertAlls)
-			func->entityQuery.filter.all.insert(type);
-		for (const auto& type : change.insertAnys)
-			func->entityQuery.filter.any.insert(type);
 		for (const auto& type : change.insertNones)
 			func->entityQuery.filter.none.insert(type);
-		for (const auto& type : change.eraseAlls)
-			func->entityQuery.filter.all.erase(type);
-		for (const auto& type : change.eraseAnys)
-			func->entityQuery.filter.any.erase(type);
 		for (const auto& type : change.eraseNones)
 			func->entityQuery.filter.none.erase(type);
 	}

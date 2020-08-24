@@ -21,7 +21,7 @@ namespace Ubpa::UECS {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"<Cmpts>... must be different");
-		assert(!from->types.Contains(std::array{ CmptType::Of<Cmpts>... }));
+		assert(!(from->types.Contains(CmptType::Of<Cmpts>) &&...));
 
 		Archetype* rst = new Archetype{ from->entityMngr };
 		

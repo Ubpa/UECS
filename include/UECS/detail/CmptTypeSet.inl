@@ -17,7 +17,7 @@ namespace Ubpa::UECS {
 		return data.find(type) != data.end();
 	}
 
-	inline bool CmptTypeSet::Contains(const CmptType* types, size_t num) const {
+	inline bool CmptTypeSet::ContainsAll(const CmptType* types, size_t num) const {
 		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++) {
 			if (!Contains(types[i]))
@@ -27,7 +27,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename CmptTypeContainer>
-	bool CmptTypeSet::Contains(const CmptTypeContainer& types) const {
+	bool CmptTypeSet::ContainsAll(const CmptTypeContainer& types) const {
 		for (const auto& type : types) {
 			if (!Contains(type))
 				return false;
@@ -67,13 +67,13 @@ namespace Ubpa::UECS {
 	}
 
 	inline bool CmptTypeSet::IsMatch(const ArchetypeFilter& filter) const {
-		return Contains(filter.all)
+		return ContainsAll(filter.all)
 			&& ContainsAny(filter.any)
 			&& NotContain(filter.none);
 	}
 
 	inline bool CmptTypeSet::IsMatch(const CmptLocator& locator) const {
-		for (const auto& t : locator.CmptTypes()) {
+		for (const auto& t : locator.CmptAccessTypes()) {
 			if (!Contains(t))
 				return false;
 		}

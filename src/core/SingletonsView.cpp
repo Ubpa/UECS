@@ -2,12 +2,10 @@
 
 using namespace Ubpa::UECS;
 
-CmptPtr SingletonsView::GetSingleton(CmptType t) const {
+CmptAccessPtr SingletonsView::GetSingleton(CmptAccessType t) const {
 	for (size_t i = 0; i < num; i++) {
-		if (singletons[i].Type() == t) {
-			assert(singletons[i].Type().GetAccessMode() == t.GetAccessMode());
+		if (singletons[i].AccessType() == t)
 			return singletons[i];
-		}
 	}
-	return { CmptType::Invalid(), nullptr };
+	return CmptAccessPtr::Invalid();
 }

@@ -7,7 +7,7 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-SingletonLocator::SingletonLocator(const CmptType* types, size_t num) {
+SingletonLocator::SingletonLocator(const CmptAccessType* types, size_t num) {
 	assert(types || num == 0);
 	for (size_t i = 0; i < num; i++)
 		singletonTypes.insert(types[i]);

@@ -2,12 +2,11 @@
 
 using namespace Ubpa::UECS;
 
-CmptPtr CmptsView::GetCmpt(CmptType t) const noexcept {
+CmptAccessPtr CmptsView::GetCmpt(CmptAccessType t) const noexcept {
 	for (size_t i = 0; i < num; i++) {
-		if (cmpts[i].Type() == t) {
-			assert(cmpts[i].Type().GetAccessMode() == t.GetAccessMode());
+		if (cmpts[i].AccessType() == t) {
 			return cmpts[i];
 		}
 	}
-	return { CmptType::Invalid(), nullptr };
+	return CmptAccessPtr::Invalid();
 }
