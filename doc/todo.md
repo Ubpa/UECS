@@ -29,15 +29,16 @@
 - [x] system base -> `System` 
 - [x] singleton
 
-### unimportant
+### maybe support in future
 
 - [x] exception: invalid `Entity` 
-- [ ] batch create/instantiate (need benchmark)
 - [x] lock `FilterChange` 
 - [ ] `EntityMngr` `Query`-driven API
 - [x] `CmptsView` = `const EntityLocator* locator + void** cmpts` 
+- [ ] pmr
+- [ ] batch create/instantiate (need benchmark)
 
-### maybe deprecate
+### maybe not support in future
 
 - [ ] shared component
 - [ ] system group

@@ -1,5 +1,13 @@
 #pragma once
 
+namespace Ubpa::UECS {
+	template<typename Cmpt>
+	constexpr bool CmptType::Is() const noexcept {
+		static_assert(!IsTaggedCmpt_v<Cmpt>);
+		return hashcode == TypeID<Cmpt>;
+	}
+}
+
 namespace std {
 	template<typename T>
 	struct hash;

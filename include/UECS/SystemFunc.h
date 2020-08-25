@@ -14,7 +14,7 @@ namespace Ubpa::UECS {
 	// system function registered by Schedule in <System>::OnUpdate(Schedule&)
 	// name + query(archetype filter + component locator) + singleton locator + function<...>
 	// name('s hashcode) must be unique in global
-	// query.filter can be change dynamically by other <System> with <Schedule>
+	// query.filter.none can be change dynamically by other <System> with <Schedule>
 	// [- system function kind] (distinguish by argument list)
 	// common arguments : World*, SingletonsView, {LastFrame|Latest}<Singleton<Cmpt>>
 	// 1. Mode::Entity: per entity function
