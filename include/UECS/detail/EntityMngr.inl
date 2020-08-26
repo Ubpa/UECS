@@ -136,7 +136,7 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	std::vector<Cmpt*> EntityMngr::GetCmptArray(const ArchetypeFilter& filter) const {
 		constexpr auto type = CmptType::Of<Cmpt>;
-		assert(filter.all.find(type) != filter.all.end());
+		assert(filter.all.find(type) != filter.all.end()); // transparent less
 
 		std::vector<Cmpt*> rst;
 

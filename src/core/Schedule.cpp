@@ -55,7 +55,7 @@ namespace Ubpa::UECS::detail {
 			return *this;
 		}
 
-		set<CmptAccessType> needTypes;
+		set<CmptAccessType, std::less<>> needTypes;
 		set<CmptType> noneTypes;
 		set<SystemFunc*> sysFuncs;
 	};

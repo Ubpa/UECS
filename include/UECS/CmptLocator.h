@@ -23,13 +23,13 @@ namespace Ubpa::UECS {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		const std::set<CmptAccessType>& CmptAccessTypes() const noexcept { return cmptTypes; }
+		const CmptAccessTypeSet& CmptAccessTypes() const noexcept { return cmptTypes; }
 
 		bool operator==(const CmptLocator& rhs) const;
 	private:
 		size_t GenHashCode() const noexcept;
 
-		std::set<CmptAccessType> cmptTypes;
+		CmptAccessTypeSet cmptTypes;
 
 		size_t hashCode;
 	};

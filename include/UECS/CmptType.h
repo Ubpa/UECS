@@ -6,6 +6,8 @@
 
 #include <UTemplate/TypeID.h>
 
+#include <set>
+
 namespace Ubpa::UECS {
 	// Component Type
 	// use a hashcode to distinguish different type
@@ -68,10 +70,26 @@ namespace Ubpa::UECS {
 		constexpr bool operator>=(const CmptAccessType& rhs) const noexcept { return type >= rhs.type; }
 		constexpr bool operator==(const CmptAccessType& rhs) const noexcept { return type == rhs.type; }
 		constexpr bool operator!=(const CmptAccessType& rhs) const noexcept { return type != rhs.type; }
+
+		constexpr bool operator< (const CmptType& rhs) const noexcept { return type <  rhs; }
+		constexpr bool operator<=(const CmptType& rhs) const noexcept { return type <= rhs; }
+		constexpr bool operator> (const CmptType& rhs) const noexcept { return type >  rhs; }
+		constexpr bool operator>=(const CmptType& rhs) const noexcept { return type >= rhs; }
+		constexpr bool operator==(const CmptType& rhs) const noexcept { return type == rhs; }
+		constexpr bool operator!=(const CmptType& rhs) const noexcept { return type != rhs; }
+
+		friend constexpr bool operator< (const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs <  rhs.type; }
+		friend constexpr bool operator<=(const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs <= rhs.type; }
+		friend constexpr bool operator> (const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs >  rhs.type; }
+		friend constexpr bool operator>=(const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs >= rhs.type; }
+		friend constexpr bool operator==(const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs == rhs.type; }
+		friend constexpr bool operator!=(const CmptType& lhs, const CmptAccessType& rhs) noexcept { return lhs != rhs.type; }
 	private:
 		CmptType type;
 		AccessMode mode;
 	};
+
+	using CmptAccessTypeSet = std::set<CmptAccessType, std::less<>>;
 }
 
 #include "detail/CmptType.inl"
