@@ -24,6 +24,8 @@ namespace Ubpa::UECS {
 	// [important]
 	// - some API with CmptType need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
 	// - API with Entity require Entity exist  (throw std::invalid_argument)
+	// [details]
+	// - when free entries is empty, use new entity entry (version is 0)
 	class EntityMngr {
 	public:
 		RTDCmptTraits cmptTraits;
@@ -64,7 +66,11 @@ namespace Ubpa::UECS {
 
 		void Destroy(Entity);
 
+		size_t TotalEntityNum() const noexcept { return entityTable.size() - entityTableFreeEntry.size(); }
 		size_t EntityNum(const EntityQuery&) const;
+		// use entry in reverse
+		const std::vector<size_t>& GetEntityFreeEntries() const noexcept { return entityTableFreeEntry; }
+		size_t GetEntityVersion(size_t idx) const noexcept { return entityTable.at(idx).version; }
 
 		std::tuple<bool, std::vector<CmptAccessPtr>> LocateSingletons(const SingletonLocator&) const;
 

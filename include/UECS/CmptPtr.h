@@ -8,9 +8,10 @@ namespace Ubpa::UECS {
 	// CmptType + void*
 	class CmptPtr {
 	public:
-		constexpr CmptPtr(CmptType type, void* p) noexcept : type{ type }, p{ p }{}
+		constexpr CmptPtr(CmptType type, void* p) noexcept : type{ type }, p{ p } {}
 		template<typename Cmpt>
-		constexpr CmptPtr(Cmpt* p) noexcept : type{ CmptType::Of<Cmpt> }, p{ p }{}
+		constexpr CmptPtr(Cmpt* p) noexcept : type{ CmptType::Of<Cmpt> }, p{ p } {}
+		constexpr CmptPtr() noexcept : CmptPtr{ Invalid() } {}
 
 		constexpr void* Ptr() const noexcept { return p; }
 
@@ -35,6 +36,7 @@ namespace Ubpa::UECS {
 		template<typename TaggedCmpt>
 		constexpr CmptAccessPtr(TaggedCmpt p) noexcept : accessType{ CmptAccessType::Of<TaggedCmpt> }, p{ CastToVoidPointer(p) } {}
 		explicit constexpr CmptAccessPtr(CmptPtr p) noexcept : CmptAccessPtr{ p, AccessMode::LATEST } {}
+		explicit constexpr CmptAccessPtr() noexcept : CmptAccessPtr{ Invalid() } {}
 
 		explicit constexpr operator CmptPtr() const noexcept { return { CmptType{accessType}, p }; }
 
