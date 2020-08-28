@@ -7,14 +7,16 @@ namespace Ubpa::UECS {
 		std::string name,
 		ArchetypeFilter filter,
 		CmptLocator cmptLocator,
-		SingletonLocator singletonLocator)
-	{
+		SingletonLocator singletonLocator,
+		bool isParallel
+	) {
 		return Request(
 			std::forward<Func>(func),
 			std::move(name),
 			std::move(filter),
 			std::move(cmptLocator),
-			std::move(singletonLocator)
+			std::move(singletonLocator),
+			isParallel
 		);
 	}
 
@@ -24,13 +26,15 @@ namespace Ubpa::UECS {
 		Func&& func,
 		std::string name,
 		ArchetypeFilter filter,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		bool isParallel
 	) {
 		return Request(
 			std::forward<Func>(func),
 			std::move(name),
 			std::move(filter),
-			std::move(singletonLocator)
+			std::move(singletonLocator),
+			isParallel
 		);
 	}
 

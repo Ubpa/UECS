@@ -39,11 +39,11 @@ namespace Ubpa::UECS {
 
 		// Mode::Entity
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator, bool isParallel);
 
 		// Mode::Chunk
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator, bool isParallel);
 
 		// Mode::Job
 		template<typename Func>
@@ -60,6 +60,7 @@ namespace Ubpa::UECS {
 		void operator()(World*, SingletonsView);
 
 		Mode GetMode() const noexcept { return mode; }
+		bool IsParallel() const noexcept { return isParallel; }
 
 		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
@@ -68,6 +69,7 @@ namespace Ubpa::UECS {
 		std::string name;
 		Mode mode;
 		size_t hashCode; // after name
+		bool isParallel;
 	};
 }
 

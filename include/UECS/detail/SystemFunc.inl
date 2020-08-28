@@ -17,14 +17,16 @@ namespace Ubpa::UECS {
 		std::string name,
 		ArchetypeFilter archetypeFilter,
 		CmptLocator cmptLocator,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		bool isParallel
 	) :
 		mode{ Mode::Entity },
 		func{ detail::Pack(std::forward<Func>(func)) },
 		entityQuery{ std::move(archetypeFilter), std::move(cmptLocator.Combine<decltype(func)>()) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) }
+		hashCode{ HashCode(this->name) },
+		isParallel{ isParallel }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
@@ -43,14 +45,16 @@ namespace Ubpa::UECS {
 		Func&& func,
 		std::string name,
 		ArchetypeFilter archetypeFilter,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		bool isParallel
 	) :
 		mode{ Mode::Chunk },
 		func{ detail::Pack(std::forward<Func>(func)) },
 		entityQuery{ std::move(archetypeFilter) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) }
+		hashCode{ HashCode(this->name) },
+		isParallel{ isParallel }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
@@ -74,7 +78,8 @@ namespace Ubpa::UECS {
 		func{ detail::Pack(std::forward<Func>(func)) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) }
+		hashCode{ HashCode(this->name) },
+		isParallel{ false }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 

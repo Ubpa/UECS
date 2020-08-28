@@ -39,7 +39,8 @@ namespace Ubpa::UECS {
 			std::string name,
 			ArchetypeFilter = {},
 			CmptLocator = {},
-			SingletonLocator = {}
+			SingletonLocator = {},
+			bool isParallel = true
 		);
 
 		// Func's argument list:
@@ -52,7 +53,8 @@ namespace Ubpa::UECS {
 			Func&&,
 			std::string name,
 			ArchetypeFilter = {},
-			SingletonLocator = {}
+			SingletonLocator = {},
+			bool isParallel = true
 		);
 
 		// Func's argument list:
