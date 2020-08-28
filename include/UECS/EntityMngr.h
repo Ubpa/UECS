@@ -112,9 +112,13 @@ namespace Ubpa::UECS {
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery&) const;
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
 
+		// if job is nullptr, direct run
 		void GenEntityJob(World*, Job*, SystemFunc*) const;
+		// if job is nullptr, direct run
 		void GenChunkJob(World*, Job*, SystemFunc*) const;
+		// if job is nullptr, direct run
 		void GenJob(World*, Job*, SystemFunc*) const;
+		// if job is nullptr, direct run
 		void AutoGen(World*, Job*, SystemFunc*) const;
 
 		struct EntityInfo {
