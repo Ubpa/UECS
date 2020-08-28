@@ -35,6 +35,8 @@
 - [x] exception: invalid `Entity` 
 - [x] lock `FilterChange` 
 - [ ] `EntityMngr` `Query`-driven API
+- [x] non-parallel job
+- [x] world run system func directly
 - [x] `CmptsView` = `const EntityLocator* locator + void** cmpts` 
 - [ ] pmr
 - [ ] batch create/instantiate (need benchmark)

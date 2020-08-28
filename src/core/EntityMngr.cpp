@@ -390,6 +390,24 @@ void EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
 	});
 }
 
+void EntityMngr::AutoGen(World* w, Job* job, SystemFunc* sys) const {
+	switch (sys->GetMode())
+	{
+	case SystemFunc::Mode::Entity:
+		GenEntityJob(w, job, sys);
+		break;
+	case SystemFunc::Mode::Chunk:
+		GenChunkJob(w, job, sys);
+		break;
+	case SystemFunc::Mode::Job:
+		GenJob(w, job, sys);
+		break;
+	default:
+		assert("not support" && false);
+		break;
+	}
+}
+
 void EntityMngr::Accept(IListener* listener) const {
 	listener->EnterEntityMngr(this);
 	for (const auto& [ts, a] : ts2a) {

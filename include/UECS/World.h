@@ -37,6 +37,46 @@ namespace Ubpa::UECS {
 
 		void AddCommand(std::function<void(World*)> command);
 
+		// Func's argument list:
+		// World*
+		// {LastFrame|Latest}<Singleton<Cmpt>>
+		// SingletonsView
+		// Entity
+		// size_t indexInQuery
+		// <tagged-components>: [const] <Cmpt>*...
+		// CmptsView
+		template<typename Func>
+		void RunEntityJob(
+			Func&&,
+			bool isParallel = true,
+			ArchetypeFilter = {},
+			CmptLocator = {},
+			SingletonLocator = {}
+		);
+
+		// Func's argument list:
+		// World*
+		// {LastFrame|Latest}<Singleton<Cmpt>>
+		// SingletonsView
+		// ChunkView (necessary)
+		template<typename Func>
+		void RunChunkJob(
+			Func&&,
+			ArchetypeFilter = {},
+			bool isParallel = true,
+			SingletonLocator = {}
+		);
+
+		// Func's argument list:
+		// World*
+		// {LastFrame|Write|Latest}<Singleton<Cmpt>>
+		// SingletonsView
+		template<typename Func>
+		void RunJob(
+			Func&&,
+			SingletonLocator = {}
+		);
+
 	private:
 		mutable JobExecutor executor;
 		Schedule schedule;
@@ -50,6 +90,8 @@ namespace Ubpa::UECS {
 		std::mutex commandBufferMutex;
 		void RunCommands();
 
+		void Run(SystemFunc*);
+
 		// ==================================================
 		World(const World& world) = delete;
 		World(World&& world) = delete;
@@ -57,3 +99,5 @@ namespace Ubpa::UECS {
 		World& operator=(const World& world) = delete;
 	};
 }
+
+#include "detail/World.inl"

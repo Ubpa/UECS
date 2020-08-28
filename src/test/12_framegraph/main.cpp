@@ -27,6 +27,7 @@ public:
 			.RegisterEntityJob(
 				[](LastFrame<A> a, Write<B> b, Latest<C> c) {},
 				"System Func",
+				true,
 				filter
 			);
 	}

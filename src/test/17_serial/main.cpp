@@ -21,7 +21,7 @@ public:
 		}, "Spilt");
 		schedule.RegisterEntityJob([](const A*) {
 			std::cout << "A" << std::endl;
-		}, "Serial Print A", {}, {}, {}, false);
+		}, "Serial Print A", false);
 		schedule.Order("Parallel Print A", "Spilt");
 		schedule.Order("Spilt", "Serial Print A");
 	}
@@ -37,10 +37,17 @@ int main() {
 	w.entityMngr.cmptTraits.Register
 		<A, B, C>();
 
-	for (size_t i = 0; i < 100; i++) {
+	for (size_t i = 0; i < 5; i++) {
 		w.Update();
 		std::cout << "^^^^^^^^^^" << std::endl;
 	}
+
+	for (size_t i = 0; i < 100; i++)
+		w.entityMngr.Create();
+
+	w.RunEntityJob([](Entity e) {
+		std::cout << e.Idx() << std::endl;
+	}, false);
 
 	std::cout << w.DumpUpdateJobGraph() << std::endl;
 	std::cout << w.GenUpdateFrameGraph().Dump() << std::endl;

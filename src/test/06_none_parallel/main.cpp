@@ -17,8 +17,8 @@ public:
 		ArchetypeFilter filter_w0, filter_w1;
 		filter_w0.none = { CmptType::Of<A> };
 		filter_w1.all = { CmptAccessType::Of<A> };
-		schedule.RegisterEntityJob([](B*) {}, "need B, none A", filter_w0);
-		schedule.RegisterEntityJob([](B*) {}, "need A, B", filter_w1);;
+		schedule.RegisterEntityJob([](B*) {}, "need B, none A", true, filter_w0);
+		schedule.RegisterEntityJob([](B*) {}, "need A, B", true, filter_w1);;
 	}
 };
 

@@ -29,13 +29,13 @@ public:
 				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::WRITE });
 				double& val = *reinterpret_cast<double*>(luaCmpt.Ptr());
 				val = 520.;
-			}, "write", ArchetypeFilter{}, locator_write);
+			}, "write", true, ArchetypeFilter{}, locator_write);
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {
 				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::LATEST });
 				const double& val = *reinterpret_cast<const double*>(luaCmpt.Ptr());
 				cout << "value : " << val << endl;
-			}, "read", ArchetypeFilter{}, locator_read);
+			}, "read", true, ArchetypeFilter{}, locator_read);
 	}
 };
 

@@ -27,6 +27,7 @@ public:
 				cout << e->val << endl;
 			},
 			"test filter",
+			true,
 			filter
 		);
 	}

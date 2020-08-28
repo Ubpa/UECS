@@ -25,20 +25,7 @@ void World::Update() {
 	for (const auto& [func, adjVs] : graph.GetAdjList()) {
 		auto job = jobPool.Request(func->Name());
 		jobs.push_back(job);
-		switch (func->GetMode())
-		{
-		case Ubpa::UECS::SystemFunc::Mode::Entity:
-			entityMngr.GenEntityJob(this, job, func);
-			break;
-		case Ubpa::UECS::SystemFunc::Mode::Chunk:
-			entityMngr.GenChunkJob(this, job, func);
-			break;
-		case Ubpa::UECS::SystemFunc::Mode::Job:
-			entityMngr.GenJob(this, job, func);
-			break;
-		default:
-			break;
-		}
+		entityMngr.AutoGen(this, job, func);
 		table[func] = jobGraph.composed_of(*job);
 	}
 
@@ -55,6 +42,13 @@ void World::Update() {
 
 string World::DumpUpdateJobGraph() const {
 	return jobGraph.dump();
+}
+
+void World::Run(SystemFunc* sys) {
+	Job job;
+	JobExecutor executor;
+	entityMngr.AutoGen(this, &job, sys);
+	executor.run(job).wait();
 }
 
 // after running Update

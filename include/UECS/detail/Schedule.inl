@@ -5,10 +5,10 @@ namespace Ubpa::UECS {
 	const SystemFunc* Schedule::RegisterEntityJob(
 		Func&& func,
 		std::string name,
+		bool isParallel,
 		ArchetypeFilter filter,
 		CmptLocator cmptLocator,
-		SingletonLocator singletonLocator,
-		bool isParallel
+		SingletonLocator singletonLocator
 	) {
 		return Request(
 			std::forward<Func>(func),
@@ -26,8 +26,8 @@ namespace Ubpa::UECS {
 		Func&& func,
 		std::string name,
 		ArchetypeFilter filter,
-		SingletonLocator singletonLocator,
-		bool isParallel
+		bool isParallel,
+		SingletonLocator singletonLocator
 	) {
 		return Request(
 			std::forward<Func>(func),

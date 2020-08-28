@@ -37,10 +37,10 @@ namespace Ubpa::UECS {
 		const SystemFunc* RegisterEntityJob(
 			Func&&,
 			std::string name,
+			bool isParallel = true,
 			ArchetypeFilter = {},
 			CmptLocator = {},
-			SingletonLocator = {},
-			bool isParallel = true
+			SingletonLocator = {}
 		);
 
 		// Func's argument list:
@@ -53,8 +53,8 @@ namespace Ubpa::UECS {
 			Func&&,
 			std::string name,
 			ArchetypeFilter = {},
-			SingletonLocator = {},
-			bool isParallel = true
+			bool isParallel = true,
+			SingletonLocator = {}
 		);
 
 		// Func's argument list:
