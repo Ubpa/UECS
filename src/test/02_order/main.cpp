@@ -28,7 +28,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<DataSystem>();
 
-	w.entityMngr.cmptTraits.Register<
+	w.cmptTraits.Register<
 		Data1,
 		Data2
 	>();

@@ -25,6 +25,9 @@ namespace Ubpa::UECS {
 		template<typename... Cmpts>
 		Archetype(EntityMngr*, TypeList<Cmpts...>);
 
+		// copy
+		Archetype(EntityMngr*, const Archetype&);
+
 		~Archetype();
 
 		// auto add Entity, use RTDCmptTraits
