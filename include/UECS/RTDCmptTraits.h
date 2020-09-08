@@ -46,6 +46,15 @@ namespace Ubpa::UECS {
 		// optional
 		RTDCmptTraits& RegisterName(CmptType, std::string name);
 
+		const auto& GetSizeofs() const noexcept { return sizeofs; }
+		const auto& GetAlignments() const noexcept { return alignments; };
+		const auto& GetDefaultConstructors() const noexcept { return default_constructors; }
+		const auto& GetCopyConstructors() const noexcept { return copy_constructors; }
+		const auto& GetMoveConstructors() const noexcept { return move_constructors; }
+		const auto& GetMoveAssignments() const noexcept { return move_assignments; }
+		const auto& GetDestructors() const noexcept { return destructors; }
+		const auto& GetNames() const noexcept { return names; }
+
 		size_t Sizeof(CmptType) const;
 		size_t Alignof(CmptType) const;
 		void DefaultConstruct(CmptType, void* cmpt) const;
@@ -64,18 +73,12 @@ namespace Ubpa::UECS {
 		void Deregister();
 
 	private:
-		friend class RTSCmptTraits;
-		friend class Archetype;
-		friend class EntityMngr;
-		friend class World;
-
-		RTDCmptTraits() = default;
-
 		// register all for Cmpt
 		// static_assert
 		// - is_default_constructible_v
 		// - is_copy_constructible_v
 		// - is_move_constructible_v
+		// - is_move_assignable_v
 		// - is_destructible_v
 		template<typename Cmpt>
 		void RegisterOne();

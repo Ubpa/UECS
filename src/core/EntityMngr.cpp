@@ -52,12 +52,7 @@ void EntityMngr::Swap(EntityMngr& rhs) noexcept {
 	swap(entityTableFreeEntry, rhs.entityTableFreeEntry);
 	swap(entityTable, rhs.entityTable);
 	swap(queryCache, rhs.queryCache);
-
-	auto pool = std::move(sharedChunkPool);
-	sharedChunkPool.~Pool();
-	new(&sharedChunkPool)Pool<Chunk>(std::move(rhs.sharedChunkPool));
-	rhs.sharedChunkPool.~Pool();
-	new(&rhs.sharedChunkPool)Pool<Chunk>(std::move(pool));
+	swap(sharedChunkPool, rhs.sharedChunkPool);
 }
 
 void EntityMngr::RecycleEntityEntry(Entity e) {
@@ -158,8 +153,8 @@ void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 		if (origArchetype->GetCmptTypeSet().Contains(type))
 			continue;
 
-		auto target = world->cmptTraits.default_constructors.find(type);
-		if (target == world->cmptTraits.default_constructors.end())
+		auto target = world->cmptTraits.GetDefaultConstructors().find(type);
+		if (target == world->cmptTraits.GetDefaultConstructors().end())
 			continue;
 
 		target->second(info.archetype->At(type, info.idxInArchetype));

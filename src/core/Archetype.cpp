@@ -145,8 +145,8 @@ size_t Archetype::Create(Entity e) {
 			memcpy(buffer + offset + idxInChunk * size, &e, size);
 		}
 		else {
-			auto target = rtdct.default_constructors.find(type);
-			if (target == rtdct.default_constructors.end())
+			auto target = rtdct.GetDefaultConstructors().find(type);
+			if (target == rtdct.GetDefaultConstructors().end())
 				continue;
 			const auto& ctor = target->second;
 			size_t size = cmptTraits.Sizeof(type);

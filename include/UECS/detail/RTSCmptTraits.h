@@ -10,22 +10,21 @@ namespace Ubpa::UECS {
 	// run-time static component traits
 	class RTSCmptTraits {
 	public:
-		size_t Sizeof(CmptType type) const;
-		size_t Alignof(CmptType type) const;
-		void CopyConstruct(CmptType type, void* dst, void* src) const;
-		void MoveConstruct(CmptType type, void* dst, void* src) const;
-		void MoveAssign(CmptType type, void* dst, void* src) const;
-		void Destruct(CmptType type, void* cmpt) const;
+		size_t Sizeof(CmptType) const;
+		size_t Alignof(CmptType) const;
+		void CopyConstruct(CmptType, void* dst, void* src) const;
+		void MoveConstruct(CmptType, void* dst, void* src) const;
+		void MoveAssign(CmptType, void* dst, void* src) const;
+		void Destruct(CmptType, void* cmpt) const;
 
 		template<typename Cmpt>
 		void Register();
 
-		// use RTDCmptTraits
-		void Register(const RTDCmptTraits& rtdCmptTraits, CmptType type);
+		void Register(const RTDCmptTraits&, CmptType);
 
 		template<typename Cmpt>
 		void Deregister();
-		void Deregister(CmptType type) noexcept;
+		void Deregister(CmptType) noexcept;
 
 	private:
 		friend class Archetype;

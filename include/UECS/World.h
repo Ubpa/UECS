@@ -26,6 +26,8 @@ namespace Ubpa::UECS {
 		// 4. run commands in main thread
 		void Update();
 
+		void AddCommand(std::function<void(World*)> command);
+
 		// after running Update
 		// you can use graphviz to vistualize the graph
 		std::string DumpUpdateJobGraph() const;
@@ -36,7 +38,8 @@ namespace Ubpa::UECS {
 
 		void Accept(IListener*) const;
 
-		void AddCommand(std::function<void(World*)> command);
+		// you can't run several parallel jobs in parallel because there is only an executor
+		// you can't run parallel jobs in runing job graph
 
 		// Func's argument list:
 		// World*
@@ -79,6 +82,8 @@ namespace Ubpa::UECS {
 		);
 
 	private:
+		bool inRunningJobGraph{ false };
+
 		mutable JobExecutor executor;
 		Schedule schedule;
 

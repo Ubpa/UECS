@@ -99,29 +99,29 @@ namespace Ubpa::UECS {
 	}
 
 	inline void RTSCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
-		auto size_target = rtdct.sizeofs.find(type);
-		if (size_target == rtdct.sizeofs.end())
+		auto size_target = rtdct.GetSizeofs().find(type);
+		if (size_target == rtdct.GetSizeofs().end())
 			throw std::logic_error("RTSCmptTraits::Register: RTDCmptTraits hasn't registered <CmptType>");
 		sizeofs[type] = size_target->second;
 		
-		auto alignment_target = rtdct.alignments.find(type);
-		if (alignment_target == rtdct.alignments.end())
+		auto alignment_target = rtdct.GetAlignments().find(type);
+		if (alignment_target == rtdct.GetAlignments().end())
 			alignments[type] = RTDCmptTraits::default_alignment;
 		else
 			alignments[type] = alignment_target->second;
 
-		auto destructor_target = rtdct.destructors.find(type);
-		auto copy_constructor_target = rtdct.copy_constructors.find(type);
-		auto move_constructor_target = rtdct.move_constructors.find(type);
-		auto move_assignments_target = rtdct.move_assignments.find(type);
+		auto destructor_target = rtdct.GetDestructors().find(type);
+		auto copy_constructor_target = rtdct.GetCopyConstructors().find(type);
+		auto move_constructor_target = rtdct.GetMoveConstructors().find(type);
+		auto move_assignments_target = rtdct.GetMoveAssignments().find(type);
 
-		if (destructor_target != rtdct.destructors.end())
+		if (destructor_target != rtdct.GetDestructors().end())
 			destructors.emplace(type, destructor_target->second);
-		if (copy_constructor_target != rtdct.copy_constructors.end())
+		if (copy_constructor_target != rtdct.GetCopyConstructors().end())
 			copy_constructors.emplace(type, copy_constructor_target->second);
-		if (move_constructor_target != rtdct.move_constructors.end())
+		if (move_constructor_target != rtdct.GetMoveConstructors().end())
 			move_constructors.emplace(type, move_constructor_target->second);
-		if (move_assignments_target != rtdct.move_assignments.end())
+		if (move_assignments_target != rtdct.GetMoveAssignments().end())
 			move_assignments.emplace(type, move_assignments_target->second);
 	}
 
