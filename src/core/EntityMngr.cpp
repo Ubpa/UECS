@@ -33,7 +33,8 @@ EntityMngr::EntityMngr(const EntityMngr& em)
 		const auto& src = em.entityTable[i];
 		dst.idxInArchetype = src.idxInArchetype;
 		dst.version = src.version;
-		dst.archetype = ts2a.find(src.archetype->types)->second.get();
+		if (src.archetype)
+			dst.archetype = ts2a.find(src.archetype->types)->second.get();
 	}
 	queryCache.reserve(em.queryCache.size());
 	for (const auto& [query, srcArchetypes] : em.queryCache) {
@@ -175,17 +176,19 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 
 	// get dstArchetype
 	Archetype* dstArchetype;
+	bool isNewArchetype;
 	auto target = ts2a.find(dstCmptTypeSet);
 	if (target == ts2a.end()) {
+		isNewArchetype = true;
 		dstArchetype = Archetype::Remove(srcArchetype, types, num);
 		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
 		for (auto& [query, archetypes] : queryCache) {
 			if (dstCmptTypeSet.IsMatch(query))
 				archetypes.insert(dstArchetype);
 		}
-		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 	}
 	else {
+		isNewArchetype = false;
 		dstArchetype = target->second.get();
 		if (dstArchetype == srcArchetype)
 			return;
@@ -196,15 +199,10 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
 	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
-	for (const auto& type : srcCmptTypeSet.data) {
+	for (const auto& type : dstCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
-		if (dstCmptTypeSet.Contains(type)) {
-			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
-			srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
-		}
-		// no need to call destructor because we will erase it later
-		/*else
-			srcCmptTraits.Destruct(type, srcCmpt);*/
+		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
+		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
 	}
 
 	// erase
@@ -214,6 +212,9 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 
 	info.archetype = dstArchetype;
 	info.idxInArchetype = dstIdxInArchetype;
+
+	if(isNewArchetype)
+		ts2a.emplace(std::move(dstCmptTypeSet), std::unique_ptr<Archetype>{dstArchetype});
 }
 
 vector<CmptPtr> EntityMngr::Components(Entity e) const {
@@ -507,13 +508,20 @@ CmptPtr EntityMngr::GetSingleton(CmptType t) const {
 	ArchetypeFilter filter{ {CmptAccessType{t}}, {}, {} };
 	EntityQuery query(move(filter));
 	const auto& archetypes = QueryArchetypes(query);
-	if (archetypes.size() != 1)
-		return { CmptType::Invalid(), nullptr };
-	auto archetype = *archetypes.begin();
-	if (archetype->EntityNum() != 1)
+
+	size_t num = 0;
+	for (auto archetype : archetypes)
+		num += archetype->EntityNum();
+
+	if (num != 1)
 		return { CmptType::Invalid(), nullptr };
 
-	return { t, archetype->At(t, 0) };
+	for (auto archetype : archetypes) {
+		if (archetype->EntityNum() != 0)
+			return { t, archetype->At(t, 0) };
+	}
+
+	return { CmptType::Invalid(), nullptr };
 }
 
 std::vector<CmptPtr> EntityMngr::GetCmptArray(const ArchetypeFilter& filter, CmptType type) const {

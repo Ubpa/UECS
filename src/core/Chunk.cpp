@@ -2,6 +2,8 @@
 
 #include <UECS/detail/Chunk.h>
 
+#include <algorithm>
+
 using namespace Ubpa::UECS;
 using namespace std;
 

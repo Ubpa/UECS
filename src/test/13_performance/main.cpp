@@ -36,8 +36,11 @@ int main() {
 		w.Update();
 	auto t2 = std::chrono::steady_clock::now();
 
+	// G5400 : 4 cores
 	// about 10s
-	// G5400 : 4 core
+	
+	// i5 8400 : 6 cores
+	// about 6s
 	auto d0 = t1 - t0;
 	auto d1 = t2 - t1;
 	std::cout << "create: " << d0.count() / 1000000000.0 << "s" << std::endl;
