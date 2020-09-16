@@ -19,11 +19,12 @@ size_t EntityMngr::RequestEntityFreeEntry() {
 }
 
 EntityMngr::EntityMngr(const EntityMngr& em)
-	: world{ em.world }
+	: world{ em.world },
+	sharedChunkPool{ std::make_unique<Pool<Chunk>>() }
 {
 	ts2a.reserve(em.ts2a.size());
 	for (const auto& [ts, a] : em.ts2a) {
-		auto [iter, success] = ts2a.try_emplace(ts, std::make_unique<Archetype>(this, *a));
+		auto [iter, success] = ts2a.try_emplace(ts, std::make_unique<Archetype>(sharedChunkPool.get(), *a));
 		assert(success);
 	}
 	entityTableFreeEntry = em.entityTableFreeEntry;
@@ -44,11 +45,16 @@ EntityMngr::EntityMngr(const EntityMngr& em)
 	}
 }
 
+EntityMngr::~EntityMngr() {
+	ts2a.clear();
+	sharedChunkPool->FastClear();
+}
+
 void EntityMngr::Swap(EntityMngr& rhs) noexcept {
 	assert(world == rhs.world);
 
 	using std::swap;
-
+	
 	swap(ts2a, rhs.ts2a);
 	swap(entityTableFreeEntry, rhs.entityTableFreeEntry);
 	swap(entityTable, rhs.entityTable);
@@ -73,7 +79,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto archetype = Archetype::New(this, types, num);
+	auto archetype = Archetype::New(world->cmptTraits, sharedChunkPool.get(), types, num);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
@@ -90,7 +96,7 @@ Entity EntityMngr::Create(const CmptType* types, size_t num) {
 	EntityInfo& info = entityTable[entityIndex];
 	Entity e{ entityIndex, info.version };
 	info.archetype = archetype;
-	info.idxInArchetype = archetype->Create(e);
+	info.idxInArchetype = archetype->Create(world->cmptTraits, e);
 	return e;
 }
 
@@ -111,7 +117,7 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t
 	Archetype* dstArchetype;
 	auto target = ts2a.find(dstCmptTypeSet);
 	if (target == ts2a.end()) {
-		dstArchetype = Archetype::Add(srcArchetype, types, num);
+		dstArchetype = Archetype::Add(world->cmptTraits, srcArchetype, types, num);
 		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
 		for (auto& [query, archetypes] : queryCache) {
 			if (dstCmptTypeSet.IsMatch(query))

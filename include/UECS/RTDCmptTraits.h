@@ -6,7 +6,7 @@
 #include <functional>
 
 namespace Ubpa::UECS {
-	// run-time dynamic component traits, singleton
+	// run-time dynamic component traits
 	// size (> 0) is neccessary
 	// optional
 	// - alignment: alignof(std::max_align_t) as default, 8 / 16 in most cases

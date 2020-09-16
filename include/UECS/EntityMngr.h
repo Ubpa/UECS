@@ -5,10 +5,6 @@
 #include "detail/Job.h"
 #include "EntityQuery.h"
 
-#include <UContainer/Pool.h>
-
-#include <memory>
-
 namespace Ubpa::UECS {
 	class World;
 
@@ -28,8 +24,9 @@ namespace Ubpa::UECS {
 	// - when free entries is empty, use new entity entry (version is 0)
 	class EntityMngr {
 	public:
-		EntityMngr(World* world) : world{ world } {}
+		EntityMngr(World* world) : world{ world }, sharedChunkPool{ std::make_unique<Pool<Chunk>>() } {}
 		EntityMngr(const EntityMngr& em);
+		~EntityMngr();
 
 		// same world
 		void Swap(EntityMngr& rhs) noexcept;
@@ -94,7 +91,6 @@ namespace Ubpa::UECS {
 		void Accept(IListener* listener) const;
 
 	private:
-		Pool<Chunk> sharedChunkPool; // destruct finally
 		World* world;
 
 		friend class World;
@@ -134,6 +130,7 @@ namespace Ubpa::UECS {
 		size_t RequestEntityFreeEntry();
 		void RecycleEntityEntry(Entity);
 
+		std::unique_ptr<Pool<Chunk>> sharedChunkPool;
 		std::unordered_map<CmptTypeSet, std::unique_ptr<Archetype>> ts2a; // archetype's CmptTypeSet to archetype
 	};
 }
