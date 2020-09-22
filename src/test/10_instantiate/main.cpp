@@ -7,25 +7,22 @@ using namespace std;
 
 struct A { float val; };
 
-class MySystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct MySystem {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](Entity e, const A* a) {
 			cout << e.Idx() << ": " << a->val << endl;
-		}, "");
+		}, "MySystem", false);
 	}
 };
 
 int main() {
 	World w;
-	w.systemMngr.Register<MySystem>();
+	auto mySystem = w.systemMngr.Register<MySystem>();
 
 	auto [e] = w.entityMngr.Create<>();
 	w.entityMngr.Emplace<A>(e, 1.f);
 	w.entityMngr.Instantiate(e);
-
+	w.systemMngr.Activate(mySystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

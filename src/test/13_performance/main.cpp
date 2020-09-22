@@ -8,11 +8,8 @@ using namespace Ubpa::UECS;
 struct A { float val; };
 struct B { float val; };
 
-class TestSystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct TestSystem {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob(
 			[](const A* a, B* b) {
 				// 256 floating-point operations
@@ -26,7 +23,8 @@ int main() {
 	size_t numEntities = 65536;
 	size_t numUpdate = 144 * 10;
 	World w;
-	w.systemMngr.Register<TestSystem>();
+	auto testSystem = w.systemMngr.Register<TestSystem>();
+	w.systemMngr.Activate(testSystem);
 
 	auto t0 = std::chrono::steady_clock::now();
 	for (size_t i = 0; i < numEntities; i++)

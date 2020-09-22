@@ -10,7 +10,7 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, s
 		e,
 		entityIndexInQuery,
 		cmptsView,
-		ChunkView{ nullptr, size_t_invalid }
+		ChunkView{ nullptr, static_cast<size_t>(-1) }
 	);
 }
 
@@ -20,7 +20,7 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, ChunkView c
 		w,
 		singletonsView,
 		Entity::Invalid(),
-		size_t_invalid,
+		static_cast<size_t>(-1),
 		CmptsView{ nullptr, 0 },
 		chunkView
 	);
@@ -32,8 +32,8 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView) {
 		w,
 		singletonsView,
 		Entity::Invalid(),
-		size_t_invalid,
+		static_cast<size_t>(-1),
 		CmptsView{ nullptr, 0 },
-		ChunkView{ nullptr, size_t_invalid }
+		ChunkView{ nullptr, static_cast<size_t>(-1) }
 	);
 }

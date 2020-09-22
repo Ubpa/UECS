@@ -22,8 +22,8 @@ namespace Ubpa::UECS {
 
 		constexpr size_t HashCode() const noexcept { return hashcode; }
 
-		static constexpr CmptType Invalid() noexcept { return CmptType{ size_t_invalid }; }
-		constexpr bool Valid() const noexcept { return hashcode == size_t_invalid; }
+		static constexpr CmptType Invalid() noexcept { return CmptType{ static_cast<size_t>(-1) }; }
+		constexpr bool Valid() const noexcept { return hashcode == static_cast<size_t>(-1); }
 
 		template<typename Cmpt>
 		constexpr bool Is() const noexcept;
@@ -60,7 +60,7 @@ namespace Ubpa::UECS {
 
 		constexpr operator CmptType()const noexcept { return type; }
 
-		static constexpr CmptAccessType Invalid() noexcept { return CmptAccessType{ size_t_invalid, AccessMode::LATEST }; }
+		static constexpr CmptAccessType Invalid() noexcept { return CmptAccessType{ static_cast<size_t>(-1), AccessMode::LATEST }; }
 		constexpr bool Valid() const noexcept { return type.Valid(); }
 
 		// same with CmptType's operator<

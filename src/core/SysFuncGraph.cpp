@@ -24,7 +24,7 @@ bool SysFuncGraph::HaveVertices(const std::vector<SystemFunc*>& vertices) const 
 bool SysFuncGraph::HaveEdge(SystemFunc* x, SystemFunc* y) const {
 	assert(HaveVertex(x) && HaveVertex(y));
 	assert(x != y);
-	const auto& adjVs = adjList.find(x)->second;
+	const auto& adjVs = adjList.at(x);
 	auto target = find(adjVs.begin(), adjVs.end(), y);
 	return target != adjVs.end();
 }
@@ -40,7 +40,7 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 		auto v = q.front();
 		visited.insert(v);
 		q.pop();
-		for (auto adjV : adjList.find(v)->second) {
+		for (auto adjV : adjList.at(v)) {
 			if (visited.find(adjV) != visited.end())
 				continue;
 			if (y == adjV)
@@ -103,7 +103,7 @@ tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 		zero_in_degree_vertices.pop();
 		sorted_vertices.push_back(v);
 		in_degree_map.erase(v);
-		for (auto child : adjList.find(v)->second) {
+		for (auto child : adjList.at(v)) {
 			auto target = in_degree_map.find(child);
 			if (target == in_degree_map.end())
 				continue;

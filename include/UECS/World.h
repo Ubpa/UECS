@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "SystemMngr.h"
 #include "EntityMngr.h"
+#include "Schedule.h"
 
 #include <UGraphviz/UGraphviz.h>
 
@@ -14,7 +15,9 @@ namespace Ubpa::UECS {
 	// SystemMngr + EntityMngr
 	class World {
 	public:
-		World();
+		World() = default;
+		// not copy schedule, so you can't use DumpUpdateJobGraph() and GenUpdateFrameGraph() before Update()
+		World(const World&);
 
 		SystemMngr systemMngr;
 		EntityMngr entityMngr;
@@ -25,13 +28,13 @@ namespace Ubpa::UECS {
 		// 4. run commands in main thread
 		void Update();
 
-		void AddCommand(std::function<void(World*)> command);
+		void AddCommand(std::function<void()> command);
 
-		// after running Update
+		// after running Update()
 		// you can use graphviz to vistualize the graph
 		std::string DumpUpdateJobGraph() const;
 
-		// after running Update
+		// after running Update()
 		// use RTDCmptTraits' registered component name
 		UGraphviz::Graph GenUpdateFrameGraph() const;
 
@@ -91,17 +94,17 @@ namespace Ubpa::UECS {
 		Pool<Job> jobPool;
 
 		// command
-		std::vector<std::function<void(World*)>> commandBuffer;
+		std::vector<std::function<void()>> commandBuffer;
 		std::mutex commandBufferMutex;
 		void RunCommands();
 
 		void Run(SystemFunc*);
 
 		// ==================================================
-		World(const World& world) = delete;
-		World(World&& world) = delete;
-		World& operator==(World&& world) = delete;
-		World& operator=(const World& world) = delete;
+		//World(const World& world) = delete;
+		//World(World&& world) = delete;
+		//World& operator==(World&& world) = delete;
+		//World& operator=(const World& world) = delete;
 	};
 }
 

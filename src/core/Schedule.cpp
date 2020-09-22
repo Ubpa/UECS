@@ -70,12 +70,12 @@ namespace Ubpa::UECS::detail {
 			const auto& postReaders = cmptFuncs.latestSysFuncs;
 
 			if (!preReaders.empty()) {
-				NoneGroup preGroup{ gMap.find(preReaders.front())->second };
+				NoneGroup preGroup{ gMap.at(preReaders.front()) };
 				for (size_t i = 1; i < preReaders.size(); i++)
-					preGroup += gMap.find(preReaders[i])->second;
+					preGroup += gMap.at(preReaders[i]);
 
 				for (const auto& w : writers) {
-					if (NoneGroup::Parallelable(preGroup, gMap.find(w)->second))
+					if (NoneGroup::Parallelable(preGroup, gMap.at(w)))
 						continue;
 					for (auto preReader : preReaders)
 						graph.AddEdge(preReader, w);
@@ -83,12 +83,12 @@ namespace Ubpa::UECS::detail {
 			}
 
 			if (!postReaders.empty()) {
-				NoneGroup postGroup{ gMap.find(postReaders.front())->second };
+				NoneGroup postGroup{ gMap.at(postReaders.front()) };
 				for (size_t i = 1; i < postReaders.size(); i++)
-					postGroup += gMap.find(postReaders[i])->second;
+					postGroup += gMap.at(postReaders[i]);
 
 				for (const auto& w : writers) {
-					if (NoneGroup::Parallelable(postGroup, gMap.find(w)->second))
+					if (NoneGroup::Parallelable(postGroup, gMap.at(w)))
 						continue;
 					for (auto postReader : postReaders)
 						graph.AddEdge(w, postReader);
@@ -107,15 +107,15 @@ namespace Ubpa::UECS::detail {
 			NoneGroup preGroup, postGroup;
 
 			if (!preReaders.empty()) {
-				preGroup = gMap.find(preReaders.front())->second;
+				preGroup = gMap.at(preReaders.front());
 				for (size_t i = 1; i < preReaders.size(); i++)
-					preGroup += gMap.find(preReaders[i])->second;
+					preGroup += gMap.at(preReaders[i]);
 			}
 
 			if (!postReaders.empty()) {
-				postGroup = gMap.find(postReaders.front())->second;
+				postGroup = gMap.at(postReaders.front());
 				for (size_t i = 1; i < postReaders.size(); i++)
-					postGroup += gMap.find(postReaders[i])->second;
+					postGroup += gMap.at(postReaders[i]);
 			}
 
 			vector<SystemFunc*> funcs;
@@ -138,7 +138,7 @@ namespace Ubpa::UECS::detail {
 				else if (!postGroup.sysFuncs.empty() && func == *postGroup.sysFuncs.begin())
 					rst.push_back(move(postGroup));
 				else // writer
-					rst.push_back(gMap.find(func)->second);
+					rst.push_back(gMap.at(func));
 			}
 
 			for (size_t i = 0; i < rst.size(); i++) {

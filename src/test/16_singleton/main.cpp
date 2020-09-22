@@ -11,11 +11,8 @@ struct Timer {
 struct Position { float val{ 1.f }; };
 struct Velocity { float val{ 1.f }; };
 
-class MoverSystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct MoverSystem {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterJob([](Singleton<Timer> timer) {
 			timer->dt = 0.03f;
 		}, "Timer");
@@ -30,7 +27,8 @@ public:
 
 int main() {
 	World w;
-	w.systemMngr.Register<MoverSystem>();
+	auto moverSystem = w.systemMngr.Register<MoverSystem>();
+	w.systemMngr.Activate(moverSystem);
 	w.entityMngr.Create<Position, Velocity>();
 	w.entityMngr.Create<Timer>();
 	w.entityMngr.cmptTraits.Register

@@ -40,25 +40,23 @@ using namespace Ubpa::UECS;
 struct Position { float val; };
 struct Velocity { float val; };
 
-class MoverSystem : public System {
-public:
-  using System::System;
-
-  virtual void OnUpdate(Schedule& schedule) override {
-    schedule.Register(
-      [](const Velocity* v, Position* p) {
-        p->val += v->val;
-      },
-      "Mover"
-    );
-  }
+struct MoverSystem {
+    static void OnUpdate(Schedule& schedule) {
+        schedule.RegisterEntityJob(
+            [](const Velocity* v, Position* p) {
+                p->val += v->val;
+            },
+            "Mover"
+        );
+    }
 };
 
 int main() {
-  World w;
-  w.systemMngr.Register<MoverSystem>();
-  w.entityMngr.CreateEntity<Position, Velocity>();
-  w.Update();
+    World w;
+    auto move = w.systemMngr.Register<MoverSystem>();
+    w.entityMngr.Create<Position, Velocity>();
+    w.systemMngr.Activate(move);
+    w.Update();
 }
 ```
 
@@ -66,8 +64,8 @@ int main() {
 
 - [read/write tag](src/test/01_tag/main.cpp) 
 - [system update order](src/test/02_order/main.cpp) 
-- system function with [`Entity`](src/test/03_query_entity/main.cpp), [`indexInQuery`](src/test/09_idx_in_query/main.cpp) 
 - [job function](src/test/08_job/main.cpp) 
+- system function with [`Entity`](src/test/03_query_entity/main.cpp) 
 - [chunk layout optimization with alignment](src/test/05_alignment/main.cpp) 
 - [parrallel with `None` filter](src/test/06_none_parallel/main.cpp) 
 - [system **overload**](src/test/07_overload/main.cpp) 

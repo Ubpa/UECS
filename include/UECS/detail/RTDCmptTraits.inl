@@ -44,8 +44,9 @@ namespace Ubpa::UECS {
 	}
 
 	inline size_t RTDCmptTraits::Sizeof(CmptType type) const {
-		assert(sizeofs.find(type) != sizeofs.end());
-		return sizeofs.find(type)->second;
+		auto target = sizeofs.find(type);
+		assert(target != sizeofs.end());
+		return target->second;
 	}
 
 	inline size_t RTDCmptTraits::Alignof(CmptType type) const {

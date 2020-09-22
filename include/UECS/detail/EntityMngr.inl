@@ -77,7 +77,7 @@ namespace Ubpa::UECS {
 
 		// erase
 		auto srcMovedEntityIndex = srcArchetype->Erase(srcIdxInArchetype);
-		if (srcMovedEntityIndex != size_t_invalid)
+		if (srcMovedEntityIndex != static_cast<size_t>(-1))
 			entityTable[srcMovedEntityIndex].idxInArchetype = srcIdxInArchetype;
 
 		info.archetype = dstArchetype;

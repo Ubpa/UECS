@@ -9,11 +9,8 @@ using namespace std;
 struct A {};
 struct B {};
 
-class MySystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct MySystem {
+	static void OnUpdate(Schedule& schedule) {
 		ArchetypeFilter filter_w0, filter_w1;
 		filter_w0.none = { CmptType::Of<A> };
 		filter_w1.all = { CmptAccessType::Of<A> };
@@ -24,12 +21,13 @@ public:
 
 int main() {
 	World w;
-	w.systemMngr.Register<MySystem>();
+	auto mySystem = w.systemMngr.Register<MySystem>();
 	w.entityMngr.Create<>();
 	w.entityMngr.Create<A>();
 	w.entityMngr.Create<B>();
 	w.entityMngr.Create<A, B>();
 
+	w.systemMngr.Activate(mySystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

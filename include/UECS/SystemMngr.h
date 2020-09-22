@@ -1,56 +1,40 @@
 #pragma once
 
-#include "Schedule.h"
-#include "System.h"
+#include <vector>
+#include <map>
+#include <set>
+#include <functional>
+#include <string>
 
-#include <UContainer/xSTL/xMap.h>
+namespace Ubpa::UECS {
+	class Schedule;
 
-#include <memory>
-
-namespace Ubpa::UECS{
-	class IListener;
-	class World;
-
-	// System Manager
-	// System is a struct with specific function
-	// signature: static void OnUpdate(Schedule&)
 	class SystemMngr {
 	public:
-		SystemMngr(World* world) : world { world } {}
+		const std::vector<std::function<void(Schedule&)>>& GetSystems() const noexcept { return systems; }
+		const std::set<size_t>& GetActiveSystemIndices() const noexcept { return activeSystemIndices; }
+		const std::map<std::string, size_t, std::less<>>& GetNameToIndexMap() const noexcept { return name2idx; }
 
-		void Register(std::unique_ptr<System> system) {
-			assert(system.get() != nullptr);
-			systems.emplace(system->GetName(), std::move(system));
-		}
-		bool IsRegister(std::string_view name) const {
-			return systems.find(name) != systems.end();
-		}
-		void Deregister(std::string_view name) {
-			systems.erase(systems.find(name));
-		}
+		// if unregister, return static_cast<size_t>(-1)
+		size_t GetIndex(std::string_view name) const;
+		// name: nameof::nameof_type<System>
+		template<typename System>
+		size_t GetIndex() const;
 
-		// Systems must be derived form System and std::is_constructable_v<Systems, World*>
-		template<typename... DerivedSystems>
-		void Register();
+		void Clear();
 
-		template<typename DerivedSystem>
-		bool IsRegistered() const;
+		size_t Register(std::string name, std::function<void(Schedule&)> func);
+		// name: nameof::nameof_type<System>
+		// func: static void System::OnUpdate(Schedule&);
+		template<typename System>
+		size_t Register();
 
-		template<typename... DerivedSystems>
-		void Deregister() noexcept;
-
-		void Accept(IListener*) const;
-
+		void Activate(size_t index);
+		void Deactivate(size_t index);
 	private:
-		template<typename DerivedSystem>
-		void RegisterOne();
-		template<typename DerivedSystem>
-		void DeregisterOne();
-
-		xMap<std::string, std::unique_ptr<System>> systems;
-		World* world;
-
-		friend class World;
+		std::vector<std::function<void(Schedule&)>> systems;
+		std::map<std::string, size_t, std::less<>> name2idx;
+		std::set<size_t> activeSystemIndices;
 	};
 }
 

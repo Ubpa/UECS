@@ -7,11 +7,8 @@ using namespace Ubpa::UECS;
 struct Position { float val{ 0.f }; };
 struct Velocity { float val{ 1.f }; };
 
-class MoverSystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct MoverSystem {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob(
 			[](const Velocity* v, Position* p) {
 				p->val += v->val;
@@ -30,16 +27,13 @@ public:
 
 int main() {
 	World w;
-	w.systemMngr.Register<MoverSystem>();
+	auto moverSystem = w.systemMngr.Register<MoverSystem>();
+	w.systemMngr.Activate(moverSystem);
 	w.entityMngr.Create<Position, Velocity>();
 
-	auto copy_e = w.entityMngr;
+	World cpW = w;
 	
-	w.entityMngr.Swap(copy_e);
-	w.Update();
-	w.entityMngr.Create<Position, Velocity>();
-	w.Update();
-	std::cout << "swap" << std::endl;
-	w.entityMngr.Swap(copy_e);
-	w.Update();
+	cpW.Update();
+	cpW.entityMngr.Create<Position, Velocity>();
+	cpW.Update();
 }

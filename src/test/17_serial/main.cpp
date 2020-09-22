@@ -8,11 +8,8 @@ struct A {};
 struct B {};
 struct C {};
 
-class PrintASystem : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct PrintASystem {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](A*) {
 			std::cout << "A" << std::endl;
 		}, "Parallel Print A");
@@ -29,7 +26,8 @@ public:
 
 int main() {
 	World w;
-	w.systemMngr.Register<PrintASystem>();
+	auto printSystem = w.systemMngr.Register<PrintASystem>();
+	w.systemMngr.Activate(printSystem);
 	w.entityMngr.Create<A>();
 	w.entityMngr.Create<A, B>();
 	w.entityMngr.Create<A, C>();

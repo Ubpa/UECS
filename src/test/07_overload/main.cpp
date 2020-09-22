@@ -9,20 +9,14 @@ struct P {};
 struct V {};
 struct A {};
 
-class VP_System : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct VP_System {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](const V*, P*) {cout << "VP" << endl; }, "VP");
 	}
 };
 
-class AVP_System : public System {
-public:
-	using System::System;
-
-	virtual void OnUpdate(Schedule& schedule) override {
+struct AVP_System {
+	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP");
 		schedule.InsertNone("VP", CmptType::Of<A>);
 	}
@@ -30,11 +24,14 @@ public:
 
 int main() {
 	World w;
-	w.systemMngr.Register<VP_System, AVP_System>();
+	auto vpSystem = w.systemMngr.Register<VP_System>();
+	auto avpSystem = w.systemMngr.Register<AVP_System>();
 
 	w.entityMngr.Create<V, P>();
 	w.entityMngr.Create<A, V, P>();
 
+	w.systemMngr.Activate(vpSystem);
+	w.systemMngr.Activate(avpSystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;
