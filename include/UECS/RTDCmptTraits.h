@@ -29,19 +29,19 @@ namespace Ubpa::UECS {
 		RTDCmptTraits& RegisterAlignment(CmptType, size_t alignment);
 
 		// optional
-		RTDCmptTraits& RegisterDefaultConstructor(CmptType, std::function<void(void*)>);
+		RTDCmptTraits& RegisterDefaultConstructor(CmptType, void(*)(void*));
 
 		// optional
-		RTDCmptTraits& RegisterCopyConstructor(CmptType, std::function<void(void*, void*)>);
+		RTDCmptTraits& RegisterCopyConstructor(CmptType, void(*)(void*, void*));
 
 		// optional
-		RTDCmptTraits& RegisterMoveConstructor(CmptType, std::function<void(void*, void*)>);
+		RTDCmptTraits& RegisterMoveConstructor(CmptType, void(*)(void*, void*));
 
 		// optional
-		RTDCmptTraits& RegisterMoveAssignment(CmptType, std::function<void(void*, void*)>);
+		RTDCmptTraits& RegisterMoveAssignment(CmptType, void(*)(void*, void*));
 
 		// optional
-		RTDCmptTraits& RegisterDestructor(CmptType, std::function<void(void*)>);
+		RTDCmptTraits& RegisterDestructor(CmptType, void(*)(void*));
 
 		// optional
 		RTDCmptTraits& RegisterName(CmptType, std::string name);
@@ -85,11 +85,11 @@ namespace Ubpa::UECS {
 
 		std::unordered_map<CmptType, size_t> sizeofs;
 		std::unordered_map<CmptType, size_t> alignments;
-		std::unordered_map<CmptType, std::function<void(void*)>> default_constructors; // dst <- src
-		std::unordered_map<CmptType, std::function<void(void*, void*)>> copy_constructors; // dst <- src
-		std::unordered_map<CmptType, std::function<void(void*, void*)>> move_constructors; // dst <- src
-		std::unordered_map<CmptType, std::function<void(void*, void*)>> move_assignments; // dst <- src
-		std::unordered_map<CmptType, std::function<void(void*)>> destructors;
+		std::unordered_map<CmptType, void(*)(void*)> default_constructors; // dst <- src
+		std::unordered_map<CmptType, void(*)(void*, void*)> copy_constructors; // dst <- src
+		std::unordered_map<CmptType, void(*)(void*, void*)> move_constructors; // dst <- src
+		std::unordered_map<CmptType, void(*)(void*, void*)> move_assignments; // dst <- src
+		std::unordered_map<CmptType, void(*)(void*)> destructors;
 		std::unordered_map<CmptType, std::string> names;
 	};
 }
