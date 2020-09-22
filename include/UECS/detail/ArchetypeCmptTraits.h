@@ -8,7 +8,7 @@
 
 namespace Ubpa::UECS {
 	// run-time static component traits
-	class RTSCmptTraits {
+	class ArchetypeCmptTraits {
 	public:
 		size_t Sizeof(CmptType) const;
 		size_t Alignof(CmptType) const;
@@ -38,4 +38,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "RTSCmptTraits.inl"
+#include "ArchetypeCmptTraits.inl"

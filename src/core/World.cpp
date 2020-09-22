@@ -6,7 +6,7 @@ using namespace Ubpa::UECS;
 using namespace Ubpa;
 using namespace std;
 
-World::World() : systemMngr{ this }, entityMngr{ this } {}
+World::World() : systemMngr{ this } {}
 
 void World::Update() {
 	inRunningJobGraph = true;
@@ -121,7 +121,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	unordered_map<size_t, size_t> sysFuncHashcode2idx;
 
 	auto queryCmptName = [this](CmptType type) -> string {
-		auto cmptName = cmptTraits.Nameof(type);
+		auto cmptName = entityMngr.cmptTraits.Nameof(type);
 		return cmptName.empty() ? std::to_string(type.HashCode()) : string{ cmptName };
 	};
 

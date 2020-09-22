@@ -4,7 +4,7 @@
 #include "../CmptPtr.h"
 #include "../CmptLocator.h"
 
-#include "RTSCmptTraits.h"
+#include "ArchetypeCmptTraits.h"
 #include "CmptTypeSet.h"
 #include "Chunk.h"
 
@@ -86,7 +86,7 @@ namespace Ubpa::UECS {
 
 		// Components + Entity
 		const CmptTypeSet& GetCmptTypeSet() const noexcept { return types; }
-		const RTSCmptTraits& GetRTSCmptTraits() const noexcept { return cmptTraits; }
+		const ArchetypeCmptTraits& GetArchetypeCmptTraits() const noexcept { return cmptTraits; }
 
 		size_t EntityNum() const noexcept { return entityNum; }
 		size_t EntityNumOfChunk(size_t chunkIdx) const noexcept;
@@ -109,7 +109,7 @@ namespace Ubpa::UECS {
 		friend class EntityMngr;
 
 		CmptTypeSet types; // Entity + Components
-		RTSCmptTraits cmptTraits;
+		ArchetypeCmptTraits cmptTraits;
 		std::unordered_map<CmptType, size_t> type2offset; // CmptType to offset in chunk (include Entity)
 
 		size_t chunkCapacity{ size_t_invalid };

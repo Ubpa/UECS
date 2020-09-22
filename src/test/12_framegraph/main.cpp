@@ -37,7 +37,7 @@ int main() {
 	World w;
 	w.systemMngr.Register<MySystem>();
 
-	w.cmptTraits
+	w.entityMngr.cmptTraits
 		.RegisterName(CmptType::Of<A>, "A")
 		.RegisterName(CmptType::Of<B>, "B")
 		.RegisterName(CmptType::Of<C>, "C")

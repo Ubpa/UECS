@@ -47,7 +47,7 @@ int main() {
 
 	World w;
 	w.systemMngr.Register<RTDSystem>();
-	w.cmptTraits
+	w.entityMngr.cmptTraits
 		.RegisterSize(type, 8)
 		.RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl; })
 		.RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });

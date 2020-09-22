@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SystemFunc.h"
+#include "detail/SystemFunc.h"
 #include "detail/SysFuncGraph.h"
 #include "detail/Job.h"
 

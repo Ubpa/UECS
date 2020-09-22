@@ -1,11 +1,11 @@
 #pragma once
 
-#include "EntityQuery.h"
-#include "SingletonLocator.h"
-#include "Entity.h"
-#include "CmptsView.h"
-#include "SingletonsView.h"
-#include "ChunkView.h"
+#include "../EntityQuery.h"
+#include "../SingletonLocator.h"
+#include "../Entity.h"
+#include "../CmptsView.h"
+#include "../SingletonsView.h"
+#include "../ChunkView.h"
 
 #include <functional>
 
@@ -73,4 +73,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/SystemFunc.inl"
+#include "SystemFunc.inl"

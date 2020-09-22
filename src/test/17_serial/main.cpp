@@ -34,7 +34,7 @@ int main() {
 	w.entityMngr.Create<A, B>();
 	w.entityMngr.Create<A, C>();
 	w.entityMngr.Create<A, B, C>();
-	w.cmptTraits.Register
+	w.entityMngr.cmptTraits.Register
 		<A, B, C>();
 
 	for (size_t i = 0; i < 5; i++) {

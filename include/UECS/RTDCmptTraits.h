@@ -18,32 +18,17 @@ namespace Ubpa::UECS {
 	// - name
 	class RTDCmptTraits {
 	public:
-		static constexpr size_t default_alignment = alignof(std::max_align_t);
+		static constexpr size_t DefaultAlignment() noexcept { return alignof(std::max_align_t); }
 
 		RTDCmptTraits& Clear();
 
-		// neccessary
 		RTDCmptTraits& RegisterSize(CmptType, size_t size);
-
-		// optional
 		RTDCmptTraits& RegisterAlignment(CmptType, size_t alignment);
-
-		// optional
 		RTDCmptTraits& RegisterDefaultConstructor(CmptType, void(*)(void*));
-
-		// optional
 		RTDCmptTraits& RegisterCopyConstructor(CmptType, void(*)(void*, void*));
-
-		// optional
 		RTDCmptTraits& RegisterMoveConstructor(CmptType, void(*)(void*, void*));
-
-		// optional
 		RTDCmptTraits& RegisterMoveAssignment(CmptType, void(*)(void*, void*));
-
-		// optional
 		RTDCmptTraits& RegisterDestructor(CmptType, void(*)(void*));
-
-		// optional
 		RTDCmptTraits& RegisterName(CmptType, std::string name);
 
 		const auto& GetSizeofs() const noexcept { return sizeofs; }

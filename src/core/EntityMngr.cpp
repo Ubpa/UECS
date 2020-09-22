@@ -1,25 +1,18 @@
 #include <UECS/EntityMngr.h>
 
+#include <UECS/detail/SystemFunc.h>
 #include <UECS/World.h>
 #include <UECS/IListener.h>
 
 using namespace Ubpa::UECS;
 using namespace std;
 
-size_t EntityMngr::RequestEntityFreeEntry() {
-	if (entityTableFreeEntry.empty()) {
-		size_t index = entityTable.size();
-		entityTable.emplace_back();
-		return index;
-	}
-
-	size_t entry = entityTableFreeEntry.back();
-	entityTableFreeEntry.pop_back();
-	return entry;
-}
+EntityMngr::EntityMngr()
+	: sharedChunkPool{ std::make_unique<Pool<Chunk>>() }
+{}
 
 EntityMngr::EntityMngr(const EntityMngr& em)
-	: world{ em.world },
+	: 
 	sharedChunkPool{ std::make_unique<Pool<Chunk>>() }
 {
 	ts2a.reserve(em.ts2a.size());
@@ -50,12 +43,23 @@ EntityMngr::~EntityMngr() {
 	sharedChunkPool->FastClear();
 }
 
-void EntityMngr::Swap(EntityMngr& rhs) noexcept {
-	assert(world == rhs.world);
+size_t EntityMngr::RequestEntityFreeEntry() {
+	if (entityTableFreeEntry.empty()) {
+		size_t index = entityTable.size();
+		entityTable.emplace_back();
+		return index;
+	}
 
+	size_t entry = entityTableFreeEntry.back();
+	entityTableFreeEntry.pop_back();
+	return entry;
+}
+
+void EntityMngr::Swap(EntityMngr& rhs) noexcept {
 	using std::swap;
 	
 	swap(ts2a, rhs.ts2a);
+	swap(cmptTraits, rhs.cmptTraits);
 	swap(entityTableFreeEntry, rhs.entityTableFreeEntry);
 	swap(entityTable, rhs.entityTable);
 	swap(queryCache, rhs.queryCache);
@@ -79,7 +83,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(const CmptType* types, size_t num)
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto archetype = Archetype::New(world->cmptTraits, sharedChunkPool.get(), types, num);
+	auto archetype = Archetype::New(cmptTraits, sharedChunkPool.get(), types, num);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
@@ -96,7 +100,7 @@ Entity EntityMngr::Create(const CmptType* types, size_t num) {
 	EntityInfo& info = entityTable[entityIndex];
 	Entity e{ entityIndex, info.version };
 	info.archetype = archetype;
-	info.idxInArchetype = archetype->Create(world->cmptTraits, e);
+	info.idxInArchetype = archetype->Create(cmptTraits, e);
 	return e;
 }
 
@@ -117,7 +121,7 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t
 	Archetype* dstArchetype;
 	auto target = ts2a.find(dstCmptTypeSet);
 	if (target == ts2a.end()) {
-		dstArchetype = Archetype::Add(world->cmptTraits, srcArchetype, types, num);
+		dstArchetype = Archetype::Add(cmptTraits, srcArchetype, types, num);
 		assert(dstCmptTypeSet == dstArchetype->GetCmptTypeSet());
 		for (auto& [query, archetypes] : queryCache) {
 			if (dstCmptTypeSet.IsMatch(query))
@@ -134,7 +138,7 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, const CmptType* types, size_t
 	// move src to dst
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
-	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	const auto& srcCmptTraits = srcArchetype->GetArchetypeCmptTraits();
 	for (const auto& type : srcCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
@@ -160,8 +164,8 @@ void EntityMngr::Attach(Entity e, const CmptType* types, size_t num) {
 		if (origArchetype->GetCmptTypeSet().Contains(type))
 			continue;
 
-		auto target = world->cmptTraits.GetDefaultConstructors().find(type);
-		if (target == world->cmptTraits.GetDefaultConstructors().end())
+		auto target = cmptTraits.GetDefaultConstructors().find(type);
+		if (target == cmptTraits.GetDefaultConstructors().end())
 			continue;
 
 		target->second(info.archetype->At(type, info.idxInArchetype));
@@ -204,7 +208,7 @@ void EntityMngr::Detach(Entity e, const CmptType* types, size_t num) {
 	size_t srcIdxInArchetype = info.idxInArchetype;
 	size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
-	const auto& srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+	const auto& srcCmptTraits = srcArchetype->GetArchetypeCmptTraits();
 	for (const auto& type : dstCmptTypeSet.data) {
 		auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);

@@ -3,17 +3,19 @@
 #include <stdexcept>
 
 namespace Ubpa::UECS {
-	inline size_t RTSCmptTraits::Sizeof(CmptType type) const {
-		assert(sizeofs.find(type) != sizeofs.end());
-		return sizeofs.find(type)->second;
+	inline size_t ArchetypeCmptTraits::Sizeof(CmptType type) const {
+		auto target = sizeofs.find(type);
+		assert(target != sizeofs.end());
+		return target->second;
 	}
 
-	inline size_t RTSCmptTraits::Alignof(CmptType type) const {
-		assert(alignments.find(type) != alignments.end());
-		return alignments.find(type)->second;
+	inline size_t ArchetypeCmptTraits::Alignof(CmptType type) const {
+		auto target = alignments.find(type);
+		assert(target != alignments.end());
+		return target->second;
 	}
 
-	inline void RTSCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
 		auto target = copy_constructors.find(type);
 
 		if (target != copy_constructors.end())
@@ -22,7 +24,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTSCmptTraits::MoveConstruct(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::MoveConstruct(CmptType type, void* dst, void* src) const {
 		auto target = move_constructors.find(type);
 
 		if (target != move_constructors.end())
@@ -31,7 +33,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTSCmptTraits::MoveAssign(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::MoveAssign(CmptType type, void* dst, void* src) const {
 		auto target = move_assignments.find(type);
 
 		if (target != move_assignments.end())
@@ -40,14 +42,14 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTSCmptTraits::Destruct(CmptType type, void* cmpt) const {
+	inline void ArchetypeCmptTraits::Destruct(CmptType type, void* cmpt) const {
 		auto target = destructors.find(type);
 		if (target != destructors.end())
 			target->second(cmpt);
 	}
 
 	template<typename Cmpt>
-	void RTSCmptTraits::Register() {
+	void ArchetypeCmptTraits::Register() {
 		static_assert(!IsTaggedCmpt_v<Cmpt>, "<Cmpt> should not be tagged");
 		static_assert(std::is_copy_constructible_v<Cmpt>, "<Cmpt> must be copy-constructible");
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
@@ -82,7 +84,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename Cmpt>
-	void RTSCmptTraits::Deregister() {
+	void ArchetypeCmptTraits::Deregister() {
 		constexpr CmptType type = CmptType::Of<Cmpt>;
 
 		sizeofs.erase(type);
@@ -98,16 +100,14 @@ namespace Ubpa::UECS {
 			move_assignments.erase(type);
 	}
 
-	inline void RTSCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
+	inline void ArchetypeCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
 		auto size_target = rtdct.GetSizeofs().find(type);
 		if (size_target == rtdct.GetSizeofs().end())
-			throw std::logic_error("RTSCmptTraits::Register: RTDCmptTraits hasn't registered <CmptType>");
+			throw std::logic_error("ArchetypeCmptTraits::Register: RTDCmptTraits hasn't registered <CmptType>");
 		sizeofs[type] = size_target->second;
 		
 		auto alignment_target = rtdct.GetAlignments().find(type);
-		if (alignment_target == rtdct.GetAlignments().end())
-			alignments[type] = RTDCmptTraits::default_alignment;
-		else
+		if (alignment_target != rtdct.GetAlignments().end())
 			alignments[type] = alignment_target->second;
 
 		auto destructor_target = rtdct.GetDestructors().find(type);
@@ -125,7 +125,7 @@ namespace Ubpa::UECS {
 			move_assignments.emplace(type, move_assignments_target->second);
 	}
 
-	inline void RTSCmptTraits::Deregister(CmptType type) noexcept {
+	inline void ArchetypeCmptTraits::Deregister(CmptType type) noexcept {
 		sizeofs.erase(type);
 		alignments.erase(type);
 		copy_constructors.erase(type);

@@ -68,7 +68,7 @@ namespace Ubpa::UECS {
 		size_t srcIdxInArchetype = info.idxInArchetype;
 		size_t dstIdxInArchetype = dstArchetype->RequestBuffer();
 
-		auto srcCmptTraits = srcArchetype->GetRTSCmptTraits();
+		auto srcCmptTraits = srcArchetype->GetArchetypeCmptTraits();
 		for (const auto& type : srcCmptTypeSet.data) {
 			auto srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 			auto dstCmpt = dstArchetype->At(type, dstIdxInArchetype);

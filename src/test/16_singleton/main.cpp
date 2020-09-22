@@ -33,7 +33,7 @@ int main() {
 	w.systemMngr.Register<MoverSystem>();
 	w.entityMngr.Create<Position, Velocity>();
 	w.entityMngr.Create<Timer>();
-	w.cmptTraits.Register
+	w.entityMngr.cmptTraits.Register
 		<Timer, Velocity, Position>();
 
 	w.Update();
