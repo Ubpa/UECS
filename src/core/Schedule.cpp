@@ -2,7 +2,7 @@
 
 #include <UContainer/Algorithm.h>
 
-#include <UECS/World.h>
+#include "SysFuncGraph.h"
 
 using namespace Ubpa::UECS;
 using namespace std;

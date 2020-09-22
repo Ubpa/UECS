@@ -1,4 +1,4 @@
-#include <UECS/detail/SysFuncGraph.h>
+#include "SysFuncGraph.h"
 
 #include <unordered_set>
 #include <queue>

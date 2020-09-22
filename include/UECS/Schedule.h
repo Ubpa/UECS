@@ -1,7 +1,6 @@
 #pragma once
 
 #include "detail/SystemFunc.h"
-#include "detail/SysFuncGraph.h"
 #include "detail/Job.h"
 
 #include <UContainer/Pool.h>
@@ -15,6 +14,7 @@ namespace Ubpa::UECS::detail {
 namespace Ubpa::UECS {
 	class EntityMngr;
 	class SystemMngr;
+	class SysFuncGraph;
 
 	// [description]
 	// system infomation record
