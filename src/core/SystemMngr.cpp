@@ -12,9 +12,9 @@ void SystemMngr::Clear() {
 	activeSystemIndices.clear();
 }
 
-size_t SystemMngr::Register(std::string name, std::function<void(Schedule&)> func) {
+size_t SystemMngr::Register(std::string name, void(*func)(Schedule&)) {
 	size_t idx = systems.size();
-	systems.emplace_back(std::move(func));
+	systems.emplace_back(func);
 	name2idx.emplace(std::move(name), idx);
 	return idx;
 }
