@@ -22,7 +22,17 @@ void World::Update() {
 	jobGraph.clear();
 
 	for (auto id : systemMngr.GetActiveSystemIndices())
-		systemMngr.GetSystems().at(id)(schedule);
+		systemMngr.GetSystems().at(id).func(schedule);
+
+	for (auto& [layer, scheduleCommands] : schedule.commandBuffer) {
+		auto& worldCommands = commandBuffer[layer];
+		for (auto& command : scheduleCommands) {
+			worldCommands.push_back([this, command = std::move(command)](){
+				command(this);
+			});
+		}
+	}
+	schedule.commandBuffer.clear();
 
 	auto graph = schedule.GenSysFuncGraph();
 
@@ -290,14 +300,16 @@ void World::Accept(IListener* listener) const {
 	listener->ExistWorld(this);
 }
 
-void World::AddCommand(std::function<void()> command) {
+void World::AddCommand(std::function<void()> command, size_t layer) {
 	assert(inRunningJobGraph);
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
-	commandBuffer.push_back(std::move(command));
+	commandBuffer[layer].push_back(std::move(command));
 }
 
 void World::RunCommands() {
-	for (const auto& command : commandBuffer)
-		command();
+	for (const auto& [layer, commands] : commandBuffer) {
+		for (const auto& command : commands)
+			command();
+	}
 	commandBuffer.clear();
 }

@@ -13,28 +13,28 @@ namespace Ubpa::UECS {
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(CmptType type, void(*f)(void*)) {
-		default_constructors.emplace(type, f);
+	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f) {
+		default_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(CmptType type, void(*f)(void*, void*)) {
-		copy_constructors.emplace(type, f);
+	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(CmptType type, std::function<void(void*,void*)> f) {
+		copy_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(CmptType type, void(*f)(void*, void*)) {
-		move_constructors.emplace(type, f);
+	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(CmptType type, std::function<void(void*,void*)> f) {
+		move_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(CmptType type, void(*f)(void*, void*)) {
-		move_assignments.emplace(type, f);
+	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(CmptType type, std::function<void(void*,void*)> f) {
+		move_assignments.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(CmptType type, void(*f)(void*)) {
-		destructors.emplace(type, f);
+	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(CmptType type, std::function<void(void*)> f) {
+		destructors.emplace(type, std::move(f));
 		return *this;
 	}
 

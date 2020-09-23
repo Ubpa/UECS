@@ -42,7 +42,7 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto mySystem = w.systemMngr.Register<MySystem>();
+	auto [mySystem] = w.systemMngr.Register<MySystem>();
 
 	w.entityMngr.Create<A, B>();
 

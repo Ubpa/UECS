@@ -11,8 +11,7 @@ namespace Ubpa::UECS {
 
 	inline size_t ArchetypeCmptTraits::Alignof(CmptType type) const {
 		auto target = alignments.find(type);
-		assert(target != alignments.end());
-		return target->second;
+		return target != alignments.end() ? target->second : RTDCmptTraits::DefaultAlignment();
 	}
 
 	inline void ArchetypeCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {

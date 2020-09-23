@@ -8,8 +8,13 @@ namespace Ubpa::UECS {
 		return GetIndex(nameof::nameof_type<System>());
 	}
 
+	template<typename... Systems>
+	std::array<size_t, sizeof...(Systems)> SystemMngr::Register() {
+		return { Register(std::string{ nameof::nameof_type<Systems>() }, &Systems::OnUpdate) ... };
+	}
+
 	template<typename System>
-	size_t SystemMngr::Register() {
-		return Register(std::string{ nameof::nameof_type<System>() }, &System::OnUpdate);
+	void SystemMngr::Unregister() {
+		Unregister(nameof::nameof_type<System>());
 	}
 }

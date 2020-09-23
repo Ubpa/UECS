@@ -24,14 +24,13 @@ struct AVP_System {
 
 int main() {
 	World w;
-	auto vpSystem = w.systemMngr.Register<VP_System>();
-	auto avpSystem = w.systemMngr.Register<AVP_System>();
+	auto systemIndices = w.systemMngr.Register<VP_System, AVP_System>();
+	for (auto idx : systemIndices)
+		w.systemMngr.Activate(idx);
 
 	w.entityMngr.Create<V, P>();
 	w.entityMngr.Create<A, V, P>();
 
-	w.systemMngr.Activate(vpSystem);
-	w.systemMngr.Activate(avpSystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

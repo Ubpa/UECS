@@ -27,7 +27,7 @@ struct MoverSystem {
 
 int main() {
 	World w;
-	auto moverSystem = w.systemMngr.Register<MoverSystem>();
+	auto [moverSystem] = w.systemMngr.Register<MoverSystem>();
 	w.systemMngr.Activate(moverSystem);
 	w.entityMngr.Create<Position, Velocity>();
 	w.entityMngr.Create<Timer>();

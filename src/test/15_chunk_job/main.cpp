@@ -50,7 +50,7 @@ struct SAB_System {
 
 int main() {
 	World w;
-	auto sabSystem = w.systemMngr.Register<SAB_System>();
+	auto [sabSystem] = w.systemMngr.Register<SAB_System>();
 
 	w.systemMngr.Activate(sabSystem);
 
