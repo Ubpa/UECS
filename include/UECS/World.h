@@ -41,10 +41,9 @@ namespace Ubpa::UECS {
 		void Accept(IListener*) const;
 
 		// you can't run several parallel jobs in parallel because there is only an executor
-		// you can't run parallel jobs in runing job graph
 
 		// Func's argument list:
-		// World*
+		// [const] World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		// Entity
@@ -61,9 +60,29 @@ namespace Ubpa::UECS {
 		);
 
 		// Func's argument list:
-		// World*
+		// const World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
+		// Entity
+		// size_t indexInQuery
+		// <tagged-components>: const <Cmpt>*...
+		// CmptsView
+		// --
+		// CmptLocator's Cmpt AccessMode can't be WRITE
+		template<typename Func>
+		void RunEntityJob(
+			Func&&,
+			bool isParallel = true,
+			ArchetypeFilter = {},
+			CmptLocator = {},
+			SingletonLocator = {}
+		) const;
+
+		// Func's argument list:
+		// [const] World*
+		// {LastFrame|Latest}<Singleton<Cmpt>>
+		// SingletonsView
+		// size_t entityBeginIndexInQuery
 		// ChunkView (necessary)
 		template<typename Func>
 		void RunChunkJob(
@@ -74,15 +93,20 @@ namespace Ubpa::UECS {
 		);
 
 		// Func's argument list:
-		// World*
-		// {LastFrame|Write|Latest}<Singleton<Cmpt>>
+		// const World*
+		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
+		// size_t entityBeginIndexInQuery
+		// ChunkView (necessary)
+		// --
+		// ArchetypeFilter's Cmpt AccessMode can't be WRITE
 		template<typename Func>
-		void RunJob(
+		void RunChunkJob(
 			Func&&,
+			ArchetypeFilter = {},
+			bool isParallel = true,
 			SingletonLocator = {}
-		);
-
+		) const;
 	private:
 		bool inRunningJobGraph{ false };
 

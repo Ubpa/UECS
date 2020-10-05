@@ -26,6 +26,8 @@ namespace Ubpa::UECS {
 		const CmptAccessTypeSet& CmptAccessTypes() const noexcept { return cmptTypes; }
 
 		bool operator==(const CmptLocator& rhs) const;
+
+		bool HasWriteCmptType() const noexcept;
 	private:
 		size_t GenHashCode() const noexcept;
 

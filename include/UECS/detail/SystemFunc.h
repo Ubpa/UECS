@@ -16,13 +16,14 @@ namespace Ubpa::UECS {
 	// name('s hashcode) must be unique in global
 	// query.filter.none can be change dynamically by other <System> with <Schedule>
 	// [- system function kind] (distinguish by argument list)
-	// common arguments : World*, SingletonsView, {LastFrame|Latest}<Singleton<Cmpt>>
+	// common arguments : [const] World*, SingletonsView, {LastFrame|Latest}<Singleton<Cmpt>>
 	// 1. Mode::Entity: per entity function
 	// * Entity
 	// * size_t indexInQuery
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
 	// 2. Mode::Chunk
+	// * size_t entityBeginIndexInQuery
 	// * ChunkView (necessary)
 	// 3. Mode::Job
 	// * Write<Singleton<Cmpt>> (only job can write singletons)
@@ -56,7 +57,7 @@ namespace Ubpa::UECS {
 		size_t HashCode() const noexcept { return hashCode; }
 
 		void operator()(World*, SingletonsView, Entity, size_t entityIndexInQuery, CmptsView);
-		void operator()(World*, SingletonsView, ChunkView);
+		void operator()(World*, SingletonsView, size_t entityBeginIndexInQuery, ChunkView);
 		void operator()(World*, SingletonsView);
 
 		Mode GetMode() const noexcept { return mode; }

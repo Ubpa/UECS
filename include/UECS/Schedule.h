@@ -26,7 +26,7 @@ namespace Ubpa::UECS {
 	class Schedule {
 	public:
 		// Func's argument list:
-		// World*
+		// [const] World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		// Entity
@@ -44,7 +44,7 @@ namespace Ubpa::UECS {
 		);
 
 		// Func's argument list:
-		// World*
+		// [const] World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		// ChunkView (necessary)
@@ -58,7 +58,7 @@ namespace Ubpa::UECS {
 		);
 
 		// Func's argument list:
-		// World*
+		// [const] World*
 		// {LastFrame|Write|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		template<typename Func>

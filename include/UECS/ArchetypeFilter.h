@@ -2,8 +2,6 @@
 
 #include "CmptType.h"
 
-#include <UTemplate/TypeList.h>
-
 #include <set>
 
 namespace Ubpa::UECS {
@@ -14,6 +12,8 @@ namespace Ubpa::UECS {
 		std::set<CmptType> none;
 
 		size_t HashCode() const noexcept;
+
+		bool HaveWriteCmptType() const noexcept;
 
 		bool operator==(const ArchetypeFilter& rhs) const;
 	};

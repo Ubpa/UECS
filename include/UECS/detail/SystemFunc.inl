@@ -59,14 +59,20 @@ namespace Ubpa::UECS {
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
 		static_assert(Length_v<Filter_t<ArgList, IsWriteSingleton>> == 0,
-			"(Mode::Chunk) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt> instead");
+			"(Mode::Chunk) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt>");
 
 		static_assert(Contain_v<ArgList, ChunkView>);
 
+		static_assert(!Contain_v<ArgList, Entity>,
+			"(Mode::Chunk) SystemFunc can't use Entity directly, use ChunkView::GetEntityArray()");
+
+		static_assert(!Contain_v<ArgList, CmptsView>,
+			"(Mode::Chunk) SystemFunc's argument list cann't have CmptsView");
+		
 		static_assert(Length_v<Filter_t<ArgList, IsNonSingleton>> == 0,
 			"(Mode::Chunk) SystemFunc can't directly access entities' components");
 
-		assert("(Mode::Chunk) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt> instead"
+		assert("(Mode::Chunk) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt>"
 			&& !singletonLocator.HasWriteSingletonType());
 	}
 
@@ -86,8 +92,13 @@ namespace Ubpa::UECS {
 		static_assert(Length_v<Filter_t<ArgList, IsNonSingleton>> == 0,
 			"(Mode::Job) SystemFunc can't access entities' components");
 
-		static_assert(!Contain_v<ArgList, Entity> && !Contain_v<ArgList, size_t> && !Contain_v<ArgList, ChunkView>,
-			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery or ChunkView");
+		static_assert(
+			!Contain_v<ArgList, Entity>
+			&& !Contain_v<ArgList, size_t>
+			&& !Contain_v<ArgList, CmptsView>
+			&& !Contain_v<ArgList, ChunkView>,
+			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery CmptsView or ChunkView"
+		);
 	}
 }
 
@@ -128,7 +139,7 @@ namespace Ubpa::UECS::detail {
 	auto Pack(Func&& func) noexcept {
 		using ArgList = FuncTraits_ArgList<Func>;
 
-		using DecayedArgList = Transform_t<ArgList, DecayTag>;
+		using DecayedArgList = Transform_t<ArgList, DecayArg>;
 		static_assert(IsSet_v<DecayedArgList>, "detail::System_::Pack: <Func>'s argument types must be a set");
 
 		using TaggedCmptList = Filter_t<ArgList, IsTaggedCmpt>;

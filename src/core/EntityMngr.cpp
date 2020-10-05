@@ -391,30 +391,45 @@ void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 
 	if (sys->IsParallel()) {
 		assert(job != nullptr);
+		size_t indexOffsetInQuery = 0;
 		for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
+			size_t num = archetype->EntityNum();
 			size_t chunkNum = archetype->ChunkNum();
+			size_t chunkCapacity = archetype->ChunkCapacity();
 
 			for (size_t i = 0; i < chunkNum; i++) {
+				size_t idxOffsetInChunk = i * chunkCapacity;
+				size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 				job->emplace([=, singletons = singletons]() {
 					(*sys)(
 						w,
 						SingletonsView{ singletons.data(), singletons.size() },
+						indexOffsetInQueryChunk,
 						ChunkView{ archetype, i }
 					);
 				});
 			}
+
+			indexOffsetInQuery += num;
 		}
 	}
 	else {
 		auto work = [this, w, sys, singletons = std::move(singletons)]() {
+			SingletonsView singletonsView{ singletons.data(), singletons.size() };
+
+			size_t indexOffsetInQuery = 0;
 			for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
+				size_t num = archetype->EntityNum();
 				size_t chunkNum = archetype->ChunkNum();
-				SingletonsView singletonsView{ singletons.data(), singletons.size() };
+				size_t chunkCapacity = archetype->ChunkCapacity();
 
 				for (size_t i = 0; i < chunkNum; i++) {
+					size_t idxOffsetInChunk = i * chunkCapacity;
+					size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 					(*sys)(
 						w,
 						singletonsView,
+						indexOffsetInQueryChunk,
 						ChunkView{ archetype, i }
 					);
 				}

@@ -1,5 +1,3 @@
-#pragma once
-
 #include <UECS/detail/Chunk.h>
 
 #include <algorithm>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits>
+#include <UTemplate/Basic.h>
 
 namespace Ubpa::UECS {
 	class Entity;
@@ -9,6 +9,114 @@ namespace Ubpa::UECS {
 }
 
 namespace Ubpa::UECS {
+	template<typename TaggedCmpt>
+	void* CastToVoidPointer(TaggedCmpt p) {
+		return const_cast<void*>(reinterpret_cast<const void*>(p));
+	}
+
+	// <Cmpt> (without read/write and singleton tag)
+	template<typename TaggedCmpt>
+	struct RemoveTag;
+	template<typename TaggedCmpt>
+	using RemoveTag_t = typename RemoveTag<TaggedCmpt>::type;
+
+	// <Cmpt> / Singleton<Cmpt>
+	template<typename TaggedCmpt>
+	struct RemoveRWTag;
+	template<typename TaggedCmpt>
+	using RemoveRWTag_t = typename RemoveRWTag<TaggedCmpt>::type;
+
+	// LastFrame<Cmpt>
+	// Write<Cmpt> / Cmpt*
+	// Latest<Cmpt> / const Cmpt*
+	template<typename TaggedCmpt>
+	struct RemoveSingletonTag;
+	template<typename TaggedCmpt>
+	using RemoveSingletonTag_t = typename RemoveSingletonTag<TaggedCmpt>::type;
+
+	// <Cmpt>*
+	template<typename TaggedCmpt>
+	struct DecayTag;
+	template<typename TaggedCmpt>
+	using DecayTag_t = typename DecayTag<TaggedCmpt>::type;
+
+	// <Cmpt>*, World*
+	template<typename Arg>
+	struct DecayArg;
+	template<typename Arg>
+	using DecayArg_t = typename DecayArg<Arg>::type;
+
+	template<typename TaggedCmpt>
+	struct IsLastFrame;
+	template<typename TaggedCmpt>
+	static constexpr bool IsLastFrame_v = IsLastFrame<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsWrite;
+	template<typename TaggedCmpt>
+	static constexpr bool IsWrite_v = IsWrite<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsLatest;
+	template<typename TaggedCmpt>
+	static constexpr bool IsLatest_v = IsLatest<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsLastFrameSingleton;
+	template<typename TaggedCmpt>
+	static constexpr bool IsLastFrameSingleton_v = IsLastFrameSingleton<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsWriteSingleton;
+	template<typename TaggedCmpt>
+	static constexpr bool IsWriteSingleton_v = IsWriteSingleton<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsLatestSingleton;
+	template<typename TaggedCmpt>
+	static constexpr bool IsLatestSingleton_v = IsLatestSingleton<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsSingleton : IValue<bool,
+		IsLastFrameSingleton_v<TaggedCmpt>
+		|| IsWriteSingleton_v<TaggedCmpt>
+		|| IsLatestSingleton_v<TaggedCmpt>
+	> {};
+	template<typename TaggedCmpt>
+	static constexpr bool IsSingleton_v = IsSingleton<TaggedCmpt>::value;
+
+	template<typename TaggedCmpt>
+	struct IsNonSingleton : IValue<bool,
+		IsLastFrame_v<TaggedCmpt>
+		|| IsWrite_v<TaggedCmpt>
+		|| IsLatest_v<TaggedCmpt>
+	> {};
+	template<typename TaggedCmpt>
+	static constexpr bool IsNonSingleton_v = IsNonSingleton<TaggedCmpt>::value;
+
+	template<typename T>
+	struct IsTaggedCmpt : IValue<bool, IsNonSingleton_v<T> || IsSingleton_v<T>> {};
+	template<typename T>
+	static constexpr bool IsTaggedCmpt_v = IsTaggedCmpt<T>::value;
+
+	template<typename T, AccessMode defaultMode>
+	static constexpr AccessMode AccessModeOf_default =
+		IsLastFrame_v<T> ? AccessMode::LAST_FRAME : (
+			IsWrite_v<T> ? AccessMode::WRITE : (
+				IsLatest_v<T> ? AccessMode::LATEST : (
+					IsLastFrameSingleton_v<T> ? AccessMode::LAST_FRAME_SINGLETON : (
+						IsWriteSingleton_v<T> ? AccessMode::WRITE_SINGLETON : (
+							IsLatestSingleton_v<T> ? AccessMode::LATEST_SINGLETON :
+							defaultMode
+						)
+					)
+				)
+			)
+		);
+
+	template<typename T>
+	static constexpr AccessMode AccessModeOf = AccessModeOf_default<T, AccessMode::LATEST>;
+
 	template<typename Cmpt> struct RemoveTag : IType<Cmpt> {}; // default
 
 	template<typename Cmpt> struct RemoveTag<LastFrame<Cmpt>> : IType<Cmpt> {};
@@ -64,6 +172,13 @@ namespace Ubpa::UECS {
 	template<typename Cmpt> struct DecayTag<const Singleton<Cmpt>> : IType<Cmpt*> {};
 
 	// ====
+	
+	template<typename Arg>
+	struct DecayArg : DecayTag<Arg> {};
+	template<>
+	struct DecayArg<const World*> : IType<World*> {};
+
+	// ====
 
 	template<typename T> struct IsLastFrame : std::false_type {};
 	template<typename Cmpt> struct IsLastFrame<LastFrame<Cmpt>> : std::true_type {};
@@ -80,6 +195,7 @@ namespace Ubpa::UECS {
 	template<typename Cmpt> struct IsLatest<Latest<Cmpt>> : std::true_type {};
 	template<typename Cmpt> struct IsLatest<Latest<Singleton<Cmpt>>> : std::false_type {};
 	template<typename Cmpt> struct IsLatest<const Cmpt*> : std::true_type {};
+	template<> struct IsLatest<const World*> : std::false_type {};
 
 	template<typename T> struct IsLastFrameSingleton : std::false_type {};
 	template<typename Cmpt> struct IsLastFrameSingleton<LastFrame<Singleton<Cmpt>>> : std::true_type {};
