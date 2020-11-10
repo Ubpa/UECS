@@ -101,21 +101,15 @@ namespace Ubpa::UECS {
 
 	template<typename T, AccessMode defaultMode>
 	static constexpr AccessMode AccessModeOf_default =
-		IsLastFrame_v<T> ? AccessMode::LAST_FRAME : (
-			IsWrite_v<T> ? AccessMode::WRITE : (
-				IsLatest_v<T> ? AccessMode::LATEST : (
-					IsLastFrameSingleton_v<T> ? AccessMode::LAST_FRAME_SINGLETON : (
-						IsWriteSingleton_v<T> ? AccessMode::WRITE_SINGLETON : (
-							IsLatestSingleton_v<T> ? AccessMode::LATEST_SINGLETON :
-							defaultMode
-						)
-					)
-				)
+		IsLastFrame_v<T> || IsLastFrameSingleton_v<T> ? AccessMode::LAST_FRAME : (
+			IsWrite_v<T> || IsWriteSingleton_v<T> ? AccessMode::WRITE : (
+				IsLatest_v<T> || IsLatestSingleton_v<T> ? AccessMode::LATEST :
+				defaultMode
 			)
 		);
 
 	template<typename T>
-	static constexpr AccessMode AccessModeOf = AccessModeOf_default<T, AccessMode::LATEST>;
+	static constexpr AccessMode AccessModeOf = AccessModeOf_default<T, AccessMode::WRITE>;
 
 	template<typename Cmpt> struct RemoveTag : IType<Cmpt> {}; // default
 

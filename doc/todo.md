@@ -29,7 +29,7 @@
 - [x] system base -> `System` 
 - [x] singleton
 - [ ] doxygen
-- [ ] lock ?
+- [ ] lock / random access
 - [x] system traits
 
 ### maybe support in future

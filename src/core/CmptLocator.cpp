@@ -6,10 +6,8 @@ using namespace Ubpa::UECS;
 
 CmptLocator::CmptLocator(const CmptAccessType* types, size_t num) {
 	assert(types || num == 0);
-	for (size_t i = 0; i < num; i++) {
-		assert(!AccessMode_IsSingleton(types[i].GetAccessMode()));
+	for (size_t i = 0; i < num; i++)
 		cmptTypes.insert(types[i]);
-	}
 
 	hashCode = GenHashCode();
 }

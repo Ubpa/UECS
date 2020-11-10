@@ -51,8 +51,8 @@ namespace Ubpa::UECS {
 		explicit constexpr CmptAccessType(CmptType type) noexcept : CmptAccessType{ type, AccessMode::LATEST } {}
 		explicit constexpr CmptAccessType() noexcept : CmptAccessType{ Invalid() } {}
 
-		template<typename Cmpt, AccessMode mode = AccessMode::LATEST>
-		static constexpr CmptAccessType Of = CmptAccessType{ CmptType::Of<RemoveTag_t<Cmpt>>, AccessModeOf_default<Cmpt, mode> };
+		template<typename Cmpt>
+		static constexpr CmptAccessType Of = CmptAccessType{ CmptType::Of<RemoveTag_t<Cmpt>>, AccessModeOf<Cmpt> };
 
 		// same with CmptType's HashCode
 		constexpr size_t HashCode() const noexcept { return type.HashCode(); }
@@ -61,7 +61,7 @@ namespace Ubpa::UECS {
 
 		constexpr operator CmptType()const noexcept { return type; }
 
-		static constexpr CmptAccessType Invalid() noexcept { return CmptAccessType{ static_cast<size_t>(-1), AccessMode::LATEST }; }
+		static constexpr CmptAccessType Invalid() noexcept { return CmptAccessType{ static_cast<size_t>(-1), AccessMode{} }; }
 		constexpr bool Valid() const noexcept { return type.Valid(); }
 
 		// same with CmptType's operator<

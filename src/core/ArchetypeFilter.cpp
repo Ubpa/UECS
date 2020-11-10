@@ -6,14 +6,10 @@ using namespace Ubpa::UECS;
 
 size_t ArchetypeFilter::HashCode() const noexcept {
 	size_t rst = TypeID<ArchetypeFilter>;
-	for (const auto& type : all) {
-		assert(!AccessMode_IsSingleton(type.GetAccessMode()));
+	for (const auto& type : all)
 		rst = hash_combine(rst, type.HashCode());
-	}
-	for (const auto& type : any) {
-		assert(!AccessMode_IsSingleton(type.GetAccessMode()));
+	for (const auto& type : any)
 		rst = hash_combine(rst, type.HashCode());
-	}
 	for (const auto& type : none)
 		rst = hash_combine(rst, type.HashCode());
 	return rst;

@@ -142,7 +142,8 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		.RegisterGraphEdgeAttr("color", "#C785C8")
 		.RegisterGraphEdgeAttr("arrowhead", "odot");
 
-	unordered_set<CmptAccessType> cmptTypes;
+	unordered_set<CmptType> cmptTypes;
+	unordered_set<CmptType> singletonTypes;
 	unordered_map<CmptType, size_t> cmptType2idx;
 	unordered_map<size_t, size_t> sysFuncHashcode2idx;
 
@@ -159,18 +160,21 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		for (auto cmptType : sysFunc->entityQuery.filter.any)
 			cmptTypes.insert(cmptType);
 		for (auto cmptType : sysFunc->entityQuery.filter.none)
-			cmptTypes.insert(CmptAccessType{ cmptType });
+			cmptTypes.insert(cmptType);
 		for (auto singleton : sysFunc->singletonLocator.SingletonTypes())
-			cmptTypes.insert(singleton);
+			singletonTypes.insert(singleton);
 	}
 
 	for (const auto& cmptType : cmptTypes) {
 		auto cmptIdx = registry.RegisterNode(queryCmptName(cmptType));
 		cmptType2idx.emplace(cmptType, cmptIdx);
-		if (AccessMode_IsSingleton(cmptType.GetAccessMode()))
-			subgraph_singleton.AddNode(cmptIdx);
-		else
-			subgraph_cmpt.AddNode(cmptIdx);
+		subgraph_cmpt.AddNode(cmptIdx);
+	}
+
+	for (const auto& singletonType : singletonTypes) {
+		auto cmptIdx = registry.RegisterNode(queryCmptName(singletonType));
+		cmptType2idx.emplace(singletonType, cmptIdx);
+		subgraph_singleton.AddNode(cmptIdx);
 	}
 
 	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
@@ -184,15 +188,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
-				edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 				subgraph_lastframe.AddEdge(edgeIdx);
 				break;
 			case AccessMode::WRITE:
-				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 				subgraph_write.AddEdge(edgeIdx);
 				break;
 			case AccessMode::LATEST:
-				edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 				subgraph_latest.AddEdge(edgeIdx);
 				break;
 			default:
@@ -205,20 +209,20 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
 			// filter's <All> and <Any> components are treat as r/w
 			for (const auto& cmptType : filter.all) {
-				auto cmptIdx = cmptType2idx[cmptType];
+				auto cmptIdx = cmptType2idx.at(cmptType);
 				size_t edgeIdx;
 				switch (cmptType.GetAccessMode())
 				{
 				case AccessMode::LAST_FRAME:
-					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 					subgraph_lastframe.AddEdge(edgeIdx);
 					break;
 				case AccessMode::WRITE:
-					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 					subgraph_write.AddEdge(edgeIdx);
 					break;
 				case AccessMode::LATEST:
-					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 					subgraph_latest.AddEdge(edgeIdx);
 					break;
 				default:
@@ -227,20 +231,20 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 				}
 			}
 			for (const auto& cmptType : filter.any) {
-				auto cmptIdx = cmptType2idx[cmptType];
+				auto cmptIdx = cmptType2idx.at(cmptType);
 				size_t edgeIdx;
 				switch (cmptType.GetAccessMode())
 				{
 				case AccessMode::LAST_FRAME:
-					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 					subgraph_lastframe.AddEdge(edgeIdx);
 					break;
 				case AccessMode::WRITE:
-					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 					subgraph_write.AddEdge(edgeIdx);
 					break;
 				case AccessMode::LATEST:
-					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
+					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
 					subgraph_latest.AddEdge(edgeIdx);
 					break;
 				default:
@@ -251,25 +255,25 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		}
 		else {
 			for (const auto& cmptType : filter.all) {
-				auto cmptIdx = cmptType2idx[cmptType];
+				auto cmptIdx = cmptType2idx.at(cmptType);
 				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 					continue;
-				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 				subgraph_all.AddEdge(edgeIdx);
 			}
 			for (const auto& cmptType : filter.any) {
-				auto cmptIdx = cmptType2idx[cmptType];
+				auto cmptIdx = cmptType2idx.at(cmptType);
 				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 					continue;
-				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 				subgraph_any.AddEdge(edgeIdx);
 			}
 		}
 		for (const auto& cmptType : filter.none) {
-			auto cmptIdx = cmptType2idx[cmptType];
+			auto cmptIdx = cmptType2idx.at(cmptType);
 			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
 				continue;
-			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
+			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 			subgraph_none.AddEdge(edgeIdx);
 		}
 
@@ -277,16 +281,16 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			size_t edgeIdx;
 			switch (singleton.GetAccessMode())
 			{
-			case AccessMode::LAST_FRAME_SINGLETON:
-				edgeIdx = registry.RegisterEdge(cmptType2idx[singleton], sysIdx);
+			case AccessMode::LAST_FRAME:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(singleton), sysIdx);
 				subgraph_lastframe.AddEdge(edgeIdx);
 				break;
-			case AccessMode::WRITE_SINGLETON:
-				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[singleton]);
+			case AccessMode::WRITE:
+				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(singleton));
 				subgraph_write.AddEdge(edgeIdx);
 				break;
-			case AccessMode::LATEST_SINGLETON:
-				edgeIdx = registry.RegisterEdge(cmptType2idx[singleton], sysIdx);
+			case AccessMode::LATEST:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(singleton), sysIdx);
 				subgraph_latest.AddEdge(edgeIdx);
 				break;
 			default:
