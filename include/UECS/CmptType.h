@@ -26,7 +26,8 @@ namespace Ubpa::UECS {
 		constexpr bool Valid() const noexcept { return hashcode == static_cast<size_t>(-1); }
 
 		template<typename Cmpt>
-		constexpr bool Is() const noexcept;
+		constexpr bool Is() const noexcept { return operator==(Of<Cmpt>); }
+		constexpr bool Is(std::string_view type_name) const noexcept { return operator==(CmptType{ type_name }); }
 
 		constexpr bool operator< (const CmptType& rhs) const noexcept { return hashcode <  rhs.hashcode; }
 		constexpr bool operator<=(const CmptType& rhs) const noexcept { return hashcode <= rhs.hashcode; }

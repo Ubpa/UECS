@@ -26,6 +26,7 @@ namespace Ubpa::UECS {
 	public:
 		EntityMngr();
 		EntityMngr(const EntityMngr& em);
+		EntityMngr(EntityMngr&&) noexcept = default;
 		~EntityMngr();
 
 		RTDCmptTraits cmptTraits;

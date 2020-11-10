@@ -31,7 +31,7 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.Register<MySystem>();
+	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
 
 	w.entityMngr.cmptTraits
 		.RegisterName(CmptType::Of<A>, "A")

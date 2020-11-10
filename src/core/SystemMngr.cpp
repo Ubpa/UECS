@@ -4,86 +4,59 @@
 
 using namespace Ubpa::UECS;
 
-SystemMngr::SystemMngr(const SystemMngr& mngr)
-	:
-	systems{mngr.systems},
-	frees{mngr.frees},
-	activeSystemIndices{mngr.activeSystemIndices}
-{
-	for (size_t i = 0; i < systems.size(); i++) {
-		const auto& system = systems[i];
-
-		if (system.name.empty())
-			continue;
-
-		name2idx.emplace(std::string_view{ system.name }, i);
-	}
+SystemMngr::~SystemMngr() {
+	assert(activeSystemIDs.empty());
+	assert(aliveSystemIDs.empty());
 }
 
-void SystemMngr::Clear() noexcept {
-	frees.clear();
-	activeSystemIndices.clear();
-	name2idx.clear();
-	systems.clear();
+void SystemMngr::Clear() {
+	for (auto ID : activeSystemIDs)
+		systemTraits.Deactivate(ID, w);
+	for (auto ID : aliveSystemIDs)
+		systemTraits.Destroy(ID, w);
+	activeSystemIDs.clear();
+	aliveSystemIDs.clear();
 }
 
-size_t SystemMngr::Register(std::string name, Func func) {
-	assert(!name.empty());
-
-	size_t idx;
-	if (!frees.empty()) {
-		idx = frees.back();
-		frees.pop_back();
-	}
-	else {
-		idx = systems.size();
-		systems.emplace_back();
-	}
-
-	name2idx.emplace(std::string_view(name), idx);
-	systems[idx].func = std::move(func);
-	systems[idx].name = std::move(name);
-
-	return idx;
-}
-
-void SystemMngr::Unregister(size_t idx) {
-	assert(idx < systems.size());
-	auto& system = systems[idx];
-	if (system.name.empty())
+void SystemMngr::Create(size_t ID) {
+	if (IsAlive(ID))
 		return;
-	activeSystemIndices.erase(idx);
-	name2idx.erase(system.name);
-	system.func = nullptr;
-	system.name.clear();
-	frees.push_back(idx);
+	systemTraits.Create(ID, w);
+	aliveSystemIDs.insert(ID);
 }
 
-void SystemMngr::Unregister(std::string_view name) {
-	auto target = name2idx.find(name);
-	if (target == name2idx.end())
+void SystemMngr::Activate(size_t ID) {
+	Create(ID);
+	if (IsActive(ID))
 		return;
-
-	size_t idx = target->second;
-
-	activeSystemIndices.erase(idx);
-	name2idx.erase(target);
-	systems[idx].func = nullptr;
-	systems[idx].name.clear();
-	frees.push_back(idx);
+	systemTraits.Activate(ID, w);
+	activeSystemIDs.insert(ID);
 }
 
-void SystemMngr::Activate(size_t index) {
-	assert(index < systems.size());
-	activeSystemIndices.insert(index);
+void SystemMngr::Update(size_t ID, Schedule& schedule) const {
+	assert(IsActive(ID));
+	systemTraits.Update(ID, schedule);
 }
 
-void SystemMngr::Deactivate(size_t index) noexcept {
-	assert(index < systems.size());
-	activeSystemIndices.erase(index);
+void SystemMngr::Deactivate(size_t ID) {
+	if (!IsAlive(ID) || !IsActive(ID))
+		return;
+	systemTraits.Deactivate(ID, w);
+	activeSystemIDs.erase(ID);
 }
 
-size_t SystemMngr::GetIndex(std::string_view name) const {
-	auto target = name2idx.find(name);
-	return target != name2idx.end() ? target->second : static_cast<size_t>(-1);
+void SystemMngr::Destroy(size_t ID) {
+	if (!IsAlive(ID))
+		return;
+	Deactivate(ID);
+	systemTraits.Destroy(ID, w);
+	aliveSystemIDs.erase(ID);
+}
+
+bool SystemMngr::IsAlive(size_t ID) const {
+	return aliveSystemIDs.find(ID) != aliveSystemIDs.end();
+}
+
+bool SystemMngr::IsActive(size_t ID) const {
+	return activeSystemIDs.find(ID) != activeSystemIDs.end();
 }

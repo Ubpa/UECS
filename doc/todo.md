@@ -29,6 +29,8 @@
 - [x] system base -> `System` 
 - [x] singleton
 - [ ] doxygen
+- [ ] lock ?
+- [x] system traits
 
 ### maybe support in future
 
@@ -44,7 +46,7 @@
 ### maybe not support in future
 
 - [ ] shared component
-- [ ] system group
+- [ ] system group ?
 
 ## tool
 

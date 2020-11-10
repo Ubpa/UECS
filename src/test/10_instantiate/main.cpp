@@ -17,7 +17,7 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.Register<MySystem>();
+	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
 
 	auto [e] = w.entityMngr.Create<>();
 	w.entityMngr.Emplace<A>(e, 1.f);

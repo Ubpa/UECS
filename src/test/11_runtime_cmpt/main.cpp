@@ -53,7 +53,7 @@ int main() {
     // }
 
 	World w;
-	auto [rtdSystem] = w.systemMngr.Register<RTDSystem>();
+	auto [rtdSystem] = w.systemMngr.systemTraits.Register<RTDSystem>();
 	w.entityMngr.cmptTraits
 		.RegisterSize(type, 8)
 		.RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl; })

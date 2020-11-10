@@ -24,7 +24,7 @@ struct AVP_System {
 
 int main() {
 	World w;
-	auto systemIndices = w.systemMngr.Register<VP_System, AVP_System>();
+	auto systemIndices = w.systemMngr.systemTraits.Register<VP_System, AVP_System>();
 	for (auto idx : systemIndices)
 		w.systemMngr.Activate(idx);
 

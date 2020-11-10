@@ -53,7 +53,7 @@ struct MoverSystem {
 
 int main() {
     World w;
-    auto move = w.systemMngr.Register<MoverSystem>();
+    auto move = w.systemMngr.systemTraits.Register<MoverSystem>();
     w.entityMngr.Create<Position, Velocity>();
     w.systemMngr.Activate(move);
     w.Update();

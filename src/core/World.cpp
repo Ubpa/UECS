@@ -9,46 +9,58 @@ using namespace Ubpa;
 using namespace std;
 
 World::World(const World& w)
-	: entityMngr{ w.entityMngr }, systemMngr{ w.systemMngr }
+	:
+	systemMngr{ w.systemMngr, this },
+	entityMngr{ w.entityMngr }
 {}
+
+World::World(World&& w) noexcept
+	:
+	systemMngr{ std::move(w.systemMngr), this },
+	entityMngr{ std::move(w.entityMngr) }
+{}
+
+World::~World() {
+	systemMngr.Clear();
+}
 
 void World::Update() {
 	inRunningJobGraph = true;
 
 	schedule.Clear();
-	for (auto job : jobs)
+	for (auto* job : jobs)
 		jobPool.Recycle(job);
 	jobs.clear();
 	jobGraph.clear();
 
-	for (auto id : systemMngr.GetActiveSystemIndices())
-		systemMngr.GetSystems().at(id).func(schedule);
+	for (auto id : systemMngr.GetActiveSystemsIDs())
+		systemMngr.Update(id, schedule);
 
 	for (auto& [layer, scheduleCommands] : schedule.commandBuffer) {
 		auto& worldCommands = commandBuffer[layer];
 		for (auto& command : scheduleCommands) {
-			worldCommands.push_back([this, command = std::move(command)](){
+			worldCommands.emplace_back([this, command = std::move(command)](){
 				command(this);
 			});
 		}
 	}
 	schedule.commandBuffer.clear();
 
-	auto graph = schedule.GenSysFuncGraph();
+	const auto graph = schedule.GenSysFuncGraph();
 
 	unordered_map<SystemFunc*, JobHandle> table;
 
 	for (const auto& [func, adjVs] : graph.GetAdjList()) {
-		auto job = jobPool.Request(func->Name());
+		auto* job = jobPool.Request(func->Name());
 		jobs.push_back(job);
 		entityMngr.AutoGen(this, job, func);
-		table[func] = jobGraph.composed_of(*job);
+		table.emplace(func, jobGraph.composed_of(*job));
 	}
 
 	for (const auto& [v, adjVs] : graph.GetAdjList()) {
-		auto vJob = table[v];
-		for (auto adjV : adjVs)
-			vJob.precede(table[adjV]);
+		auto vJob = table.at(v);
+		for (auto* adjV : adjVs)
+			vJob.precede(table.at(adjV));
 	}
 
 	executor.run(jobGraph).wait();
@@ -171,15 +183,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{
-			case Ubpa::UECS::AccessMode::LAST_FRAME:
+			case AccessMode::LAST_FRAME:
 				edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 				subgraph_lastframe.AddEdge(edgeIdx);
 				break;
-			case Ubpa::UECS::AccessMode::WRITE:
+			case AccessMode::WRITE:
 				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 				subgraph_write.AddEdge(edgeIdx);
 				break;
-			case Ubpa::UECS::AccessMode::LATEST:
+			case AccessMode::LATEST:
 				edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 				subgraph_latest.AddEdge(edgeIdx);
 				break;
@@ -197,15 +209,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 				size_t edgeIdx;
 				switch (cmptType.GetAccessMode())
 				{
-				case Ubpa::UECS::AccessMode::LAST_FRAME:
+				case AccessMode::LAST_FRAME:
 					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 					subgraph_lastframe.AddEdge(edgeIdx);
 					break;
-				case Ubpa::UECS::AccessMode::WRITE:
+				case AccessMode::WRITE:
 					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 					subgraph_write.AddEdge(edgeIdx);
 					break;
-				case Ubpa::UECS::AccessMode::LATEST:
+				case AccessMode::LATEST:
 					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 					subgraph_latest.AddEdge(edgeIdx);
 					break;
@@ -219,15 +231,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 				size_t edgeIdx;
 				switch (cmptType.GetAccessMode())
 				{
-				case Ubpa::UECS::AccessMode::LAST_FRAME:
+				case AccessMode::LAST_FRAME:
 					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 					subgraph_lastframe.AddEdge(edgeIdx);
 					break;
-				case Ubpa::UECS::AccessMode::WRITE:
+				case AccessMode::WRITE:
 					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[cmptType]);
 					subgraph_write.AddEdge(edgeIdx);
 					break;
-				case Ubpa::UECS::AccessMode::LATEST:
+				case AccessMode::LATEST:
 					edgeIdx = registry.RegisterEdge(cmptType2idx[cmptType], sysIdx);
 					subgraph_latest.AddEdge(edgeIdx);
 					break;
@@ -265,15 +277,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			size_t edgeIdx;
 			switch (singleton.GetAccessMode())
 			{
-			case Ubpa::UECS::AccessMode::LAST_FRAME_SINGLETON:
+			case AccessMode::LAST_FRAME_SINGLETON:
 				edgeIdx = registry.RegisterEdge(cmptType2idx[singleton], sysIdx);
 				subgraph_lastframe.AddEdge(edgeIdx);
 				break;
-			case Ubpa::UECS::AccessMode::WRITE_SINGLETON:
+			case AccessMode::WRITE_SINGLETON:
 				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx[singleton]);
 				subgraph_write.AddEdge(edgeIdx);
 				break;
-			case Ubpa::UECS::AccessMode::LATEST_SINGLETON:
+			case AccessMode::LATEST_SINGLETON:
 				edgeIdx = registry.RegisterEdge(cmptType2idx[singleton], sysIdx);
 				subgraph_latest.AddEdge(edgeIdx);
 				break;

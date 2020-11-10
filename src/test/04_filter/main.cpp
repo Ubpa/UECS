@@ -32,7 +32,7 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.Register<MySystem>();
+	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
 
 	auto [e0,     b0        ] = w.entityMngr.Create<   B      >(); // x
 	auto [e1, a1            ] = w.entityMngr.Create<A         >(); // x
