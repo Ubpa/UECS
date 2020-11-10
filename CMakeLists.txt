@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(UECS VERSION 0.13.2)
+project(UECS VERSION 0.13.3)
 message(STATUS "[Project] ${PROJECT_NAME}")
 
 include(cmake/InitUCMake.cmake)
@@ -9,7 +9,7 @@ Ubpa_InitUCMake()
 Ubpa_InitProject()
 
 Ubpa_AddDep(UContainer 0.0.7)
-Ubpa_AddDep(UTemplate  0.4.8)
+Ubpa_AddDep(UTemplate  0.4.9)
 Ubpa_AddDep(UGraphviz  0.1.5)
 
 Ubpa_AddSubDirsRec(include)

@@ -12,12 +12,12 @@ namespace Ubpa::UECS {
 	// 6. Latest<Singleton<Cmpt>>
 
 	enum class AccessMode : size_t {
-		LAST_FRAME = 0,           // 000, LastFrame<Cmpt>
-		WRITE = 1,                // 001, Write<Cmpt> / Cmpt*
-		LATEST = 2,               // 010, Latest<Cmpt> / const Cmpt*
-		LAST_FRAME_SINGLETON = 4, // 100, LastFrame<Singleton<Cmpt>>
-		WRITE_SINGLETON = 5,      // 101, Write<Singleton<Cmpt>> / Singleton<Cmpt>
-		LATEST_SINGLETON = 6,     // 110, Latest<Singleton<Cmpt>>
+		LAST_FRAME           = 0b000, // LastFrame<Cmpt>
+		WRITE                = 0b001, // Write<Cmpt> / Cmpt*
+		LATEST               = 0b010, // Latest<Cmpt> / const Cmpt*
+		LAST_FRAME_SINGLETON = 0b100, // LastFrame<Singleton<Cmpt>>
+		WRITE_SINGLETON      = 0b101, // Write<Singleton<Cmpt>> / Singleton<Cmpt>
+		LATEST_SINGLETON     = 0b110, // Latest<Singleton<Cmpt>>
 	};
 
 	constexpr bool AccessMode_IsSingleton(AccessMode mode) noexcept {

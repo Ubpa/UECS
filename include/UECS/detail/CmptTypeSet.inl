@@ -7,7 +7,7 @@ namespace Ubpa::UECS {
 			data.insert(types[i]);
 	}
 
-	inline void CmptTypeSet::Erase(const CmptType* types, size_t num) {
+	inline void CmptTypeSet::Erase(const CmptType* types, size_t num) noexcept {
 		assert(types || num == 0);
 		for (size_t i = 0; i < num; i++)
 			data.erase(types[i]);
@@ -84,7 +84,7 @@ namespace Ubpa::UECS {
 		return IsMatch(query.filter) && IsMatch(query.locator);
 	}
 
-	inline size_t CmptTypeSet::HashCode() const {
+	inline size_t CmptTypeSet::HashCode() const noexcept {
 		size_t seed = TypeID<CmptTypeSet>;
 		for (const auto& t : data)
 			seed = hash_combine(seed, t.HashCode());

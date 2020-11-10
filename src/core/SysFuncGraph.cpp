@@ -37,10 +37,10 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 	queue<SystemFunc*> q;
 	q.push(x);
 	while (!q.empty()) {
-		auto v = q.front();
+		auto* v = q.front();
 		visited.insert(v);
 		q.pop();
-		for (auto adjV : adjList.at(v)) {
+		for (auto* adjV : adjList.at(v)) {
 			if (visited.find(adjV) != visited.end())
 				continue;
 			if (y == adjV)
@@ -64,11 +64,11 @@ void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
 SysFuncGraph SysFuncGraph::SubGraph(const std::vector<SystemFunc*>& vertices) const {
 	assert(HaveVertices(vertices));
 	SysFuncGraph subgraph;
-	for (auto v : vertices)
+	for (auto* v : vertices)
 		subgraph.AddVertex(v);
 
-	for (auto x : vertices) {
-		for (auto y : vertices) {
+	for (auto* x : vertices) {
+		for (auto* y : vertices) {
 			if (y == x)
 				continue;
 			if (HavePath(x, y))
@@ -99,11 +99,11 @@ tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 	}
 
 	while (!zero_in_degree_vertices.empty()) {
-		auto v = zero_in_degree_vertices.top();
+		auto* v = zero_in_degree_vertices.top();
 		zero_in_degree_vertices.pop();
 		sorted_vertices.push_back(v);
 		in_degree_map.erase(v);
-		for (auto child : adjList.at(v)) {
+		for (auto* child : adjList.at(v)) {
 			auto target = in_degree_map.find(child);
 			if (target == in_degree_map.end())
 				continue;

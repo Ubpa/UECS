@@ -62,41 +62,24 @@ namespace Ubpa::UECS {
 
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
 			destructors.emplace(type, [](void* cmpt) {
-				reinterpret_cast<Cmpt*>(cmpt)->~Cmpt();
+				static_cast<Cmpt*>(cmpt)->~Cmpt();
 			});
 		}
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>) {
 			move_constructors.emplace(type, [](void* dst, void* src) {
-				new(dst)Cmpt(std::move(*reinterpret_cast<Cmpt*>(src)));
+				new(dst)Cmpt(std::move(*static_cast<Cmpt*>(src)));
 			});
 		}
 		if constexpr (!std::is_trivially_copy_assignable_v<Cmpt>) {
 			move_assignments.emplace(type, [](void* dst, void* src) {
-				*reinterpret_cast<Cmpt*>(dst) = std::move(*reinterpret_cast<Cmpt*>(src));
+				*static_cast<Cmpt*>(dst) = std::move(*static_cast<Cmpt*>(src));
 			});
 		}
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
 			copy_constructors.emplace(type, [](void* dst, void* src) {
-				new(dst)Cmpt(*reinterpret_cast<Cmpt*>(src));
+				new(dst)Cmpt(*static_cast<Cmpt*>(src));
 			});
 		}
-	}
-
-	template<typename Cmpt>
-	void ArchetypeCmptTraits::Deregister() {
-		constexpr CmptType type = CmptType::Of<Cmpt>;
-
-		sizeofs.erase(type);
-		alignments.erase(type);
-
-		if constexpr (!std::is_trivially_destructible_v<Cmpt>)
-			destructors.erase(type);
-		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>)
-			copy_constructors.erase(type);
-		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>)
-			move_constructors.erase(type);
-		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>)
-			move_assignments.erase(type);
 	}
 
 	inline void ArchetypeCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
@@ -122,6 +105,23 @@ namespace Ubpa::UECS {
 			move_constructors.emplace(type, move_constructor_target->second);
 		if (move_assignments_target != rtdct.GetMoveAssignments().end())
 			move_assignments.emplace(type, move_assignments_target->second);
+	}
+
+	template<typename Cmpt>
+	void ArchetypeCmptTraits::Deregister() noexcept {
+		constexpr CmptType type = CmptType::Of<Cmpt>;
+
+		sizeofs.erase(type);
+		alignments.erase(type);
+
+		if constexpr (!std::is_trivially_destructible_v<Cmpt>)
+			destructors.erase(type);
+		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>)
+			copy_constructors.erase(type);
+		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>)
+			move_constructors.erase(type);
+		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>)
+			move_assignments.erase(type);
 	}
 
 	inline void ArchetypeCmptTraits::Deregister(CmptType type) noexcept {

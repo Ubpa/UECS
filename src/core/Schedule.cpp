@@ -345,8 +345,8 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		for (size_t i = 0; i < sortedGroup.size() - 1; i++) {
 			const auto& gx = sortedGroup[i];
 			const auto& gy = sortedGroup[i + 1];
-			for (auto fx : gx.sysFuncs) {
-				for (auto fy : gy.sysFuncs)
+			for (auto* fx : gx.sysFuncs) {
+				for (auto* fy : gy.sysFuncs)
 					graph.AddEdge(fx, fy);
 			}
 		}

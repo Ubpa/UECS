@@ -32,6 +32,6 @@ bool CmptLocator::HasWriteCmptType() const noexcept {
 	return false;
 }
 
-bool CmptLocator::operator==(const CmptLocator& rhs) const {
+bool CmptLocator::operator==(const CmptLocator& rhs) const noexcept {
 	return cmptTypes == rhs.cmptTypes;
 }

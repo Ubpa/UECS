@@ -1,7 +1,5 @@
 #pragma once
 
-#include "CmptTag.h"
-
 #include "CmptType.h"
 
 #include <set>

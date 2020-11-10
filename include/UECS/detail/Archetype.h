@@ -22,7 +22,7 @@ namespace Ubpa::UECS {
 	// type of Entity + Components is Archetype's type
 	class Archetype {
 	public:
-		Archetype(Pool<Chunk>* chunkPool) : chunkPool{ chunkPool } {}
+		Archetype(Pool<Chunk>* chunkPool) noexcept : chunkPool{ chunkPool } {}
 
 		// argument TypeList<Cmpts...> is for type deduction
 		// auto add Entity

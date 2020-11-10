@@ -37,13 +37,13 @@ Archetype::Archetype(Pool<Chunk>* pool, const Archetype& src)
 
 	chunks.resize(src.chunks.size(), nullptr);
 	for (size_t i = 0; i < src.chunks.size(); i++) {
-		auto srcChunk = src.chunks[i];
-		auto dstChunk = chunks[i] = chunkPool->Request();
+		auto* srcChunk = src.chunks[i];
+		auto* dstChunk = chunks[i] = chunkPool->Request();
 		size_t num = src.EntityNumOfChunk(i);
 		for (auto type : types.data) {
 			auto offset = Offsetof(type);
-			auto srcBegin = srcChunk->Data() + offset;
-			auto dstBegin = dstChunk->Data() + offset;
+			auto* srcBegin = srcChunk->Data() + offset;
+			auto* dstBegin = dstChunk->Data() + offset;
 			auto size = cmptTraits.Sizeof(type);
 			auto target = cmptTraits.copy_constructors.find(type);
 			if (target != cmptTraits.copy_constructors.end()) {
@@ -85,7 +85,7 @@ void Archetype::SetLayout() {
 Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, Pool<Chunk>* chunkPool, const CmptType* types, size_t num) {
 	assert(NotContainEntity(types, num));
 
-	auto rst = new Archetype{ chunkPool };
+	auto* rst = new Archetype{ chunkPool };
 	rst->types.Insert(types, num);
 	rst->types.data.insert(CmptType::Of<Entity>);
 	rst->cmptTraits.Register<Entity>();
@@ -99,7 +99,7 @@ Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, c
 	assert(NotContainEntity(types, num));
 	assert(!from->types.ContainsAll(types, num));
 
-	Archetype* rst = new Archetype{ from->chunkPool };
+	auto* rst = new Archetype{ from->chunkPool };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
@@ -116,7 +116,7 @@ Archetype* Archetype::Remove(const Archetype* from, const CmptType* types, size_
 	assert(NotContainEntity(types, num));
 	assert(from->types.ContainsAny(types, num));
 	
-	Archetype* rst = new Archetype{ from->chunkPool };
+	auto* rst = new Archetype{ from->chunkPool };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
@@ -157,7 +157,7 @@ size_t Archetype::Create(RTDCmptTraits& rtdCmptTraits, Entity e) {
 
 size_t Archetype::RequestBuffer() {
 	if (entityNum == chunks.size() * chunkCapacity) {
-		auto chunk = chunkPool->Request();
+		auto* chunk = chunkPool->Request();
 		chunks.push_back(chunk);
 	}
 	return entityNum++;
@@ -237,7 +237,7 @@ void* Archetype::Locate(size_t chunkIdx, CmptType t) const {
 	if (!types.Contains(t))
 		return nullptr;
 
-	auto buffer = chunks[chunkIdx]->Data();
+	auto* buffer = chunks[chunkIdx]->Data();
 	return buffer + Offsetof(t);
 }
 

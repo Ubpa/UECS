@@ -1,7 +1,5 @@
 #include <UECS/SingletonLocator.h>
 
-#include <UECS/detail/Util.h>
-
 using namespace Ubpa::UECS;
 using namespace std;
 

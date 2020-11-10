@@ -15,6 +15,6 @@ namespace Ubpa::UECS {
 
 		bool HaveWriteCmptType() const noexcept;
 
-		bool operator==(const ArchetypeFilter& rhs) const;
+		bool operator==(const ArchetypeFilter& rhs) const noexcept;
 	};
 }

@@ -7,7 +7,7 @@ namespace Ubpa::UECS {
 
 	class ChunkView {
 	public:
-		ChunkView(Archetype* archetype, size_t chunkIdx)
+		ChunkView(Archetype* archetype, size_t chunkIdx) noexcept
 			: archetype{ archetype }, chunkIdx{ chunkIdx } {}
 
 		bool Contains(CmptType) const;
@@ -15,8 +15,8 @@ namespace Ubpa::UECS {
 		// nullptr if not contain
 		void* GetCmptArray(CmptType) const;
 		template<typename Cmpt>
-		Cmpt* GetCmptArray() const { return reinterpret_cast<Cmpt*>(GetCmptArray(CmptType::Of<Cmpt>)); }
-		const Entity* GetEntityArray() const { return GetCmptArray<Entity>(); }
+		Cmpt* GetCmptArray() const { return static_cast<Cmpt*>(GetCmptArray(CmptType::Of<Cmpt>)); }
+		const Entity* GetEntityArray() const noexcept { return GetCmptArray<Entity>(); }
 		size_t EntityNum() const noexcept;
 
 	private:

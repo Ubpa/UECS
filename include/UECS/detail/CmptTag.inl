@@ -10,7 +10,7 @@ namespace Ubpa::UECS {
 
 namespace Ubpa::UECS {
 	template<typename TaggedCmpt>
-	void* CastToVoidPointer(TaggedCmpt p) {
+	void* CastToVoidPointer(TaggedCmpt p) noexcept {
 		return const_cast<void*>(reinterpret_cast<const void*>(p));
 	}
 

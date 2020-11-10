@@ -56,21 +56,20 @@ namespace Ubpa::UECS {
 
 		size_t HashCode() const noexcept { return hashCode; }
 
-		void operator()(World*, SingletonsView, Entity, size_t entityIndexInQuery, CmptsView);
-		void operator()(World*, SingletonsView, size_t entityBeginIndexInQuery, ChunkView);
-		void operator()(World*, SingletonsView);
+		void operator()(World*, SingletonsView, Entity, size_t entityIndexInQuery, CmptsView) const;
+		void operator()(World*, SingletonsView, size_t entityBeginIndexInQuery, ChunkView) const;
+		void operator()(World*, SingletonsView) const;
 
 		Mode GetMode() const noexcept { return mode; }
 		bool IsParallel() const noexcept { return isParallel; }
 
 		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
-		std::function<void(World*, SingletonsView, Entity, size_t, CmptsView, ChunkView)> func;
-
-		std::string name;
 		Mode mode;
+		std::string name;
 		size_t hashCode; // after name
 		bool isParallel;
+		std::function<void(World*, SingletonsView, Entity, size_t, CmptsView, ChunkView)> func;
 	};
 }
 

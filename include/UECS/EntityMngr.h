@@ -46,12 +46,17 @@ namespace Ubpa::UECS {
 		// use RTDCmptTraits
 		void Attach(Entity, const CmptType* types, size_t num);
 
-		// assert(Have(e, CmptType::Of<Cmpt>))
 		template<typename Cmpt, typename... Args>
 		Cmpt* Emplace(Entity, Args&&...);
 
+		// use Detach(Entity, const CmptType*, size_t)
+		template<typename... Cmpts>
+		void Detach(Entity);
 		void Detach(Entity, const CmptType* types, size_t num);
 
+		// use Have(Entity, CmptType)
+		template<typename Cmpt>
+		bool Have(Entity) const;
 		bool Have(Entity, CmptType) const;
 
 		// nullptr if not containts <Cmpt>

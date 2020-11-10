@@ -1,6 +1,6 @@
 #pragma once
 
-#include <_deps/nameof.hpp>
+#include <nameof.hpp>
 
 namespace Ubpa::UECS {
 	template<typename System>

@@ -5,8 +5,9 @@
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	Archetype::Archetype(Pool<Chunk>* chunkPool, TypeList<Cmpts...>)
-		: chunkPool{ chunkPool },
-		types(GenCmptTypeSet<Cmpts...>())
+		:
+		types(GenCmptTypeSet<Cmpts...>()),
+		chunkPool{ chunkPool }
 	{
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"<Cmpts>... must be different");
@@ -61,9 +62,9 @@ namespace Ubpa::UECS {
 				"<Cmpts>... must be different");
 
 			constexpr std::array types = { CmptType::Of<Cmpts>... };
-			return Archetype::GenCmptTypeSet(types.data(), types.size());
+			return GenCmptTypeSet(types.data(), types.size());
 		}
 		else
-			return Archetype::GenCmptTypeSet(nullptr, 0);
+			return GenCmptTypeSet(nullptr, 0);
 	}
 }

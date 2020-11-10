@@ -8,7 +8,7 @@ namespace Ubpa::UECS {
     }
 
     template<size_t N>
-    inline constexpr size_t hash_combine(const std::array<size_t, N>& arr) noexcept {
+    constexpr size_t hash_combine(const std::array<size_t, N>& arr) noexcept {
         static_assert(N >= 2);
         size_t rst = arr[0];
         for (size_t i = 1; i < N; i++)
@@ -31,7 +31,7 @@ namespace Ubpa::UECS {
     }
 
     // fnv1a
-    inline constexpr size_t hash_string(std::string_view str) noexcept {
+    constexpr size_t hash_string(std::string_view str) noexcept {
         return RuntimeTypeID(str);
     }
 }

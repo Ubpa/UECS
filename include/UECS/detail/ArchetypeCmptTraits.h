@@ -23,7 +23,7 @@ namespace Ubpa::UECS {
 		void Register(const RTDCmptTraits&, CmptType);
 
 		template<typename Cmpt>
-		void Deregister();
+		void Deregister() noexcept;
 		void Deregister(CmptType) noexcept;
 
 	private:
