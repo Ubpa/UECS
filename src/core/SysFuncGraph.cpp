@@ -31,7 +31,8 @@ bool SysFuncGraph::HaveEdge(SystemFunc* x, SystemFunc* y) const {
 
 bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 	assert(HaveVertex(x) && HaveVertex(y));
-	assert(x != y);
+	//if (x == y)
+	//	return false; // acyclic
 
 	unordered_set<SystemFunc*> visited;
 	queue<SystemFunc*> q;
@@ -52,12 +53,15 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 }
 
 void SysFuncGraph::AddVertex(SystemFunc* x) {
-	assert(!HaveVertex(x));
+	if (HaveVertex(x))
+		return;
 	adjList.emplace(x, unordered_set<SystemFunc*>{});
 }
 
 void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
 	assert(HaveVertex(x) && HaveVertex(y));
+	if (x == y)
+		return;
 	adjList[x].insert(y);
 }
 

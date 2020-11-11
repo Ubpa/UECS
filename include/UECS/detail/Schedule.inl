@@ -8,7 +8,8 @@ namespace Ubpa::UECS {
 		bool isParallel,
 		ArchetypeFilter filter,
 		CmptLocator cmptLocator,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		RandomAccessor randomAccessor
 	) {
 		return Request(
 			std::forward<Func>(func),
@@ -16,10 +17,10 @@ namespace Ubpa::UECS {
 			std::move(filter),
 			std::move(cmptLocator),
 			std::move(singletonLocator),
+			std::move(randomAccessor),
 			isParallel
 		);
 	}
-
 
 	template<typename Func>
 	const SystemFunc* Schedule::RegisterChunkJob(
@@ -27,13 +28,15 @@ namespace Ubpa::UECS {
 		std::string name,
 		ArchetypeFilter filter,
 		bool isParallel,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		RandomAccessor randomAccessor
 	) {
 		return Request(
 			std::forward<Func>(func),
 			std::move(name),
 			std::move(filter),
 			std::move(singletonLocator),
+			std::move(randomAccessor),
 			isParallel
 		);
 	}
@@ -42,12 +45,14 @@ namespace Ubpa::UECS {
 	const SystemFunc* Schedule::RegisterJob(
 		Func&& func,
 		std::string name,
-		SingletonLocator singletonLocator
+		SingletonLocator singletonLocator,
+		RandomAccessor randomAccessor
 	) {
 		return Request(
 			std::forward<Func>(func),
 			std::move(name),
-			std::move(singletonLocator)
+			std::move(singletonLocator),
+			std::move(randomAccessor)
 		);
 	}
 

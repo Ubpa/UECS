@@ -15,7 +15,8 @@ namespace Ubpa::UECS {
 			std::move(filter),
 			std::move(cmptLocator),
 			std::move(singletonLocator),
-			std::move(isParallel)
+			{},
+			isParallel
 		};
 		Run(&sys);
 	}
@@ -57,7 +58,8 @@ namespace Ubpa::UECS {
 			"",
 			std::move(filter),
 			std::move(singletonLocator),
-			std::move(isParallel)
+			{},
+			isParallel
 		};
 		Run(&sys);
 	}

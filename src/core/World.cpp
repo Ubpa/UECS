@@ -99,15 +99,29 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	auto& subgraph_singleton = graph.GenSubgraph("Singleton Nodes");
 	auto& subgraph_sys = graph.GenSubgraph("System Function Nodes");
 
+	auto& subgraph_basic = graph.GenSubgraph("Basic Edges");
 	auto& subgraph_lastframe = graph.GenSubgraph("LastFrame Edges");
 	auto& subgraph_write = graph.GenSubgraph("Write Edges");
 	auto& subgraph_latest = graph.GenSubgraph("Latest Edges");
-
 	auto& subgraph_order = graph.GenSubgraph("Order Edges");
 
-	auto& subgraph_all = graph.GenSubgraph("All Edges");
-	auto& subgraph_any = graph.GenSubgraph("Any Edges");
-	auto& subgraph_none = graph.GenSubgraph("None Edges");
+	auto& subgraph_basic_all = subgraph_basic.GenSubgraph("Basic All Edges");
+	auto& subgraph_basic_any = subgraph_basic.GenSubgraph("Basic Any Edges");
+	
+	auto& subgraph_lastframe_all = subgraph_lastframe.GenSubgraph("LastFrame All Edges");
+	auto& subgraph_lastframe_any = subgraph_lastframe.GenSubgraph("LastFrame Any Edges");
+	
+	auto& subgraph_write_all = subgraph_write.GenSubgraph("Write All Edges");
+	auto& subgraph_write_any = subgraph_write.GenSubgraph("Write Any Edges");
+	
+	auto& subgraph_latest_all = subgraph_latest.GenSubgraph("Latest All Edges");
+	auto& subgraph_latest_any = subgraph_latest.GenSubgraph("Latest Any Edges");
+	
+	auto& subgraph_none = subgraph_basic.GenSubgraph("None Edges");
+	
+	auto& subgraph_lastframe_random = subgraph_lastframe.GenSubgraph("LastFrame Random Edges");
+	auto& subgraph_write_random = subgraph_write.GenSubgraph("Write Random Edges");
+	auto& subgraph_latest_random = subgraph_latest.GenSubgraph("Latest Random Edges");
 
 	subgraph_cmpt
 		.RegisterGraphNodeAttr("shape", "ellipse")
@@ -121,26 +135,57 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		.RegisterGraphNodeAttr("shape", "box")
 		.RegisterGraphNodeAttr("color", "#F79646");
 
+	subgraph_basic.RegisterGraphEdgeAttr("color", "#C785C8");
 	subgraph_lastframe.RegisterGraphEdgeAttr("color", "#60C5F1");
 	subgraph_write.RegisterGraphEdgeAttr("color", "#F47378");
 	subgraph_latest.RegisterGraphEdgeAttr("color", "#6BD089");
-
 	subgraph_order.RegisterGraphEdgeAttr("color", "#00A2E8");
 
-	subgraph_all
+	subgraph_basic_all
 		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("color", "#C785C8")
-		.RegisterGraphEdgeAttr("arrowhead", "crow");
+		.RegisterGraphEdgeAttr("arrowhead", "box");
+	subgraph_lastframe_all
+		.RegisterGraphEdgeAttr("style", "dashed")
+		.RegisterGraphEdgeAttr("arrowhead", "box");
+	subgraph_write_all
+		.RegisterGraphEdgeAttr("style", "dashed")
+		.RegisterGraphEdgeAttr("arrowhead", "box");
+	subgraph_latest_all
+		.RegisterGraphEdgeAttr("style", "dashed")
+		.RegisterGraphEdgeAttr("arrowhead", "box");
 
-	subgraph_any
+	subgraph_basic_any
 		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("color", "#C785C8")
+		.RegisterGraphEdgeAttr("arrowhead", "diamond");
+	subgraph_lastframe_any
+		.RegisterGraphEdgeAttr("style", "dashed")
+		.RegisterGraphEdgeAttr("arrowhead", "diamond");
+	subgraph_write_any
+		.RegisterGraphEdgeAttr("style", "dashed")
+		.RegisterGraphEdgeAttr("arrowhead", "diamond");
+	subgraph_latest_any
+		.RegisterGraphEdgeAttr("style", "dashed")
 		.RegisterGraphEdgeAttr("arrowhead", "diamond");
 
 	subgraph_none
 		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("color", "#C785C8")
 		.RegisterGraphEdgeAttr("arrowhead", "odot");
+	
+	subgraph_lastframe_random
+		.RegisterGraphEdgeAttr("style", "dotted")
+		.RegisterGraphEdgeAttr("dir", "both")
+		.RegisterGraphEdgeAttr("arrowhead", "curve")
+		.RegisterGraphEdgeAttr("arrowtail", "tee");
+	subgraph_write_random
+		.RegisterGraphEdgeAttr("style", "dotted")
+		.RegisterGraphEdgeAttr("dir", "both")
+		.RegisterGraphEdgeAttr("arrowhead", "curve")
+		.RegisterGraphEdgeAttr("arrowtail", "tee");
+	subgraph_latest_random
+		.RegisterGraphEdgeAttr("style", "dotted")
+		.RegisterGraphEdgeAttr("dir", "both")
+		.RegisterGraphEdgeAttr("arrowhead", "curve")
+		.RegisterGraphEdgeAttr("arrowtail", "tee");
 
 	unordered_set<CmptType> cmptTypes;
 	unordered_set<CmptType> singletonTypes;
@@ -205,93 +250,72 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			}
 		}
 
-		const auto& filter = sysFunc->entityQuery.filter;
-		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
-			// filter's <All> and <Any> components are treat as r/w
-			for (const auto& cmptType : filter.all) {
-				auto cmptIdx = cmptType2idx.at(cmptType);
-				size_t edgeIdx;
-				switch (cmptType.GetAccessMode())
-				{
-				case AccessMode::LAST_FRAME:
-					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-					subgraph_lastframe.AddEdge(edgeIdx);
-					break;
-				case AccessMode::WRITE:
-					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
-					subgraph_write.AddEdge(edgeIdx);
-					break;
-				case AccessMode::LATEST:
-					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-					subgraph_latest.AddEdge(edgeIdx);
-					break;
-				default:
-					assert(false);
-					break;
-				}
-			}
-			for (const auto& cmptType : filter.any) {
-				auto cmptIdx = cmptType2idx.at(cmptType);
-				size_t edgeIdx;
-				switch (cmptType.GetAccessMode())
-				{
-				case AccessMode::LAST_FRAME:
-					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-					subgraph_lastframe.AddEdge(edgeIdx);
-					break;
-				case AccessMode::WRITE:
-					edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
-					subgraph_write.AddEdge(edgeIdx);
-					break;
-				case AccessMode::LATEST:
-					edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-					subgraph_latest.AddEdge(edgeIdx);
-					break;
-				default:
-					assert(false);
-					break;
-				}
+		const bool isChunk = sysFunc->GetMode() == SystemFunc::Mode::Chunk;
+
+		for (const auto& cmptType : sysFunc->entityQuery.filter.all) {
+			size_t edgeIdx;
+			switch (cmptType.GetAccessMode())
+			{
+			case AccessMode::LAST_FRAME:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				(isChunk ? subgraph_lastframe_all : subgraph_basic_all).AddEdge(edgeIdx);
+				break;
+			case AccessMode::WRITE:
+				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
+				(isChunk ? subgraph_write_all : subgraph_basic_all).AddEdge(edgeIdx);
+				break;
+			case AccessMode::LATEST:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				(isChunk ? subgraph_latest_all : subgraph_basic_all).AddEdge(edgeIdx);
+				break;
+			default:
+				assert(false);
+				break;
 			}
 		}
-		else {
-			for (const auto& cmptType : filter.all) {
-				auto cmptIdx = cmptType2idx.at(cmptType);
-				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
-					continue;
-				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
-				subgraph_all.AddEdge(edgeIdx);
-			}
-			for (const auto& cmptType : filter.any) {
-				auto cmptIdx = cmptType2idx.at(cmptType);
-				if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
-					continue;
-				auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
-				subgraph_any.AddEdge(edgeIdx);
+
+		for (const auto& cmptType : sysFunc->entityQuery.filter.any) {
+			size_t edgeIdx;
+			switch (cmptType.GetAccessMode())
+			{
+			case AccessMode::LAST_FRAME:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				(isChunk ? subgraph_lastframe_any : subgraph_basic_any).AddEdge(edgeIdx);
+				break;
+			case AccessMode::WRITE:
+				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
+				(isChunk ? subgraph_write_any : subgraph_basic_any).AddEdge(edgeIdx);
+				break;
+			case AccessMode::LATEST:
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				(isChunk ? subgraph_latest_any : subgraph_basic_any).AddEdge(edgeIdx);
+				break;
+			default:
+				assert(false);
+				break;
 			}
 		}
-		for (const auto& cmptType : filter.none) {
-			auto cmptIdx = cmptType2idx.at(cmptType);
-			if (registry.IsRegisteredEdge(sysIdx, cmptIdx))
-				continue;
-			auto edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
+
+		for (const auto& cmptType : sysFunc->entityQuery.filter.none) {
+			size_t edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 			subgraph_none.AddEdge(edgeIdx);
 		}
 
-		for (const auto& singleton : sysFunc->singletonLocator.SingletonTypes()) {
+		for (const auto& cmptType : sysFunc->randomAccessor.types) {
 			size_t edgeIdx;
-			switch (singleton.GetAccessMode())
+			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
-				edgeIdx = registry.RegisterEdge(cmptType2idx.at(singleton), sysIdx);
-				subgraph_lastframe.AddEdge(edgeIdx);
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				subgraph_lastframe_random.AddEdge(edgeIdx);
 				break;
 			case AccessMode::WRITE:
-				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(singleton));
-				subgraph_write.AddEdge(edgeIdx);
+				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
+				subgraph_write_random.AddEdge(edgeIdx);
 				break;
 			case AccessMode::LATEST:
-				edgeIdx = registry.RegisterEdge(cmptType2idx.at(singleton), sysIdx);
-				subgraph_latest.AddEdge(edgeIdx);
+				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
+				subgraph_latest_random.AddEdge(edgeIdx);
 				break;
 			default:
 				assert(false);
@@ -316,7 +340,7 @@ void World::Accept(IListener* listener) const {
 	listener->ExistWorld(this);
 }
 
-void World::AddCommand(std::function<void()> command, size_t layer) {
+void World::AddCommand(std::function<void()> command, int layer) {
 	assert(inRunningJobGraph);
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
 	commandBuffer[layer].push_back(std::move(command));

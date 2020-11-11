@@ -16,10 +16,12 @@ namespace Ubpa::UECS {
 		ArchetypeFilter archetypeFilter,
 		CmptLocator cmptLocator,
 		SingletonLocator singletonLocator,
+		RandomAccessor randomAccessor,
 		bool isParallel
 	) :
 		entityQuery{ std::move(archetypeFilter), std::move(cmptLocator.Combine<decltype(func)>()) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
+		randomAccessor{std::move(randomAccessor)},
 		mode{ Mode::Entity },
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
@@ -44,10 +46,12 @@ namespace Ubpa::UECS {
 		std::string name,
 		ArchetypeFilter archetypeFilter,
 		SingletonLocator singletonLocator,
+		RandomAccessor randomAccessor,
 		bool isParallel
 	) :
 		entityQuery{ std::move(archetypeFilter) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
+		randomAccessor{ std::move(randomAccessor) },
 		mode{ Mode::Chunk },
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
@@ -76,9 +80,10 @@ namespace Ubpa::UECS {
 
 	// Mode::Job
 	template<typename Func>
-	SystemFunc::SystemFunc(Func&& func, std::string name, SingletonLocator singletonLocator)
+	SystemFunc::SystemFunc(Func&& func, std::string name, SingletonLocator singletonLocator, RandomAccessor randomAccessor)
 		:
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
+		randomAccessor {std::move(randomAccessor)},
 		mode{ Mode::Job },
 		name{ std::move(name) },
 		hashCode{ HashCode(this->name) },
@@ -96,7 +101,7 @@ namespace Ubpa::UECS {
 			&& !Contain_v<ArgList, CmptsView>
 			&& !Contain_v<ArgList, ChunkView>,
 			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery CmptsView or ChunkView"
-		);
+			);
 	}
 }
 

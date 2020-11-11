@@ -13,35 +13,138 @@ namespace Ubpa::UECS::detail {
 		NoneGroup(SystemFunc* func)
 			: sysFuncs{ func }
 		{
-			needTypes = SetUnion(func->entityQuery.filter.all, func->entityQuery.filter.any);
-			needTypes = SetUnion(needTypes, func->entityQuery.locator.CmptAccessTypes());
+			allTypes = SetUnion(func->entityQuery.filter.all, func->entityQuery.locator.CmptAccessTypes());
+			anyTypes = func->entityQuery.filter.any;
+			randomTypes = func->randomAccessor.types;
 			noneTypes = func->entityQuery.filter.none;
 		}
 
 		static bool Parallelable(const NoneGroup& x, const NoneGroup& y) {
-			/*return !SetIntersection(x.needTypes, y.noneTypes).empty()
-				|| !SetIntersection(y.needTypes, x.noneTypes).empty();*/
-			{
-				auto x_iter = x.needTypes.begin();
-				auto y_iter = y.noneTypes.begin();
-				while (x_iter != x.needTypes.end() && y_iter != y.noneTypes.end()) {
-					if (x_iter->GetCmptType() < *y_iter)
-						++x_iter;
-					else if (x_iter->GetCmptType() > * y_iter)
+			//{ // subgraph
+			//	const NoneGroup& minG = x.sysFuncs.size() < y.sysFuncs.size() ? x : y;
+			//	const NoneGroup& maxG = x.sysFuncs.size() < y.sysFuncs.size() ? y : x;
+			//	bool flag = true;
+			//	for(auto* f : minG.sysFuncs) {
+			//		if(maxG.sysFuncs.find(f) == maxG.sysFuncs.end()) {
+			//			flag = false;
+			//			break;
+			//		}
+			//	}
+			//	if (flag)
+			//		return true;
+			//}
+			if (y.randomTypes.empty()) { // y.none
+				bool allFlag = false;
+				bool anyFlag = true;
+				bool randomFlag = true;
+
+				{ // all
+					auto x_iter = x.allTypes.begin();
+					auto y_iter = y.noneTypes.begin();
+					while (x_iter != x.allTypes.end() && y_iter != y.noneTypes.end()) {
+						if (x_iter->GetCmptType() < *y_iter)
+							++x_iter;
+						else if (x_iter->GetCmptType() > * y_iter)
+							++y_iter;
+						else { // == 
+							allFlag = true;
+							break;
+						}
+					}
+				}
+				if (!allFlag) {
+					if (x.anyTypes.empty())
+						anyFlag = false;
+					else {
+						// any
+						auto x_iter = x.anyTypes.begin();
+						auto y_iter = y.noneTypes.begin();
+						while (x_iter != x.anyTypes.end() && y_iter != y.noneTypes.end()) {
+							if (x_iter->GetCmptType() < *y_iter) {
+								anyFlag = false;
+								break;
+							}
+
+							if (x_iter->GetCmptType() == *y_iter)
+								++x_iter;
+
+							++y_iter;
+						}
+					}
+				}
+				if (allFlag || anyFlag) {
+					// random
+					auto x_iter = x.randomTypes.begin();
+					auto y_iter = y.noneTypes.begin();
+					while (x_iter != x.randomTypes.end() && y_iter != y.noneTypes.end()) {
+						if (x_iter->GetCmptType() < *y_iter) {
+							randomFlag = false;
+							break;
+						}
+
+						if (x_iter->GetCmptType() == *y_iter)
+							++x_iter;
+
 						++y_iter;
-					else // ==
+					}
+					if (randomFlag)
 						return true;
 				}
 			}
-			{
-				auto x_iter = x.noneTypes.begin();
-				auto y_iter = y.needTypes.begin();
-				while (x_iter != x.noneTypes.end() && y_iter != y.needTypes.end()) {
-					if (*x_iter < y_iter->GetCmptType())
+			if (x.randomTypes.empty()) { // x.none
+				bool allFlag = false;
+				bool anyFlag = true;
+				bool randomFlag = true;
+				{ // all
+					auto x_iter = x.noneTypes.begin();
+					auto y_iter = y.allTypes.begin();
+					while (x_iter != x.noneTypes.end() && y_iter != y.allTypes.end()) {
+						if (*x_iter < y_iter->GetCmptType())
+							++x_iter;
+						else if (*x_iter > y_iter->GetCmptType())
+							++y_iter;
+						else { // == 
+							allFlag = true;
+							break;
+						}
+					}
+				}
+				if (!allFlag) {
+					// any
+					if (y.anyTypes.empty())
+						anyFlag = false;
+					else {
+						auto x_iter = x.noneTypes.begin();
+						auto y_iter = y.anyTypes.begin();
+						while (x_iter != x.noneTypes.end() && y_iter != y.anyTypes.end()) {
+							if (y_iter->GetCmptType() < *x_iter) {
+								anyFlag = false;
+								break;
+							}
+
+							if (y_iter->GetCmptType() == *x_iter)
+								++y_iter;
+
+							++x_iter;
+						}
+					}
+				}
+				if (allFlag || anyFlag) {
+					// random
+					auto x_iter = x.noneTypes.begin();
+					auto y_iter = y.randomTypes.begin();
+					while (x_iter != x.noneTypes.end() && y_iter != y.randomTypes.end()) {
+						if (y_iter->GetCmptType() < *x_iter) {
+							randomFlag = false;
+							break;
+						}
+
+						if (y_iter->GetCmptType() == *x_iter)
+							++y_iter;
+
 						++x_iter;
-					else if (*x_iter > y_iter->GetCmptType())
-						++y_iter;
-					else // ==
+					}
+					if (randomFlag)
 						return true;
 				}
 			}
@@ -49,13 +152,18 @@ namespace Ubpa::UECS::detail {
 		}
 
 		NoneGroup& operator+=(const NoneGroup& y) {
-			needTypes = SetIntersection(needTypes, y.needTypes);
+			allTypes = SetIntersection(allTypes, y.allTypes);
+			anyTypes = SetUnion(anyTypes, y.anyTypes);
+			anyTypes = SetUnion(anyTypes, SetSymmetricDifference(allTypes, y.allTypes));
+			randomTypes = SetUnion(randomTypes, y.randomTypes);
 			noneTypes = SetIntersection(noneTypes, y.noneTypes);
 			sysFuncs = SetUnion(sysFuncs, y.sysFuncs);
 			return *this;
 		}
 
-		set<CmptAccessType, std::less<>> needTypes;
+		CmptAccessTypeSet allTypes;
+		CmptAccessTypeSet anyTypes;
+		CmptAccessTypeSet randomTypes;
 		set<CmptType> noneTypes;
 		set<SystemFunc*> sysFuncs;
 	};
@@ -69,6 +177,9 @@ namespace Ubpa::UECS::detail {
 			const auto& writers = cmptFuncs.writeSysFuncs;
 			const auto& postReaders = cmptFuncs.latestSysFuncs;
 
+			if (writers.empty())
+				return;
+
 			if (!preReaders.empty()) {
 				NoneGroup preGroup{ gMap.at(preReaders.front()) };
 				for (size_t i = 1; i < preReaders.size(); i++)
@@ -77,7 +188,7 @@ namespace Ubpa::UECS::detail {
 				for (const auto& w : writers) {
 					if (NoneGroup::Parallelable(preGroup, gMap.at(w)))
 						continue;
-					for (auto preReader : preReaders)
+					for (auto* preReader : preReaders)
 						graph.AddEdge(preReader, w);
 				}
 			}
@@ -90,13 +201,14 @@ namespace Ubpa::UECS::detail {
 				for (const auto& w : writers) {
 					if (NoneGroup::Parallelable(postGroup, gMap.at(w)))
 						continue;
-					for (auto postReader : postReaders)
+					for (auto* postReader : postReaders)
 						graph.AddEdge(w, postReader);
 				}
 			}
 		}
 
-		static vector<NoneGroup> GenSortNoneGroup(SysFuncGraph graph,
+		static vector<NoneGroup> GenSortNoneGroup(
+			const SysFuncGraph& graph,
 			const Schedule::CmptSysFuncs& cmptFuncs,
 			const unordered_map<SystemFunc*, NoneGroup>& gMap)
 		{
@@ -123,7 +235,7 @@ namespace Ubpa::UECS::detail {
 				funcs.push_back(*preGroup.sysFuncs.begin());
 			if (!postGroup.sysFuncs.empty())
 				funcs.push_back(*postGroup.sysFuncs.begin());
-			for (auto w : writers)
+			for (auto* w : writers)
 				funcs.push_back(w);
 
 			auto subgraph = graph.SubGraph(funcs);
@@ -132,7 +244,7 @@ namespace Ubpa::UECS::detail {
 
 			vector<NoneGroup> rst;
 
-			for (auto func : sortedFuncs) {
+			for (auto* func : sortedFuncs) {
 				if (!preGroup.sysFuncs.empty() && func == *preGroup.sysFuncs.begin())
 					rst.push_back(move(preGroup));
 				else if (!postGroup.sysFuncs.empty() && func == *postGroup.sysFuncs.begin())
@@ -149,8 +261,8 @@ namespace Ubpa::UECS::detail {
 						continue;
 
 					bool haveOrder = false;
-					for (auto ifunc : gi.sysFuncs) {
-						for (auto jfunc : gj.sysFuncs) {
+					for (auto* ifunc : gi.sysFuncs) {
+						for (auto* jfunc : gj.sysFuncs) {
 							if (subgraph.HavePath(ifunc, jfunc)
 								|| subgraph.HavePath(jfunc, ifunc)) {
 								haveOrder = true;
@@ -204,18 +316,18 @@ void Schedule::Clear() {
 }
 
 unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {
-	unordered_map<CmptType, Schedule::CmptSysFuncs> rst;
+	unordered_map<CmptType, CmptSysFuncs> rst;
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
 		for (const auto& type : sysFunc->entityQuery.locator.CmptAccessTypes()) {
 			switch (type.GetAccessMode())
 			{
-			case Ubpa::UECS::AccessMode::LAST_FRAME:
+			case AccessMode::LAST_FRAME:
 				rst[type].lastFrameSysFuncs.push_back(sysFunc);
 				break;
-			case Ubpa::UECS::AccessMode::WRITE:
+			case AccessMode::WRITE:
 				rst[type].writeSysFuncs.push_back(sysFunc);
 				break;
-			case Ubpa::UECS::AccessMode::LATEST:
+			case AccessMode::LATEST:
 				rst[type].latestSysFuncs.push_back(sysFunc);
 				break;
 			default:
@@ -226,13 +338,30 @@ unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() c
 		for (const auto& type : sysFunc->singletonLocator.SingletonTypes()) {
 			switch (type.GetAccessMode())
 			{
-			case Ubpa::UECS::AccessMode::LAST_FRAME:
+			case AccessMode::LAST_FRAME:
 				rst[type].lastFrameSysFuncs.push_back(sysFunc);
 				break;
-			case Ubpa::UECS::AccessMode::WRITE:
+			case AccessMode::WRITE:
 				rst[type].writeSysFuncs.push_back(sysFunc);
 				break;
-			case Ubpa::UECS::AccessMode::LATEST:
+			case AccessMode::LATEST:
+				rst[type].latestSysFuncs.push_back(sysFunc);
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+		for (const auto& type : sysFunc->randomAccessor.types) {
+			switch (type.GetAccessMode())
+			{
+			case AccessMode::LAST_FRAME:
+				rst[type].lastFrameSysFuncs.push_back(sysFunc);
+				break;
+			case AccessMode::WRITE:
+				rst[type].writeSysFuncs.push_back(sysFunc);
+				break;
+			case AccessMode::LATEST:
 				rst[type].latestSysFuncs.push_back(sysFunc);
 				break;
 			default:
@@ -247,13 +376,13 @@ unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() c
 				auto& cmptSysFuncs = rst[type];
 				switch (type.GetAccessMode())
 				{
-				case Ubpa::UECS::AccessMode::LAST_FRAME:
+				case AccessMode::LAST_FRAME:
 					cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
 					break;
-				case Ubpa::UECS::AccessMode::WRITE:
+				case AccessMode::WRITE:
 					cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
 					break;
-				case Ubpa::UECS::AccessMode::LATEST:
+				case AccessMode::LATEST:
 					cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
 					break;
 				default:
@@ -266,13 +395,13 @@ unordered_map<CmptType, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() c
 				auto& cmptSysFuncs = rst[type];
 				switch (type.GetAccessMode())
 				{
-				case Ubpa::UECS::AccessMode::LAST_FRAME:
+				case AccessMode::LAST_FRAME:
 					cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
 					break;
-				case Ubpa::UECS::AccessMode::WRITE:
+				case AccessMode::WRITE:
 					cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
 					break;
-				case Ubpa::UECS::AccessMode::LATEST:
+				case AccessMode::LATEST:
 					cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
 					break;
 				default:
@@ -295,7 +424,7 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		if (target == sysFuncs.end())
 			continue;
 
-		auto func = target->second;
+		auto* func = target->second;
 
 		for (const auto& type : change.insertNones)
 			func->entityQuery.filter.none.insert(type);
@@ -326,8 +455,8 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 		if (target_y == sysFuncs.end())
 			continue;
 
-		auto sysFunc_x = target_x->second;
-		auto sysFunc_y = target_y->second;
+		auto* sysFunc_x = target_x->second;
+		auto* sysFunc_y = target_y->second;
 		graph.AddEdge(sysFunc_x, sysFunc_y);
 	}
 

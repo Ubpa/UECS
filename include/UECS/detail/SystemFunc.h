@@ -2,6 +2,7 @@
 
 #include "../EntityQuery.h"
 #include "../SingletonLocator.h"
+#include "../RandomAccessor.h"
 #include "../Entity.h"
 #include "../CmptsView.h"
 #include "../SingletonsView.h"
@@ -37,18 +38,19 @@ namespace Ubpa::UECS {
 
 		EntityQuery entityQuery;
 		SingletonLocator singletonLocator;
+		RandomAccessor randomAccessor;
 
 		// Mode::Entity
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator, bool isParallel);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator, RandomAccessor, bool isParallel);
 
 		// Mode::Chunk
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator, bool isParallel);
+		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator, RandomAccessor, bool isParallel);
 
 		// Mode::Job
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, SingletonLocator);
+		SystemFunc(Func&&, std::string name, SingletonLocator, RandomAccessor);
 		
 		const std::string& Name() const noexcept { return name; }
 

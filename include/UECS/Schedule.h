@@ -40,7 +40,8 @@ namespace Ubpa::UECS {
 			bool isParallel = true,
 			ArchetypeFilter = {},
 			CmptLocator = {},
-			SingletonLocator = {}
+			SingletonLocator = {},
+			RandomAccessor = {}
 		);
 
 		// Func's argument list:
@@ -54,7 +55,8 @@ namespace Ubpa::UECS {
 			std::string name,
 			ArchetypeFilter = {},
 			bool isParallel = true,
-			SingletonLocator = {}
+			SingletonLocator = {},
+			RandomAccessor = {}
 		);
 
 		// Func's argument list:
@@ -65,10 +67,11 @@ namespace Ubpa::UECS {
 		const SystemFunc* RegisterJob(
 			Func&&,
 			std::string name,
-			SingletonLocator = {}
+			SingletonLocator = {},
+			RandomAccessor = {}
 		);
 
-		void RegisterCommand(std::function<void(World*)> command, size_t layer = 0) {
+		void RegisterCommand(std::function<void(World*)> command, int layer = 0) {
 			commandBuffer[layer].push_back(std::move(command));
 		}
 
@@ -109,7 +112,7 @@ namespace Ubpa::UECS {
 		std::unordered_map<size_t, FilterChange> sysFilterChange;
 		std::unordered_set<size_t> sysLockFilter;
 
-		std::map<size_t, std::vector<std::function<void(World*)>>> commandBuffer;
+		std::map<int, std::vector<std::function<void(World*)>>> commandBuffer;
 
 		Pool<SystemFunc> sysFuncPool;
 		friend class World;
