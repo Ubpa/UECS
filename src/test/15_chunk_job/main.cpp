@@ -22,8 +22,8 @@ struct SAB_System {
 			auto arrayS = chunk.GetCmptArray<S>();
 			auto arrayA = chunk.GetCmptArray<A>();
 			auto arrayB = chunk.GetCmptArray<B>();
-			bool containsA = arrayA != nullptr;
-			bool containsB = arrayB != nullptr;
+			bool containsA = !arrayA.empty();
+			bool containsB = !arrayB.empty();
 			bool containsAB = containsA && containsB;
 
 			if (containsAB) {

@@ -20,17 +20,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class Singleton {
 	public:
-		Singleton(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		Singleton(const Cmpt* cmpt) noexcept : cmpt{ const_cast<Cmpt*>(cmpt) } {}
-
-		Cmpt* Get() noexcept { return cmpt; }
-		const Cmpt* Get() const noexcept { return cmpt; }
-
-		operator Cmpt* () noexcept { return cmpt; }
-		operator const Cmpt* () const noexcept { return cmpt; }
-
-		Cmpt* operator->() noexcept { return cmpt; }
-		const Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr Singleton(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator Cmpt* () const noexcept { return cmpt; }
+		constexpr Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		Cmpt* cmpt;
 	};
@@ -38,10 +31,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class LastFrame {
 	public:
-		LastFrame(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		const Cmpt* Get() const noexcept { return cmpt; }
-		operator const Cmpt* () const noexcept { return cmpt; }
-		const Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr LastFrame(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr const Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator const Cmpt* () const noexcept { return cmpt; }
+		constexpr const Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		const Cmpt* cmpt;
 	};
@@ -49,10 +42,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class LastFrame<Singleton<Cmpt>> {
 	public:
-		LastFrame(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		const Cmpt* Get() const noexcept { return cmpt; }
-		operator const Cmpt* () const noexcept { return cmpt; }
-		const Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr LastFrame(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr const Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator const Cmpt* () const noexcept { return cmpt; }
+		constexpr const Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		const Cmpt* cmpt;
 	};
@@ -60,10 +53,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class Write {
 	public:
-		Write(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		Cmpt* Get() const noexcept { return cmpt; }
-		operator Cmpt* () const noexcept { return cmpt; }
-		Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr Write(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator Cmpt* () const noexcept { return cmpt; }
+		constexpr Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		Cmpt* cmpt;
 	};
@@ -71,10 +64,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class Write<Singleton<Cmpt>> {
 	public:
-		Write(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		Cmpt* Get() const noexcept { return cmpt; }
-		operator Cmpt* () const noexcept { return cmpt; }
-		Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr Write(Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator Cmpt* () const noexcept { return cmpt; }
+		constexpr Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		Cmpt* cmpt;
 	};
@@ -82,10 +75,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class Latest {
 	public:
-		Latest(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		const Cmpt* Get() const noexcept { return cmpt; }
-		operator const Cmpt* () const noexcept { return cmpt; }
-		const Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr Latest(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr const Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator const Cmpt* () const noexcept { return cmpt; }
+		constexpr const Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		const Cmpt* cmpt;
 	};
@@ -93,10 +86,10 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	class Latest<Singleton<Cmpt>> {
 	public:
-		Latest(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
-		const Cmpt* Get() const noexcept { return cmpt; }
-		operator const Cmpt* () const noexcept { return cmpt; }
-		const Cmpt* operator->() const noexcept { return cmpt; }
+		constexpr Latest(const Cmpt* cmpt) noexcept : cmpt{ cmpt } {}
+		constexpr const Cmpt* Get() const noexcept { return cmpt; }
+		constexpr operator const Cmpt* () const noexcept { return cmpt; }
+		constexpr const Cmpt* operator->() const noexcept { return cmpt; }
 	private:
 		const Cmpt* cmpt;
 	};

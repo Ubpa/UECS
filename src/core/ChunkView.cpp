@@ -4,12 +4,11 @@
 
 using namespace Ubpa::UECS;
 
+ChunkView::ChunkView(Archetype* archetype, size_t chunkIdx) noexcept
+	: archetype{ archetype }, chunkIdx{ chunkIdx }, entityNum{ archetype->EntityNumOfChunk(chunkIdx) } {}
+
 void* ChunkView::GetCmptArray(CmptType t) const {
 	return archetype->Locate(chunkIdx, t);
-}
-
-size_t ChunkView::EntityNum() const noexcept {
-	return archetype->EntityNumOfChunk(chunkIdx);
 }
 
 bool ChunkView::Contains(CmptType t) const {

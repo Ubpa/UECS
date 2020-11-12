@@ -2,10 +2,10 @@
 
 using namespace Ubpa::UECS;
 
-CmptAccessPtr SingletonsView::GetSingleton(CmptAccessType t) const {
-	for (size_t i = 0; i < num; i++) {
-		if (singletons[i].AccessType() == t)
-			return singletons[i];
+CmptAccessPtr SingletonsView::GetSingleton(CmptAccessType t) const noexcept {
+	for (const auto& singleton : singletons) {
+		if (singleton.AccessType() == t)
+			return singleton;
 	}
 	return CmptAccessPtr::Invalid();
 }

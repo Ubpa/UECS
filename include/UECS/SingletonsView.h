@@ -2,18 +2,17 @@
 
 #include "CmptPtr.h"
 
+#include <UContainer/Span.h>
+
 namespace Ubpa::UECS {
 	class SingletonsView {
 	public:
-		SingletonsView(const CmptAccessPtr* singletons, size_t num) noexcept
-			: singletons{ singletons }, num{ num } {}
+		SingletonsView(Span<const CmptAccessPtr> singletons) noexcept
+			: singletons{ singletons } {}
 
-		CmptAccessPtr GetSingleton(CmptAccessType) const;
-
-		const CmptAccessPtr* Singletons() const noexcept { return singletons; }
-		size_t NumberOfSingletons() const noexcept { return num; }
+		CmptAccessPtr GetSingleton(CmptAccessType) const noexcept;
+		Span<const CmptAccessPtr> Singletons() const noexcept { return singletons; }
 	private:
-		const CmptAccessPtr* singletons;
-		size_t num;
+		Span<const CmptAccessPtr> singletons;
 	};
 }
