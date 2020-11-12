@@ -3,6 +3,7 @@
 - 0.14.3
   - `CmptsView`, `SingletonsView` use `Span` 
   - API with `const CmptType* types, size_t num` use `Span<CmptType> types` as instead
+  - move `include/UECS/detail/_deps/taskflow` to `include/_deps/taskflow` 
 - 0.14.2
   - add `RandomAccessor` for random access other entity's component
     - `SystemFunc` add the member
