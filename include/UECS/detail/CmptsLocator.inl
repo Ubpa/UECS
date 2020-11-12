@@ -27,6 +27,7 @@ namespace Ubpa::UECS {
 	CmptLocator& CmptLocator::Combine() {
 		CmptLocator funcLocator = Generate<Func>();
 		cmptTypes = SetUnion(cmptTypes, funcLocator.cmptTypes);
+		UpdateHashCode();
 		return *this;
 	}
 }

@@ -2,12 +2,14 @@
 
 #include "CmptType.h"
 
+#include <UContainer/Span.h>
+
 #include <set>
 
 namespace Ubpa::UECS {
 	class SingletonLocator {
 	public:
-		SingletonLocator(const CmptAccessType* types, size_t num);
+		SingletonLocator(Span<const CmptAccessType> types);
 		SingletonLocator() = default;
 
 		template<typename Func>

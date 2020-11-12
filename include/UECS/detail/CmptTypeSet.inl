@@ -1,26 +1,23 @@
 #pragma once
 
 namespace Ubpa::UECS {
-	inline void CmptTypeSet::Insert(const CmptType* types, size_t num) {
-		assert(types || num == 0);
-		for (size_t i = 0; i < num; i++)
-			data.insert(types[i]);
+	inline void CmptTypeSet::Insert(Span<const CmptType> types) {
+		for(const auto& type : types)
+			data.insert(type);
 	}
 
-	inline void CmptTypeSet::Erase(const CmptType* types, size_t num) noexcept {
-		assert(types || num == 0);
-		for (size_t i = 0; i < num; i++)
-			data.erase(types[i]);
+	inline void CmptTypeSet::Erase(Span<const CmptType> types) noexcept {
+		for (const auto& type : types)
+			data.erase(type);
 	}
 
 	inline bool CmptTypeSet::Contains(CmptType type) const {
 		return data.find(type) != data.end();
 	}
 
-	inline bool CmptTypeSet::ContainsAll(const CmptType* types, size_t num) const {
-		assert(types || num == 0);
-		for (size_t i = 0; i < num; i++) {
-			if (!Contains(types[i]))
+	inline bool CmptTypeSet::ContainsAll(Span<const CmptType> types) const {
+		for (const auto& type : types) {
+			if (Contains(type))
 				return false;
 		}
 		return true;
@@ -35,10 +32,9 @@ namespace Ubpa::UECS {
 		return true;
 	}
 
-	inline bool CmptTypeSet::ContainsAny(const CmptType* types, size_t num) const {
-		assert(types || num == 0);
-		for (size_t i = 0; i < num; i++) {
-			if (Contains(types[i]))
+	inline bool CmptTypeSet::ContainsAny(Span<const CmptType> types) const {
+		for (const auto& type : types) {
+			if (!Contains(type))
 				return true;
 		}
 		return false;

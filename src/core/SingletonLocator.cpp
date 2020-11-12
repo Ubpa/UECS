@@ -3,11 +3,9 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-SingletonLocator::SingletonLocator(const CmptAccessType* types, size_t num) {
-	assert(types || num == 0);
-	for (size_t i = 0; i < num; i++) {
-		singletonTypes.insert(types[i]);
-	}
+SingletonLocator::SingletonLocator(Span<const CmptAccessType> types) {
+	for (const auto& type : types)
+		singletonTypes.insert(type);
 }
 
 bool SingletonLocator::HasWriteSingletonType() const noexcept {

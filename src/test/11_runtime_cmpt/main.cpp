@@ -60,7 +60,7 @@ int main() {
 		.RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });
 
 	auto [e] = w.entityMngr.Create();
-	w.entityMngr.Attach(e, &type, 1);
+	w.entityMngr.Attach(e, { &type, 1 });
 	w.systemMngr.Activate(rtdSystem);
 	w.Update();
 

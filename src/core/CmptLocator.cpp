@@ -9,17 +9,17 @@ CmptLocator::CmptLocator(const CmptAccessType* types, size_t num) {
 	for (size_t i = 0; i < num; i++)
 		cmptTypes.insert(types[i]);
 
-	hashCode = GenHashCode();
+	UpdateHashCode();
 }
 
 CmptLocator::CmptLocator()
 	: hashCode{ TypeID<CmptLocator> } {}
 
-size_t CmptLocator::GenHashCode() const noexcept {
+void CmptLocator::UpdateHashCode() noexcept {
 	size_t rst = TypeID<CmptLocator>;
 	for (const auto& type : cmptTypes)
 		rst = hash_combine(rst, type.HashCode());
-	return rst;
+	hashCode = rst;
 }
 
 bool CmptLocator::HasWriteCmptType() const noexcept {

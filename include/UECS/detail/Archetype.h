@@ -11,9 +11,6 @@
 #include <UContainer/Pool.h>
 
 #include <UTemplate/Typelist.h>
-#include <UTemplate/TypeID.h>
-
-#include <map>
 
 namespace Ubpa::UECS {
 	class EntityMngr;
@@ -36,15 +33,15 @@ namespace Ubpa::UECS {
 		~Archetype();
 
 		// auto add Entity
-		static Archetype* New(RTDCmptTraits&, Pool<Chunk>* chunkPool, const CmptType* types, size_t num);
+		static Archetype* New(RTDCmptTraits&, Pool<Chunk>* chunkPool, Span<const CmptType> types);
 
 		// auto add Entity
 		template<typename... Cmpts>
 		static Archetype* Add(const Archetype* from);
-		static Archetype* Add(RTDCmptTraits&, const Archetype* from, const CmptType* types, size_t num);
+		static Archetype* Add(RTDCmptTraits&, const Archetype* from, Span<const CmptType> types);
 
 		// auto add Entity
-		static Archetype* Remove(const Archetype* from, const CmptType* types, size_t num);
+		static Archetype* Remove(const Archetype* from, Span<const CmptType> types);
 
 		// Entity + Components
 		std::tuple<std::vector<Entity*>, std::vector<std::vector<CmptAccessPtr>>, std::vector<size_t>>
@@ -94,7 +91,7 @@ namespace Ubpa::UECS {
 		size_t ChunkCapacity() const noexcept { return chunkCapacity; }
 
 		// add Entity
-		static CmptTypeSet GenCmptTypeSet(const CmptType* types, size_t num);
+		static CmptTypeSet GenCmptTypeSet(Span<const CmptType> types);
 		template<typename... Cmpts>
 		static CmptTypeSet GenCmptTypeSet();
 
@@ -104,7 +101,7 @@ namespace Ubpa::UECS {
 		void SetLayout();
 
 		size_t Offsetof(CmptType type) const { return type2offset.at(type); }
-		static bool NotContainEntity(const CmptType* types, size_t num) noexcept;
+		static bool NotContainEntity(Span<const CmptType> types) noexcept;
 
 		friend class EntityMngr;
 

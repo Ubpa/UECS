@@ -8,10 +8,10 @@ namespace Ubpa::UECS::detail {
 	SingletonLocator GenerateSingletonLocator(TypeList<Singletons...>) {
 		if constexpr (sizeof...(Singletons) > 0) {
 			constexpr std::array types{ CmptAccessType::Of<Singletons>... };
-			return SingletonLocator{ types.data(), types.size() };
+			return SingletonLocator{ types };
 		}
 		else
-			return SingletonLocator{};
+			return SingletonLocator{{}};
 	}
 }
 

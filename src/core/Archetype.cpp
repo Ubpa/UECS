@@ -82,47 +82,47 @@ void Archetype::SetLayout() {
 		type2offset.emplace(type, layout.offsets[i++]);
 }
 
-Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, Pool<Chunk>* chunkPool, const CmptType* types, size_t num) {
-	assert(NotContainEntity(types, num));
+Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, Pool<Chunk>* chunkPool, Span<const CmptType> types) {
+	assert(NotContainEntity(types));
 
 	auto* rst = new Archetype{ chunkPool };
-	rst->types.Insert(types, num);
+	rst->types.Insert(types);
 	rst->types.data.insert(CmptType::Of<Entity>);
 	rst->cmptTraits.Register<Entity>();
-	for (size_t i = 0; i < num; i++)
-		rst->cmptTraits.Register(rtdCmptTraits, types[i]);
+	for(const auto& type : types)
+		rst->cmptTraits.Register(rtdCmptTraits, type);
 	rst->SetLayout();
 	return rst;
 }
 
-Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, const CmptType* types, size_t num) {
-	assert(NotContainEntity(types, num));
-	assert(!from->types.ContainsAll(types, num));
+Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, Span<const CmptType> types) {
+	assert(NotContainEntity(types));
+	assert(!from->types.ContainsAll(types));
 
 	auto* rst = new Archetype{ from->chunkPool };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
-	rst->types.Insert(types, num);
-	for (size_t i = 0; i < num; i++)
-		rst->cmptTraits.Register(rtdCmptTraits, types[i]);
+	rst->types.Insert(types);
+	for (const auto& type : types)
+		rst->cmptTraits.Register(rtdCmptTraits, type);
 
 	rst->SetLayout();
 
 	return rst;
 }
 
-Archetype* Archetype::Remove(const Archetype* from, const CmptType* types, size_t num) {
-	assert(NotContainEntity(types, num));
-	assert(from->types.ContainsAny(types, num));
+Archetype* Archetype::Remove(const Archetype* from, Span<const CmptType> types) {
+	assert(NotContainEntity(types));
+	assert(from->types.ContainsAny(types));
 	
 	auto* rst = new Archetype{ from->chunkPool };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
-	rst->types.Erase(types, num);
-	for (size_t i = 0; i < num; i++)
-		rst->cmptTraits.Deregister(types[i]);
+	rst->types.Erase(types);
+	for (const auto& type : types)
+		rst->cmptTraits.Deregister(type);
 
 	rst->SetLayout();
 
@@ -309,18 +309,17 @@ size_t Archetype::EntityNumOfChunk(size_t chunkIdx) const noexcept {
 		return chunkCapacity;
 }
 
-CmptTypeSet Archetype::GenCmptTypeSet(const CmptType* types, size_t num) {
-	assert(NotContainEntity(types, num));
+CmptTypeSet Archetype::GenCmptTypeSet(Span<const CmptType> types) {
+	assert(NotContainEntity(types));
 	CmptTypeSet typeset;
-	typeset.Insert(types, num);
+	typeset.Insert(types);
 	typeset.data.insert(CmptType::Of<Entity>);
 	return typeset;
 }
 
-bool Archetype::NotContainEntity(const CmptType* types, size_t num) noexcept {
-	assert(types || num == 0);
-	for (size_t i = 0; i < num; i++) {
-		if (types[i].Is<Entity>())
+bool Archetype::NotContainEntity(Span<const CmptType> types) noexcept {
+	for (const auto& type : types) {
+		if (type.Is<Entity>())
 			return false;
 	}
 	return true;

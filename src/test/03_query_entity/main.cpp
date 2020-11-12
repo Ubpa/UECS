@@ -30,7 +30,7 @@ struct MySystem {
 					[e, w]() {
 						if (w->entityMngr.Have(e, CmptType::Of<C>)) {
 							cout << "Dettach C" << endl;
-							w->entityMngr.Detach(e, &CmptType::Of<C>, 1);
+							w->entityMngr.Detach<C>(e);
 						}
 					}
 				);

@@ -29,7 +29,7 @@ namespace Ubpa::UECS {
 
 		bool HasWriteCmptType() const noexcept;
 	private:
-		size_t GenHashCode() const noexcept;
+		void UpdateHashCode() noexcept;
 
 		CmptAccessTypeSet cmptTypes;
 

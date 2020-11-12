@@ -6,13 +6,9 @@
 
 namespace Ubpa::UECS {
 	// ArchetypeFilter + CmptLocator
-	class EntityQuery {
-	public:
+	struct EntityQuery {
 		ArchetypeFilter filter;
 		CmptLocator locator;
-
-		EntityQuery(ArchetypeFilter filter = {}, CmptLocator locator = {})
-			: filter{ std::move(filter) }, locator{ std::move(locator) } {}
 
 		size_t HashCode() const noexcept { return hash_combine(filter.HashCode(), locator.HashCode()); }
 

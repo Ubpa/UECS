@@ -102,7 +102,7 @@ namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	void EntityMngr::Detach(Entity e) {
 		constexpr std::array types{ CmptType::Of<Cmpts>... };
-		Detach(e, types.data, types.size());
+		Detach(e, types);
 	}
 
 	template<typename Cmpt>
