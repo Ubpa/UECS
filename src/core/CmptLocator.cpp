@@ -4,10 +4,9 @@
 
 using namespace Ubpa::UECS;
 
-CmptLocator::CmptLocator(const CmptAccessType* types, size_t num) {
-	assert(types || num == 0);
-	for (size_t i = 0; i < num; i++)
-		cmptTypes.insert(types[i]);
+CmptLocator::CmptLocator(Span<const CmptAccessType> types) {
+	for (const auto& type : types)
+		cmptTypes.insert(type);
 
 	UpdateHashCode();
 }

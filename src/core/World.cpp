@@ -108,13 +108,8 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	auto& subgraph_basic_all = subgraph_basic.GenSubgraph("Basic All Edges");
 	auto& subgraph_basic_any = subgraph_basic.GenSubgraph("Basic Any Edges");
 	
-	auto& subgraph_lastframe_all = subgraph_lastframe.GenSubgraph("LastFrame All Edges");
 	auto& subgraph_lastframe_any = subgraph_lastframe.GenSubgraph("LastFrame Any Edges");
-	
-	auto& subgraph_write_all = subgraph_write.GenSubgraph("Write All Edges");
 	auto& subgraph_write_any = subgraph_write.GenSubgraph("Write Any Edges");
-	
-	auto& subgraph_latest_all = subgraph_latest.GenSubgraph("Latest All Edges");
 	auto& subgraph_latest_any = subgraph_latest.GenSubgraph("Latest Any Edges");
 	
 	auto& subgraph_none = subgraph_basic.GenSubgraph("None Edges");
@@ -141,30 +136,16 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	subgraph_latest.RegisterGraphEdgeAttr("color", "#6BD089");
 	subgraph_order.RegisterGraphEdgeAttr("color", "#00A2E8");
 
-	subgraph_basic_all
-		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("arrowhead", "box");
-	subgraph_lastframe_all
-		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("arrowhead", "box");
-	subgraph_write_all
-		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("arrowhead", "box");
-	subgraph_latest_all
-		.RegisterGraphEdgeAttr("style", "dashed")
-		.RegisterGraphEdgeAttr("arrowhead", "box");
+	subgraph_basic_all.RegisterGraphEdgeAttr("style", "dashed");
 
 	subgraph_basic_any
 		.RegisterGraphEdgeAttr("style", "dashed")
 		.RegisterGraphEdgeAttr("arrowhead", "diamond");
 	subgraph_lastframe_any
-		.RegisterGraphEdgeAttr("style", "dashed")
 		.RegisterGraphEdgeAttr("arrowhead", "diamond");
 	subgraph_write_any
-		.RegisterGraphEdgeAttr("style", "dashed")
 		.RegisterGraphEdgeAttr("arrowhead", "diamond");
 	subgraph_latest_any
-		.RegisterGraphEdgeAttr("style", "dashed")
 		.RegisterGraphEdgeAttr("arrowhead", "diamond");
 
 	subgraph_none
@@ -258,15 +239,15 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 			{
 			case AccessMode::LAST_FRAME:
 				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-				(isChunk ? subgraph_lastframe_all : subgraph_basic_all).AddEdge(edgeIdx);
+				(isChunk ? subgraph_lastframe : subgraph_basic).AddEdge(edgeIdx);
 				break;
 			case AccessMode::WRITE:
 				edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
-				(isChunk ? subgraph_write_all : subgraph_basic_all).AddEdge(edgeIdx);
+				(isChunk ? subgraph_write : subgraph_basic).AddEdge(edgeIdx);
 				break;
 			case AccessMode::LATEST:
 				edgeIdx = registry.RegisterEdge(cmptType2idx.at(cmptType), sysIdx);
-				(isChunk ? subgraph_latest_all : subgraph_basic_all).AddEdge(edgeIdx);
+				(isChunk ? subgraph_latest : subgraph_basic).AddEdge(edgeIdx);
 				break;
 			default:
 				assert(false);

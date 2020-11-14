@@ -4,14 +4,14 @@
 
 #include "CmptType.h"
 
-#include <set>
+#include <UContainer/Span.h>
 
 namespace Ubpa::UECS {
 	// locate components in function's argument list for Archetype
 	// immutable
 	class CmptLocator {
 	public:
-		CmptLocator(const CmptAccessType* types, size_t num);
+		CmptLocator(Span<const CmptAccessType> types);
 
 		CmptLocator();
 

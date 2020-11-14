@@ -11,7 +11,7 @@ namespace Ubpa::UECS::detail {
 			return SingletonLocator{ types };
 		}
 		else
-			return SingletonLocator{{}};
+			return {};
 	}
 }
 

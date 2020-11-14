@@ -10,7 +10,7 @@ Ubpa_InitProject()
 
 Ubpa_AddDep(UContainer 0.0.8)
 Ubpa_AddDep(UTemplate  0.4.9)
-Ubpa_AddDep(UGraphviz  0.1.5)
+Ubpa_AddDep(UGraphviz  0.1.6)
 
 Ubpa_AddSubDirsRec(include)
 Ubpa_AddSubDirsRec(src)

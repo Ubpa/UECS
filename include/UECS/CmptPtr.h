@@ -57,12 +57,6 @@ namespace Ubpa::UECS {
 				return Write<Cmpt>{p};
 			else if constexpr (mode == AccessMode::LATEST)
 				return Latest<Cmpt>{p};
-			else if constexpr (mode == AccessMode::LAST_FRAME_SINGLETON)
-				return LastFrame<Singleton<Cmpt>>{p};
-			else if constexpr (mode == AccessMode::WRITE_SINGLETON)
-				return Write<Singleton<Cmpt>>{p};
-			else if constexpr (mode == AccessMode::LATEST_SINGLETON)
-				return Latest<Singleton<Cmpt>>{p};
 			else
 				static_assert(false);
 		}

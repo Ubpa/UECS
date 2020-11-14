@@ -28,22 +28,22 @@ namespace Ubpa::UECS {
 		//         |
 		//         v
 		//     OnDestroy
-		using OnCreate     = std::function<void(World*   )>;
-		using OnActivate   = std::function<void(World*   )>;
-		using OnUpdate     = std::function<void(Schedule&)>;
-		using OnDeactivate = std::function<void(World*   )>;
-		using OnDestroy    = std::function<void(World*   )>;
+		using OnCreate     = void(World*);
+		using OnActivate   = void(World*);
+		using OnUpdate     = void(Schedule&);
+		using OnDeactivate = void(World*);
+		using OnDestroy    = void(World*);
 
 		SystemTraits() = default;
 		SystemTraits(const SystemTraits&);
 		SystemTraits(SystemTraits&&) noexcept = default;
 
 		size_t Register(std::string name);
-		void RegisterOnCreate(size_t ID, OnCreate);
-		void RegisterOnActivate(size_t ID, OnActivate);
-		void RegisterOnUpdate(size_t ID, OnUpdate);
-		void RegisterOnDeactivate(size_t ID, OnDeactivate);
-		void RegisterOnDestroy(size_t ID, OnDestroy);
+		void RegisterOnCreate(size_t ID, std::function<OnCreate>);
+		void RegisterOnActivate(size_t ID, std::function<OnActivate>);
+		void RegisterOnUpdate(size_t ID, std::function<OnUpdate>);
+		void RegisterOnDeactivate(size_t ID, std::function<OnDeactivate>);
+		void RegisterOnDestroy(size_t ID, std::function<OnDestroy>);
 
 		bool IsRegistered(size_t ID) const noexcept;
 		size_t GetID(std::string_view name) const;
@@ -67,11 +67,11 @@ namespace Ubpa::UECS {
 		std::vector<std::string> names;
 		std::unordered_map<std::string_view, size_t> name2id;
 
-		std::unordered_map<size_t, OnCreate>     createMap;
-		std::unordered_map<size_t, OnActivate>   activateMap;
-		std::unordered_map<size_t, OnUpdate>     updateMap;
-		std::unordered_map<size_t, OnDeactivate> deactivateMap;
-		std::unordered_map<size_t, OnDestroy>    destroyMap;
+		std::unordered_map<size_t, std::function<OnCreate    >> createMap;
+		std::unordered_map<size_t, std::function<OnActivate  >> activateMap;
+		std::unordered_map<size_t, std::function<OnUpdate    >> updateMap;
+		std::unordered_map<size_t, std::function<OnDeactivate>> deactivateMap;
+		std::unordered_map<size_t, std::function<OnDestroy   >> destroyMap;
 	};
 }
 

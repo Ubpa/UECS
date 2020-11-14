@@ -14,12 +14,8 @@ struct RTDSystem {
 			CmptAccessType{ "LuaCmpt", AccessMode::LATEST }
 		};
 
-		CmptLocator locator_write(
-			cmpts_write.data(), cmpts_write.size()
-		);
-		CmptLocator locator_read(
-			cmpts_read.data(), cmpts_read.size()
-		);
+		CmptLocator locator_write(cmpts_write);
+		CmptLocator locator_read(cmpts_read);
 
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {

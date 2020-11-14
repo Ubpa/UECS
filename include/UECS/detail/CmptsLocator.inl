@@ -8,10 +8,10 @@ namespace Ubpa::UECS::detail {
 	CmptLocator GenerateCmptLocator(TypeList<Cmpts...>) {
 		if constexpr (sizeof...(Cmpts) > 0) {
 			constexpr std::array types{ CmptAccessType::Of<Cmpts>... };
-			return CmptLocator{ types.data(), types.size() };
+			return CmptLocator{ types };
 		}
 		else
-			return CmptLocator{};
+			return {};
 	}
 }
 

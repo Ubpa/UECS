@@ -33,7 +33,7 @@ namespace Ubpa::UECS::detail {
 			//	if (flag)
 			//		return true;
 			//}
-			if (y.randomTypes.empty()) { // y.none
+			if (y.randomTypes.empty() && !y.noneTypes.empty()) { // y.none
 				bool allFlag = false;
 				bool anyFlag = true;
 				bool randomFlag = true;
@@ -59,8 +59,8 @@ namespace Ubpa::UECS::detail {
 						// any
 						auto x_iter = x.anyTypes.begin();
 						auto y_iter = y.noneTypes.begin();
-						while (x_iter != x.anyTypes.end() && y_iter != y.noneTypes.end()) {
-							if (x_iter->GetCmptType() < *y_iter) {
+						while (x_iter != x.anyTypes.end()) {
+							if (y_iter == y.noneTypes.end() || x_iter->GetCmptType() < *y_iter) {
 								anyFlag = false;
 								break;
 							}
@@ -91,7 +91,7 @@ namespace Ubpa::UECS::detail {
 						return true;
 				}
 			}
-			if (x.randomTypes.empty()) { // x.none
+			if (x.randomTypes.empty() && !x.noneTypes.empty()) { // x.none
 				bool allFlag = false;
 				bool anyFlag = true;
 				bool randomFlag = true;
@@ -116,8 +116,8 @@ namespace Ubpa::UECS::detail {
 					else {
 						auto x_iter = x.noneTypes.begin();
 						auto y_iter = y.anyTypes.begin();
-						while (x_iter != x.noneTypes.end() && y_iter != y.anyTypes.end()) {
-							if (y_iter->GetCmptType() < *x_iter) {
+						while (x_iter != x.noneTypes.end()) {
+							if (y_iter == y.anyTypes.end() || y_iter->GetCmptType() < *x_iter) {
 								anyFlag = false;
 								break;
 							}
@@ -263,8 +263,8 @@ namespace Ubpa::UECS::detail {
 					bool haveOrder = false;
 					for (auto* ifunc : gi.sysFuncs) {
 						for (auto* jfunc : gj.sysFuncs) {
-							if (subgraph.HavePath(ifunc, jfunc)
-								|| subgraph.HavePath(jfunc, ifunc)) {
+							if (graph.HavePath(ifunc, jfunc)
+								|| graph.HavePath(jfunc, ifunc)) {
 								haveOrder = true;
 								break;
 							}

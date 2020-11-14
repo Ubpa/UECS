@@ -6,6 +6,7 @@
 namespace Ubpa::UECS {
 	class CmptsView {
 	public:
+		CmptsView() noexcept = default;
 		CmptsView(Span<const CmptAccessPtr> cmpts) noexcept : cmpts{ cmpts } {}
 
 		CmptAccessPtr GetCmpt(CmptAccessType) const noexcept;
