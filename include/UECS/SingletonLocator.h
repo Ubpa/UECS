@@ -9,6 +9,7 @@
 namespace Ubpa::UECS {
 	class SingletonLocator {
 	public:
+		SingletonLocator(std::set<CmptAccessType> types) : singletonTypes{ std::move(types) } {}
 		SingletonLocator(Span<const CmptAccessType> types);
 		SingletonLocator() = default;
 

@@ -17,7 +17,7 @@ namespace Ubpa::UECS {
 
 	inline bool CmptTypeSet::ContainsAll(Span<const CmptType> types) const {
 		for (const auto& type : types) {
-			if (Contains(type))
+			if (!Contains(type))
 				return false;
 		}
 		return true;
@@ -34,7 +34,7 @@ namespace Ubpa::UECS {
 
 	inline bool CmptTypeSet::ContainsAny(Span<const CmptType> types) const {
 		for (const auto& type : types) {
-			if (!Contains(type))
+			if (Contains(type))
 				return true;
 		}
 		return false;

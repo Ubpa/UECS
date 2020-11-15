@@ -12,8 +12,8 @@ namespace Ubpa::UECS {
 		SystemTraits systemTraits;
 		
 		SystemMngr(World* w) : w{w}{}
-		SystemMngr(const SystemMngr& mngr, World* w) : systemTraits{ mngr.systemTraits }, w{ w } {}
-		SystemMngr(SystemMngr&& mngr, World* w) noexcept : systemTraits{ std::move(mngr.systemTraits) }, w{ w } {}
+		SystemMngr(const SystemMngr& mngr, World* w);
+		SystemMngr(SystemMngr&& mngr, World* w) noexcept;
 		~SystemMngr();
 
 		// not alive -> create

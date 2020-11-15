@@ -4,6 +4,22 @@
 
 using namespace Ubpa::UECS;
 
+SystemMngr::SystemMngr(const SystemMngr& mngr, World* w)
+	:
+	systemTraits{ mngr.systemTraits },
+	aliveSystemIDs{ mngr.aliveSystemIDs },
+	activeSystemIDs{ mngr.activeSystemIDs },
+	w{ w }
+{}
+
+SystemMngr::SystemMngr(SystemMngr&& mngr, World* w) noexcept
+	:
+	systemTraits{ std::move(mngr.systemTraits) },
+	aliveSystemIDs{ mngr.aliveSystemIDs },
+	activeSystemIDs{ mngr.activeSystemIDs },
+	w{ w } 
+{}
+
 SystemMngr::~SystemMngr() {
 	assert(activeSystemIDs.empty());
 	assert(aliveSystemIDs.empty());

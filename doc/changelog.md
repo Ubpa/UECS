@@ -1,5 +1,6 @@
 # Change Log
 
+- 0.14.4: EntityMngr add single `CmptType` API
 - 0.14.3
   - `CmptsView`, `SingletonsView` use `Span` 
   - API with `const CmptType* types, size_t num` use `Span<CmptType> types` as instead
