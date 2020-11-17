@@ -17,12 +17,11 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
+	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	auto [e] = w.entityMngr.Create<>();
 	w.entityMngr.Emplace<A>(e, 1.f);
 	w.entityMngr.Instantiate(e);
-	w.systemMngr.Activate(mySystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

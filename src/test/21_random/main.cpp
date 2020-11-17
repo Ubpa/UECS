@@ -64,7 +64,7 @@ struct TranslationSystem {
 int main() {
 	World w;
 	w.entityMngr.cmptTraits.Register<Translation, LocalToWorld, LocalToParent, Children, Parent>();
-	auto [sys] = w.systemMngr.systemTraits.Register<TranslationSystem>();
+	w.systemMngr.RegisterAndActivate<TranslationSystem>();
 	auto [e1, c, t1, l2w1] = w.entityMngr.Create<Children, Translation, LocalToWorld>();
 	auto [e2, p2, t2, l2p2, l2w2] = w.entityMngr.Create<Parent, Translation, LocalToParent, LocalToWorld>();
 	auto [e3, p3, t3, l2p3, l2w3] = w.entityMngr.Create<Parent, Translation, LocalToParent, LocalToWorld>();
@@ -77,7 +77,6 @@ int main() {
 	t2->value = 2.f;
 	t3->value = 3.f;
 	
-	w.systemMngr.Activate(sys);
 	w.Update();
 
 	std::cout << w.GenUpdateFrameGraph().Dump() << std::endl;

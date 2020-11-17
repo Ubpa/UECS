@@ -21,11 +21,10 @@ struct DataSystem {
 
 int main() {
 	World w;
-	auto [dataSystem] = w.systemMngr.systemTraits.Register<DataSystem>();
+	w.systemMngr.RegisterAndActivate<DataSystem>();
 
 	w.entityMngr.Create<Data>();
 
-	w.systemMngr.Activate(dataSystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

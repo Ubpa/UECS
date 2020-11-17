@@ -16,7 +16,7 @@ namespace Ubpa::UECS {
 	class World {
 	public:
 		World() : systemMngr{ this }{}
-		// not copy schedule, so you can't use DumpUpdateJobGraph() and GenUpdateFrameGraph() before Update()
+		// not copy/move schedule, so you can't use DumpUpdateJobGraph() and GenUpdateFrameGraph() before Update()
 		World(const World&);
 		World(World&&) noexcept;
 		~World();
@@ -109,6 +109,7 @@ namespace Ubpa::UECS {
 			bool isParallel = true,
 			SingletonLocator = {}
 		) const;
+
 	private:
 		bool inRunningJobGraph{ false };
 
@@ -125,12 +126,6 @@ namespace Ubpa::UECS {
 		void RunCommands();
 
 		void Run(SystemFunc*);
-
-		// ==================================================
-		//World(const World& world) = delete;
-		//World(World&& world) = delete;
-		//World& operator==(World&& world) = delete;
-		//World& operator=(const World& world) = delete;
 	};
 }
 

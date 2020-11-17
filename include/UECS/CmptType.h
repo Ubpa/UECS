@@ -58,7 +58,7 @@ namespace Ubpa::UECS {
 		constexpr CmptType GetCmptType() const noexcept { return type; }
 		constexpr AccessMode GetAccessMode() const noexcept { return mode; }
 
-		constexpr operator CmptType()const noexcept { return type; }
+		constexpr operator CmptType() const noexcept { return type; }
 
 		static constexpr CmptAccessType Invalid() noexcept { return CmptAccessType{ static_cast<size_t>(-1), AccessMode{} }; }
 		constexpr bool Valid() const noexcept { return type.Valid(); }

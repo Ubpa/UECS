@@ -32,7 +32,7 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
+	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	auto [e0,     b0        ] = w.entityMngr.Create<   B      >(); // x
 	auto [e1, a1            ] = w.entityMngr.Create<A         >(); // x
@@ -44,7 +44,6 @@ int main() {
 	w.entityMngr.Emplace<E>(e2, 2.f);
 	w.entityMngr.Emplace<E>(e3, 3.f);
 
-	w.systemMngr.Activate(mySystem);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

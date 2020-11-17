@@ -42,11 +42,10 @@ struct MySystem {
 
 int main() {
 	World w;
-	auto [mySystem] = w.systemMngr.systemTraits.Register<MySystem>();
+	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	w.entityMngr.Create<A, B>();
 
-	w.systemMngr.Activate(mySystem);
 	w.Update();
 	w.Update();
 	w.Update();

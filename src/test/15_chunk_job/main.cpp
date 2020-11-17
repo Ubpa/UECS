@@ -50,9 +50,7 @@ struct SAB_System {
 
 int main() {
 	World w;
-	auto [sabSystem] = w.systemMngr.systemTraits.Register<SAB_System>();
-
-	w.systemMngr.Activate(sabSystem);
+	w.systemMngr.RegisterAndActivate<SAB_System>();
 
 	w.entityMngr.cmptTraits.Register<S, A, B>();
 

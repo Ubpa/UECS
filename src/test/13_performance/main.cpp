@@ -23,8 +23,7 @@ int main() {
 	size_t numEntities = 65536;
 	size_t numUpdate = 144 * 10;
 	World w;
-	auto [testSystem] = w.systemMngr.systemTraits.Register<TestSystem>();
-	w.systemMngr.Activate(testSystem);
+	w.systemMngr.RegisterAndActivate<TestSystem>();
 
 	auto t0 = std::chrono::steady_clock::now();
 	for (size_t i = 0; i < numEntities; i++)

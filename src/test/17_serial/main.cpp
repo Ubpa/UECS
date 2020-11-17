@@ -26,8 +26,7 @@ struct PrintASystem {
 
 int main() {
 	World w;
-	auto [printSystem] = w.systemMngr.systemTraits.Register<PrintASystem>();
-	w.systemMngr.Activate(printSystem);
+	w.systemMngr.RegisterAndActivate<PrintASystem>();
 	w.entityMngr.Create<A>();
 	w.entityMngr.Create<A, B>();
 	w.entityMngr.Create<A, C>();

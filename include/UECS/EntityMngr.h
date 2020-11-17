@@ -71,7 +71,7 @@ namespace Ubpa::UECS {
 
 		std::vector<CmptPtr> Components(Entity) const;
 
-		bool Exist(Entity) const;
+		bool Exist(Entity) const noexcept;
 
 		void Destroy(Entity);
 
@@ -96,6 +96,8 @@ namespace Ubpa::UECS {
 
 		void Accept(IListener* listener) const;
 
+		EntityMngr& operator=(EntityMngr&&) noexcept = delete;
+		EntityMngr& operator=(const EntityMngr&) = delete;
 	private:
 		friend class World;
 		friend class Archetype;

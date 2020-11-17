@@ -18,6 +18,20 @@ SystemTraits::SystemTraits(const SystemTraits& traits)
 	}
 }
 
+SystemTraits& SystemTraits::operator=(SystemTraits& rhs) {
+	names = rhs.names;
+	createMap = rhs.createMap;
+	activateMap = rhs.activateMap;
+	updateMap = rhs.updateMap;
+	deactivateMap = rhs.deactivateMap;
+	destroyMap = rhs.destroyMap;
+	for (size_t i = 0; i < names.size(); i++) {
+		const auto& name = names[i];
+		name2id.emplace(std::string_view{ name }, i);
+	}
+	return *this;
+}
+
 size_t SystemTraits::Register(std::string name) {
 	assert(!name.empty());
 	
@@ -43,27 +57,27 @@ size_t SystemTraits::GetID(std::string_view name) const {
 
 void SystemTraits::RegisterOnCreate(size_t ID, std::function<OnCreate> func) {
 	assert(IsRegistered(ID));
-	createMap.emplace(ID, std::move(func));
+	createMap[ID] = std::move(func);
 }
 
 void SystemTraits::RegisterOnActivate(size_t ID, std::function<OnActivate> func) {
 	assert(IsRegistered(ID));
-	activateMap.emplace(ID, std::move(func));
+	activateMap[ID] = std::move(func);
 }
 
 void SystemTraits::RegisterOnUpdate(size_t ID, std::function<OnUpdate> func) {
 	assert(IsRegistered(ID));
-	updateMap.emplace(ID, std::move(func));
+	updateMap[ID] = std::move(func);
 }
 
 void SystemTraits::RegisterOnDeactivate(size_t ID, std::function<OnDeactivate> func) {
 	assert(IsRegistered(ID));
-	deactivateMap.emplace(ID, std::move(func));
+	deactivateMap[ID] = std::move(func);
 }
 
 void SystemTraits::RegisterOnDestroy(size_t ID, std::function<OnDestroy> func) {
 	assert(IsRegistered(ID));
-	destroyMap.emplace(ID, std::move(func));
+	destroyMap[ID] = std::move(func);
 }
 
 std::string_view SystemTraits::Nameof(size_t ID) const noexcept {

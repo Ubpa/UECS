@@ -44,9 +44,8 @@ void print1(const World& w) {
 
 int main() {
 	World w;
-	auto [move] = w.systemMngr.systemTraits.Register<MoverSystem>();
+	w.systemMngr.RegisterAndActivate<MoverSystem>();
 	w.entityMngr.Create<Position, Velocity>();
-	w.systemMngr.Activate(move);
 	w.Update();
 	print0(w);
 	print1(w);

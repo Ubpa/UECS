@@ -8,7 +8,7 @@ Ubpa_InitUCMake()
 
 Ubpa_InitProject()
 
-Ubpa_AddDep(UContainer 0.0.8)
+Ubpa_AddDep(UContainer 0.0.9)
 Ubpa_AddDep(UTemplate  0.4.9)
 Ubpa_AddDep(UGraphviz  0.1.6)
 

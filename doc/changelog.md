@@ -1,6 +1,8 @@
 # Change Log
 
-- 0.14.4: EntityMngr add single `CmptType` API
+- 0.14.4
+  - EntityMngr add single `CmptType` API
+  - Add some template API for `SystemTraits` and `SystemMngr` 
 - 0.14.3
   - `CmptsView`, `SingletonsView` use `Span` 
   - API with `const CmptType* types, size_t num` use `Span<CmptType> types` as instead
@@ -15,3 +17,4 @@
   - `World` command buffer layer's type change from `size_t` to `int` 
 - 0.14.1: `CmptAccessMode` remove singleton
 - 0.14.0: System Lifecycle
+
