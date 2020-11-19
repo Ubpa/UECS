@@ -50,7 +50,8 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	void ArchetypeCmptTraits::Register() {
 		static_assert(!IsTaggedCmpt_v<Cmpt>, "<Cmpt> should not be tagged");
-		static_assert(std::is_copy_constructible_v<Cmpt>, "<Cmpt> must be copy-constructible");
+		static_assert(std::is_copy_constructible_v<Cmpt> || std::is_constructible_v<Cmpt, Cmpt&>,
+			"<Cmpt> must be copy-constructible or constructible with <Cmpt&>");
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
 		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");

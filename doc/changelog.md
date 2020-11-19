@@ -3,6 +3,7 @@
 - 0.14.4
   - EntityMngr add single `CmptType` API
   - Add some template API for `SystemTraits` and `SystemMngr` 
+  - `static_assert(std::is_copy_constructible_v<Cmpt>)` to `std::is_copy_constructible_v<Cmpt> || std::is_constructible_v<Cmpt, Cmpt&>` 
 - 0.14.3
   - `CmptsView`, `SingletonsView` use `Span` 
   - API with `const CmptType* types, size_t num` use `Span<CmptType> types` as instead
