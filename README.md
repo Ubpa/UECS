@@ -26,8 +26,7 @@
 
 ## Documentation
 
-- [API](doc/API.md) 
-- [Comparison with Unity3D ECS](doc/comparison.md) 
+- [changelog](doc/changelog.md) 
 - [TODO](doc/todo.md) 
 
 ## Example
@@ -74,6 +73,11 @@ int main() {
 - [serialize](src/test/14_serialize/main.cpp) 
 - [chunk job](src/test/15_chunk_job/main.cpp) 
 - [singleton](src/test/16_singleton/main.cpp) 
+- [serial execution](src/test/17_serial/main.cpp) 
+- [world copy](src/test/18_copy/main.cpp) 
+- [directly run execution](src/test/19_direct_run/main.cpp) 
+- [system lifecycle](src/test/20_system_lifecycle/main.cpp) 
+- [random access components](src/test/21_random/main.cpp) 
 
 ## Licensing
 
