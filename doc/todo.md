@@ -28,9 +28,9 @@
 - [x] serialize (`IListner`)
 - [x] system base -> `System` 
 - [x] singleton
-- [ ] doxygen
 - [x] random access
 - [x] system traits
+- [ ] change filter
 
 ### maybe support in future
 
@@ -41,6 +41,8 @@
 - [x] world run system func directly
 - [x] `CmptsView` = `const EntityLocator* locator + void** cmpts` 
 - [ ] pmr
+  - [x] pool
+  - [ ] API
 - [ ] batch create/instantiate (need benchmark)
 
 ### maybe not support in future
@@ -53,7 +55,7 @@
 - [x] SysFuncGraph dump
 - [x] doc
 
-## detial
+## detials
 
 - [x] remove `EntityMngr::ai2ei` 
 - [x] Archetype share `Pool<Chunk>` 

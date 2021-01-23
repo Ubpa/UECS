@@ -20,9 +20,11 @@
 
 ## Environment
 
-- VS 2019
-- C++ 17
-- CMake 16.3 +
+- Compiler
+  - MSVC: >=1926
+  - GCC: >= 10
+  - Clang: >= 10
+- C++ 20
 
 ## Documentation
 

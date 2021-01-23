@@ -1,7 +1,12 @@
 # Change Log
 
+- 0.15.0
+  - use C++20: `span`, `concept`, ...
+  - `CmptType` -> `TypeID`, `CmptAccessType` -> `AccessTypeID` 
+  - support pch
+  - support Clang, GCC, MSVC
 - 0.14.4
-  - EntityMngr add single `CmptType` API
+  - `EntityMngr` add single `CmptType` API
   - Add some template API for `SystemTraits` and `SystemMngr` 
   - `static_assert(std::is_copy_constructible_v<Cmpt>)` to `std::is_copy_constructible_v<Cmpt> || std::is_constructible_v<Cmpt, Cmpt&>` 
 - 0.14.3
