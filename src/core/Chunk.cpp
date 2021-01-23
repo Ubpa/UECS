@@ -1,4 +1,4 @@
-#include <UECS/detail/Chunk.h>
+#include <UECS/details/Chunk.h>
 
 #include <algorithm>
 

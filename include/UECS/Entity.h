@@ -1,6 +1,6 @@
 #pragma once
 
-#include "detail/Util.h"
+#include "details/Util.h"
 
 namespace Ubpa::UECS {
 	// index + version

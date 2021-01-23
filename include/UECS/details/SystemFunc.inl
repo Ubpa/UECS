@@ -2,7 +2,7 @@
 
 #include <UTemplate/Func.h>
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	template<typename Func>
 	auto Pack(Func&& func) noexcept;
 }
@@ -26,7 +26,7 @@ namespace Ubpa::UECS {
 		name{ std::move(name) },
 		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
-		func{ detail::Pack(std::forward<Func>(func)) }
+		func{ details::Pack(std::forward<Func>(func)) }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
@@ -56,7 +56,7 @@ namespace Ubpa::UECS {
 		name{ std::move(name) },
 		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
-		func{ detail::Pack(std::forward<Func>(func)) }
+		func{ details::Pack(std::forward<Func>(func)) }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
@@ -88,7 +88,7 @@ namespace Ubpa::UECS {
 		name{ std::move(name) },
 		hashCode{ GetValue(this->name) },
 		isParallel{ false },
-		func{ detail::Pack(std::forward<Func>(func)) }
+		func{ details::Pack(std::forward<Func>(func)) }
 	{
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 
@@ -105,7 +105,7 @@ namespace Ubpa::UECS {
 	}
 }
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	template<typename DecayedArgList, typename SortedSingletonList, typename SortedNonSingletonList>
 	struct Packer;
 
@@ -143,7 +143,7 @@ namespace Ubpa::UECS::detail {
 		using ArgList = FuncTraits_ArgList<Func>;
 
 		using DecayedArgList = Transform_t<ArgList, DecayArg>;
-		static_assert(IsSet_v<DecayedArgList>, "detail::System_::Pack: <Func>'s argument types must be a set");
+		static_assert(IsSet_v<DecayedArgList>, "details::System_::Pack: <Func>'s argument types must be a set");
 
 		using TaggedCmptList = Filter_t<ArgList, IsTaggedCmpt>;
 

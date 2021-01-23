@@ -6,7 +6,7 @@ using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	struct NoneGroup {
 		NoneGroup() = default;
 		NoneGroup(SystemFunc* func)
@@ -483,7 +483,7 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 	auto cmptSysFuncsMap = GenCmptSysFuncsMap();
 
 	// [gen groupMap]
-	unordered_map<SystemFunc*, detail::NoneGroup> groupMap;
+	unordered_map<SystemFunc*, details::NoneGroup> groupMap;
 	for (const auto& [hashcode, sysFunc] : sysFuncs)
 		groupMap.emplace(sysFunc, sysFunc);
 
@@ -510,14 +510,14 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 	// [gen graph] - edge - time point
 	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap)
-		detail::Compiler::SetPrePostEdge(graph, cmptSysFuncs, groupMap);
+		details::Compiler::SetPrePostEdge(graph, cmptSysFuncs, groupMap);
 
 	// [gen graph] - edge - none group
 	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap) {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
-		auto sortedGroup = detail::Compiler::GenSortNoneGroup(graph, cmptSysFuncs, groupMap);
+		auto sortedGroup = details::Compiler::GenSortNoneGroup(graph, cmptSysFuncs, groupMap);
 		
 		for (std::size_t i = 0; i < sortedGroup.size() - 1; i++) {
 			const auto& gx = sortedGroup[i];

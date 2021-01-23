@@ -94,4 +94,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/SystemTraits.inl"
+#include "details/SystemTraits.inl"

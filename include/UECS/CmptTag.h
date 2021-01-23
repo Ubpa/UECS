@@ -97,4 +97,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/CmptTag.inl"
+#include "details/CmptTag.inl"

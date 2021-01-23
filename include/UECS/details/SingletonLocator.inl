@@ -2,7 +2,7 @@
 
 #include <UTemplate/Func.h>
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	template<typename... Singletons>
 	SingletonLocator GenerateSingletonLocator(TypeList<Singletons...>) {
 		if constexpr (sizeof...(Singletons) > 0) {
@@ -19,7 +19,7 @@ namespace Ubpa::UECS {
 	SingletonLocator SingletonLocator::Generate() {
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 		using SingletonList = Filter_t<ArgList, IsSingleton>;
-		return detail::GenerateSingletonLocator(SingletonList{});
+		return details::GenerateSingletonLocator(SingletonList{});
 	}
 
 	template<typename Func>

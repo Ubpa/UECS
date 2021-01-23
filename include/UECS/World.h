@@ -131,4 +131,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/World.inl"
+#include "details/World.inl"

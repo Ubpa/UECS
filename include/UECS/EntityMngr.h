@@ -1,7 +1,7 @@
 #pragma once
 
-#include "detail/Archetype.h"
-#include "detail/Job.h"
+#include "details/Archetype.h"
+#include "details/Job.h"
 #include "EntityQuery.h"
 #include "SingletonLocator.h"
 
@@ -145,4 +145,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/EntityMngr.inl"
+#include "details/EntityMngr.inl"

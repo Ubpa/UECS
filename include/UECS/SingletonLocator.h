@@ -27,4 +27,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/SingletonLocator.inl"
+#include "details/SingletonLocator.inl"

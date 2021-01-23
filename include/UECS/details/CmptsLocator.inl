@@ -2,7 +2,7 @@
 
 #include <UTemplate/Func.h>
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	template<typename... Cmpts>
 	CmptLocator GenerateCmptLocator(TypeList<Cmpts...>) {
 		if constexpr (sizeof...(Cmpts) > 0) {
@@ -19,7 +19,7 @@ namespace Ubpa::UECS {
 	CmptLocator CmptLocator::Generate() {
 		using ArgList = FuncTraits_ArgList<std::decay_t<Func>>;
 		using CmptList = Filter_t<ArgList, IsNonSingleton>;
-		return detail::GenerateCmptLocator(CmptList{});
+		return details::GenerateCmptLocator(CmptList{});
 	}
 
 	template<typename Func>

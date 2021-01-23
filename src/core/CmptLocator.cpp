@@ -1,6 +1,6 @@
 #include <UECS/CmptLocator.h>
 
-#include <UECS/detail/Util.h>
+#include <UECS/details/Util.h>
 
 using namespace Ubpa::UECS;
 

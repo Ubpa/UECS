@@ -37,4 +37,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/CmptsLocator.inl"
+#include "details/CmptsLocator.inl"

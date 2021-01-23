@@ -29,4 +29,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/ChunkView.inl"
+#include "details/ChunkView.inl"

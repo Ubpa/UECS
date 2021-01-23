@@ -2,7 +2,7 @@
 
 #include "CmptTag.h"
 
-#include "detail/Util.h"
+#include "details/Util.h"
 
 #include <UTemplate/TypeID.h>
 
@@ -31,4 +31,4 @@ namespace Ubpa::UECS {
 	using AccessTypeIDSet = std::set<AccessTypeID, std::less<>>;
 }
 
-#include "detail/AccessTypeID.inl"
+#include "details/AccessTypeID.inl"

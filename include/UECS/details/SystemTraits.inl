@@ -2,7 +2,7 @@
 
 #include <UTemplate/Name.h>
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	template<typename System>
 	concept HaveOnCreate     = requires(World* w) { { System::OnCreate(w) }; };
 	template<typename System>
@@ -34,7 +34,7 @@ namespace Ubpa::UECS::detail {
 namespace Ubpa::UECS {
 	template<typename... Systems>
 	std::array<std::size_t, sizeof...(Systems)> SystemTraits::Register() {
-		return { detail::Register<Systems>(*this)... };
+		return { details::Register<Systems>(*this)... };
 	}
 
 	template<typename System>

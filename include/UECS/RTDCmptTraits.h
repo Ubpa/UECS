@@ -79,4 +79,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/RTDCmptTraits.inl"
+#include "details/RTDCmptTraits.inl"

@@ -2,7 +2,7 @@
 
 #include "ArchetypeFilter.h"
 #include "CmptLocator.h"
-#include "detail/Util.h"
+#include "details/Util.h"
 
 namespace Ubpa::UECS {
 	// ArchetypeFilter + CmptLocator
@@ -18,4 +18,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/EntityQuery.inl"
+#include "details/EntityQuery.inl"

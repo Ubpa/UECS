@@ -1,4 +1,4 @@
-#include <UECS/detail/Archetype.h>
+#include <UECS/details/Archetype.h>
 
 using namespace Ubpa::UECS;
 using namespace std;

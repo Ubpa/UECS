@@ -79,4 +79,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/SystemMngr.inl"
+#include "details/SystemMngr.inl"

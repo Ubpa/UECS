@@ -1,13 +1,13 @@
 #pragma once
 
-#include "detail/SystemFunc.h"
-#include "detail/Job.h"
+#include "details/SystemFunc.h"
+#include "details/Job.h"
 
 #include <map>
 #include <memory>
 #include <memory_resource>
 
-namespace Ubpa::UECS::detail {
+namespace Ubpa::UECS::details {
 	struct Compiler;
 }
 
@@ -97,7 +97,7 @@ namespace Ubpa::UECS {
 			std::vector<SystemFunc*> writeSysFuncs;
 			std::vector<SystemFunc*> latestSysFuncs;
 		};
-		friend struct detail::Compiler;
+		friend struct details::Compiler;
 		std::unordered_map<TypeID, CmptSysFuncs> GenCmptSysFuncsMap() const;
 
 		SysFuncGraph GenSysFuncGraph() const;
@@ -124,4 +124,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "detail/Schedule.inl"
+#include "details/Schedule.inl"

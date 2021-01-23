@@ -1,6 +1,6 @@
 #include <UECS/EntityMngr.h>
 
-#include <UECS/detail/SystemFunc.h>
+#include <UECS/details/SystemFunc.h>
 #include <UECS/IListener.h>
 
 using namespace Ubpa::UECS;

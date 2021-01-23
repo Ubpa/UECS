@@ -1,4 +1,4 @@
-#include <UECS/detail/SystemFunc.h>
+#include <UECS/details/SystemFunc.h>
 
 using namespace Ubpa::UECS;
 
