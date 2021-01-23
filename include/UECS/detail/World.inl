@@ -35,7 +35,7 @@ namespace Ubpa::UECS {
 		static_assert(Length_v<Filter_t<ArgList, IsWrite>> == 0,
 			"const RunEntityJob can't write cmpt");
 		assert("const RunEntityJob can't write cmpt"
-			&& !cmptLocator.HasWriteCmptType());
+			&& !cmptLocator.HasWriteTypeID());
 
 		const_cast<World*>(this)->RunEntityJob(
 			std::forward<Func>(func),
@@ -75,7 +75,7 @@ namespace Ubpa::UECS {
 		static_assert(Contain_v<ArgList, World*> == 0,
 			"const RunChunkJob should use const World*");
 		assert("const RunChunkJob can't write cmpt"
-			&& !filter.HaveWriteCmptType());
+			&& !filter.HaveWriteTypeID());
 
 		const_cast<World*>(this)->RunChunkJob(
 			std::forward<Func>(func),

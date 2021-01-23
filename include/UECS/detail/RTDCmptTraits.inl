@@ -3,66 +3,66 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa::UECS {
-	inline RTDCmptTraits& RTDCmptTraits::RegisterSize(CmptType type, size_t size) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterSize(TypeID type, std::size_t size) {
 		sizeofs.emplace(type, size);
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterAlignment(CmptType type, size_t alignment) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterAlignment(TypeID type, std::size_t alignment) {
 		alignments.emplace(type, alignment);
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(CmptType type, std::function<void(void*)> f) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*)> f) {
 		default_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(CmptType type, std::function<void(void*,void*)> f) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*,void*)> f) {
 		copy_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(CmptType type, std::function<void(void*,void*)> f) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*,void*)> f) {
 		move_constructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(CmptType type, std::function<void(void*,void*)> f) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(TypeID type, std::function<void(void*,void*)> f) {
 		move_assignments.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(CmptType type, std::function<void(void*)> f) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(TypeID type, std::function<void(void*)> f) {
 		destructors.emplace(type, std::move(f));
 		return *this;
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::RegisterName(CmptType type, std::string name) {
+	inline RTDCmptTraits& RTDCmptTraits::RegisterName(TypeID type, std::string name) {
 		names.emplace(type, std::move(name));
 		return *this;
 	}
 
-	inline size_t RTDCmptTraits::Sizeof(CmptType type) const {
+	inline std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
 		auto target = sizeofs.find(type);
 		assert(target != sizeofs.end());
 		return target->second;
 	}
 
-	inline size_t RTDCmptTraits::Alignof(CmptType type) const {
+	inline std::size_t RTDCmptTraits::Alignof(TypeID type) const {
 		auto target = alignments.find(type);
 
 		return target != alignments.end() ? target->second : DefaultAlignment();
 	}
 
-	inline void RTDCmptTraits::DefaultConstruct(CmptType type, void* cmpt) const {
+	inline void RTDCmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
 		auto target = default_constructors.find(type);
 
 		if (target != default_constructors.end())
 			target->second(cmpt);
 	}
 
-	inline void RTDCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
+	inline void RTDCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
 		auto target = copy_constructors.find(type);
 
 		if (target != copy_constructors.end())
@@ -71,7 +71,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTDCmptTraits::MoveConstruct(CmptType type, void* dst, void* src) const {
+	inline void RTDCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
 		auto target = move_constructors.find(type);
 
 		if (target != move_constructors.end())
@@ -80,7 +80,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTDCmptTraits::MoveAssign(CmptType type, void* dst, void* src) const {
+	inline void RTDCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
 		auto target = move_assignments.find(type);
 
 		if (target != move_assignments.end())
@@ -89,13 +89,13 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void RTDCmptTraits::Destruct(CmptType type, void* cmpt) const {
+	inline void RTDCmptTraits::Destruct(TypeID type, void* cmpt) const {
 		auto target = destructors.find(type);
 		if (target != destructors.end())
 			target->second(cmpt);
 	}
 
-	inline std::string_view RTDCmptTraits::Nameof(CmptType type) const {
+	inline std::string_view RTDCmptTraits::Nameof(TypeID type) const {
 		auto target = names.find(type);
 		if (target != names.end())
 			return target->second;
@@ -118,11 +118,11 @@ namespace Ubpa::UECS {
 		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
-		constexpr CmptType type = CmptType::Of<Cmpt>;
+		constexpr TypeID type = TypeID_of<Cmpt>;
 
 		sizeofs.emplace(type, sizeof(Cmpt));
 		alignments.emplace(type, alignof(Cmpt));
-		names.emplace(type, std::string{ nameof::nameof_type<Cmpt>() });
+		names.emplace(type, std::string{ type_name<Cmpt>().View() });
 
 		if constexpr (!std::is_trivially_default_constructible_v<Cmpt>) {
 			default_constructors.emplace(type, [](void* cmpt) {
@@ -153,7 +153,7 @@ namespace Ubpa::UECS {
 
 	template<typename Cmpt>
 	void RTDCmptTraits::Deregister() {
-		constexpr CmptType type = CmptType::Of<Cmpt>;
+		constexpr TypeID type = TypeID_of<Cmpt>;
 
 		sizeofs.erase(type);
 		alignments.erase(type);
@@ -171,7 +171,7 @@ namespace Ubpa::UECS {
 			copy_constructors.erase(type);
 	}
 
-	inline RTDCmptTraits& RTDCmptTraits::Deregister(CmptType type) noexcept {
+	inline RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
 		names.erase(type);
 		sizeofs.erase(type);
 		alignments.erase(type);

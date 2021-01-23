@@ -2,16 +2,17 @@
 
 #include <iostream>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;
 
 struct RTDSystem {
 	static void OnUpdate(Schedule& schedule) {
 		std::array cmpts_write = {
-			CmptAccessType{ "LuaCmpt", AccessMode::WRITE }
+			AccessTypeID{ "LuaCmpt", AccessMode::WRITE }
 		};
 		std::array cmpts_read = {
-			CmptAccessType{ "LuaCmpt", AccessMode::LATEST }
+			AccessTypeID{ "LuaCmpt", AccessMode::LATEST }
 		};
 
 		CmptLocator locator_write(cmpts_write);
@@ -19,7 +20,7 @@ struct RTDSystem {
 
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {
-				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::WRITE });
+				auto luaCmpt = cmpts.GetCmpt(AccessTypeID{ "LuaCmpt", AccessMode::WRITE });
 				double& val = *reinterpret_cast<double*>(luaCmpt.Ptr());
 				val = 520.;
 			},
@@ -30,7 +31,7 @@ struct RTDSystem {
 		);
 		schedule.RegisterEntityJob(
 			[](CmptsView cmpts) {
-				auto luaCmpt = cmpts.GetCmpt(CmptAccessType{ "LuaCmpt", AccessMode::LATEST });
+				auto luaCmpt = cmpts.GetCmpt(AccessTypeID{ "LuaCmpt", AccessMode::LATEST });
 				const double& val = *reinterpret_cast<const double*>(luaCmpt.Ptr());
 				cout << "value : " << val << endl;
 			},
@@ -43,7 +44,7 @@ struct RTDSystem {
 };
 
 int main() {
-	CmptType type("LuaCmpt");
+	TypeID type("LuaCmpt");
 	// LuaCmpt {
 	//   number value;
     // }

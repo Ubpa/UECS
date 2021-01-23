@@ -1,18 +1,17 @@
 #pragma once
 
 #include "CmptTag.h"
+#include "AccessTypeID.h"
 
-#include "CmptType.h"
-
-#include <UContainer/Span.h>
+#include <span>
 
 namespace Ubpa::UECS {
 	// locate components in function's argument list for Archetype
 	// immutable
 	class CmptLocator {
 	public:
-		CmptLocator(Span<const CmptAccessType> types);
-		CmptLocator(CmptAccessTypeSet types);
+		CmptLocator(std::span<const AccessTypeID> types);
+		CmptLocator(AccessTypeIDSet types);
 
 		CmptLocator();
 
@@ -22,19 +21,19 @@ namespace Ubpa::UECS {
 		template<typename Func>
 		CmptLocator& Combine();
 
-		size_t HashCode() const noexcept { return hashCode; }
+		std::size_t GetValue() const noexcept { return hashCode; }
 
-		const CmptAccessTypeSet& CmptAccessTypes() const noexcept { return cmptTypes; }
+		const AccessTypeIDSet& AccessTypeIDs() const noexcept { return cmptTypes; }
 
 		bool operator==(const CmptLocator& rhs) const noexcept;
 
-		bool HasWriteCmptType() const noexcept;
+		bool HasWriteTypeID() const noexcept;
 	private:
-		void UpdateHashCode() noexcept;
+		void UpdateGetValue() noexcept;
 
-		CmptAccessTypeSet cmptTypes;
+		AccessTypeIDSet cmptTypes;
 
-		size_t hashCode;
+		std::size_t hashCode;
 	};
 }
 

@@ -15,9 +15,9 @@ struct E { float val; };
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
 		ArchetypeFilter filter;
-		filter.all = { CmptAccessType::Of<A> };
-		filter.any = { CmptAccessType::Of<B>, CmptAccessType::Of<C> };
-		filter.none = { CmptType::Of<D> };
+		filter.all = { AccessTypeID_of<A> };
+		filter.any = { AccessTypeID_of<B>, AccessTypeID_of<C> };
+		filter.none = { TypeID_of<D> };
 
 		schedule.RegisterEntityJob(
 			[](const E* e) {

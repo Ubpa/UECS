@@ -4,10 +4,10 @@
 
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
-	Archetype::Archetype(Pool<Chunk>* chunkPool, TypeList<Cmpts...>)
+	Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, TypeList<Cmpts...>)
 		:
-		types(GenCmptTypeSet<Cmpts...>()),
-		chunkPool{ chunkPool }
+		types(GenTypeIDSet<Cmpts...>()),
+		chunkAllocator{ chunkAllocator }
 	{
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"<Cmpts>... must be different");
@@ -21,12 +21,12 @@ namespace Ubpa::UECS {
 		static_assert(sizeof...(Cmpts) > 0);
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"<Cmpts>... must be different");
-		assert(!(from->types.Contains(CmptType::Of<Cmpts>) &&...));
+		assert(!(from->types.Contains(TypeID_of<Cmpts>) &&...));
 
-		Archetype* rst = new Archetype{ from->chunkPool };
+		Archetype* rst = new Archetype{ from->chunkAllocator };
 		
 		rst->types = from->types;
-		(rst->types.data.insert(CmptType::Of<Cmpts>), ...);
+		(rst->types.data.insert(TypeID_of<Cmpts>), ...);
 		rst->cmptTraits = from->cmptTraits;
 		(rst->cmptTraits.Register<Cmpts>(), ...);
 
@@ -36,35 +36,35 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename... Cmpts>
-	std::tuple<size_t, std::tuple<Cmpts *...>> Archetype::Create(Entity e) {
+	std::tuple<std::size_t, std::tuple<Cmpts *...>> Archetype::Create(Entity e) {
 		static_assert((std::is_constructible_v<Cmpts> &&...),
 			"<Cmpts> isn't constructible");
 		static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 			"<Cmpts>... must be different");
 
-		assert((types.Contains(CmptType::Of<Cmpts>) &&...) && types.data.size() == 1 + sizeof...(Cmpts));
+		assert((types.Contains(TypeID_of<Cmpts>) &&...) && types.data.size() == 1 + sizeof...(Cmpts));
 
-		size_t idx = RequestBuffer();
-		size_t idxInChunk = idx % chunkCapacity;
+		std::size_t idx = RequestBuffer();
+		std::size_t idxInChunk = idx % chunkCapacity;
 		byte* buffer = chunks[idx / chunkCapacity]->Data();
 
-		new(buffer + Offsetof(CmptType::Of<Entity>) + idxInChunk * sizeof(Entity))Entity(e);
+		new(buffer + Offsetof(TypeID_of<Entity>) + idxInChunk * sizeof(Entity))Entity(e);
 
-		std::tuple cmpts = { new(buffer + Offsetof(CmptType::Of<Cmpts>) + idxInChunk * sizeof(Cmpts))Cmpts... };
+		std::tuple cmpts = { new(buffer + Offsetof(TypeID_of<Cmpts>) + idxInChunk * sizeof(Cmpts))Cmpts... };
 
 		return { idx,cmpts };
 	}
 
 	template<typename... Cmpts>
-	CmptTypeSet Archetype::GenCmptTypeSet() {
+	TypeIDSet Archetype::GenTypeIDSet() {
 		if constexpr (sizeof...(Cmpts) > 0) {
 			static_assert(IsSet_v<TypeList<Entity, Cmpts...>>,
 				"<Cmpts>... must be different");
 
-			constexpr std::array types = { CmptType::Of<Cmpts>... };
-			return GenCmptTypeSet(types);
+			constexpr std::array types = { TypeID_of<Cmpts>... };
+			return GenTypeIDSet(types);
 		}
 		else
-			return GenCmptTypeSet({});
+			return GenTypeIDSet({});
 	}
 }

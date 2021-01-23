@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;
 
@@ -18,7 +19,7 @@ struct VP_System {
 struct AVP_System {
 	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](const A*, V*, P*) {cout << "AVP" << endl; }, "AVP");
-		schedule.InsertNone("VP", CmptType::Of<A>);
+		schedule.InsertNone("VP", TypeID_of<A>);
 	}
 };
 

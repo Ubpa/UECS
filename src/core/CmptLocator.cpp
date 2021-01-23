@@ -4,30 +4,30 @@
 
 using namespace Ubpa::UECS;
 
-CmptLocator::CmptLocator(CmptAccessTypeSet cmptTypes)
+CmptLocator::CmptLocator(AccessTypeIDSet cmptTypes)
 	: cmptTypes{ std::move(cmptTypes) }
 {
-	UpdateHashCode();
+	UpdateGetValue();
 }
 
-CmptLocator::CmptLocator(Span<const CmptAccessType> types) {
+CmptLocator::CmptLocator(std::span<const AccessTypeID> types) {
 	for (const auto& type : types)
 		cmptTypes.insert(type);
 
-	UpdateHashCode();
+	UpdateGetValue();
 }
 
 CmptLocator::CmptLocator()
-	: hashCode{ TypeID<CmptLocator> } {}
+	: hashCode{ TypeID_of<CmptLocator>.GetValue() } {}
 
-void CmptLocator::UpdateHashCode() noexcept {
-	size_t rst = TypeID<CmptLocator>;
+void CmptLocator::UpdateGetValue() noexcept {
+	std::size_t rst = TypeID_of<CmptLocator>.GetValue();
 	for (const auto& type : cmptTypes)
-		rst = hash_combine(rst, type.HashCode());
+		rst = hash_combine(rst, type.GetValue());
 	hashCode = rst;
 }
 
-bool CmptLocator::HasWriteCmptType() const noexcept {
+bool CmptLocator::HasWriteTypeID() const noexcept {
 	for (const auto& type : cmptTypes) {
 		if (type.GetAccessMode() == AccessMode::WRITE)
 			return true;

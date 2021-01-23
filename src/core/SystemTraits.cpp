@@ -12,7 +12,7 @@ SystemTraits::SystemTraits(const SystemTraits& traits)
 	deactivateMap{ traits.deactivateMap },
 	destroyMap{ traits.destroyMap }
 {
-	for (size_t i = 0; i < names.size(); i++) {
+	for (std::size_t i = 0; i < names.size(); i++) {
 		const auto& name = names[i];
 		name2id.emplace(std::string_view{ name }, i);
 	}
@@ -25,95 +25,95 @@ SystemTraits& SystemTraits::operator=(SystemTraits& rhs) {
 	updateMap = rhs.updateMap;
 	deactivateMap = rhs.deactivateMap;
 	destroyMap = rhs.destroyMap;
-	for (size_t i = 0; i < names.size(); i++) {
+	for (std::size_t i = 0; i < names.size(); i++) {
 		const auto& name = names[i];
 		name2id.emplace(std::string_view{ name }, i);
 	}
 	return *this;
 }
 
-size_t SystemTraits::Register(std::string name) {
+std::size_t SystemTraits::Register(std::string name) {
 	assert(!name.empty());
 	
 	auto target = name2id.find(name);
 	if (target != name2id.end())
 		return target->second;
 
-	size_t idx = names.size();
+	std::size_t idx = names.size();
 	names.push_back(std::move(name));
 	name2id.emplace_hint(target, std::pair{ std::string_view{names[idx]}, idx });
 
 	return idx;
 }
 
-bool SystemTraits::IsRegistered(size_t ID) const noexcept {
+bool SystemTraits::IsRegistered(std::size_t ID) const noexcept {
 	return ID < names.size();
 }
 
-size_t SystemTraits::GetID(std::string_view name) const {
+std::size_t SystemTraits::GetID(std::string_view name) const {
 	auto target = name2id.find(name);
-	return target == name2id.end() ? static_cast<size_t>(-1) : target->second;
+	return target == name2id.end() ? static_cast<std::size_t>(-1) : target->second;
 }
 
-void SystemTraits::RegisterOnCreate(size_t ID, std::function<OnCreate> func) {
+void SystemTraits::RegisterOnCreate(std::size_t ID, std::function<OnCreate> func) {
 	assert(IsRegistered(ID));
 	createMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnActivate(size_t ID, std::function<OnActivate> func) {
+void SystemTraits::RegisterOnActivate(std::size_t ID, std::function<OnActivate> func) {
 	assert(IsRegistered(ID));
 	activateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnUpdate(size_t ID, std::function<OnUpdate> func) {
+void SystemTraits::RegisterOnUpdate(std::size_t ID, std::function<OnUpdate> func) {
 	assert(IsRegistered(ID));
 	updateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnDeactivate(size_t ID, std::function<OnDeactivate> func) {
+void SystemTraits::RegisterOnDeactivate(std::size_t ID, std::function<OnDeactivate> func) {
 	assert(IsRegistered(ID));
 	deactivateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnDestroy(size_t ID, std::function<OnDestroy> func) {
+void SystemTraits::RegisterOnDestroy(std::size_t ID, std::function<OnDestroy> func) {
 	assert(IsRegistered(ID));
 	destroyMap[ID] = std::move(func);
 }
 
-std::string_view SystemTraits::Nameof(size_t ID) const noexcept {
+std::string_view SystemTraits::Nameof(std::size_t ID) const noexcept {
 	assert(ID < names.size());
 	return names[ID];
 }
 
-void SystemTraits::Create(size_t ID, World* w) const {
+void SystemTraits::Create(std::size_t ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = createMap.find(ID);
 	if (target != createMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Activate(size_t ID, World* w) const {
+void SystemTraits::Activate(std::size_t ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = activateMap.find(ID);
 	if (target != activateMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Update(size_t ID, Schedule& schedule) const {
+void SystemTraits::Update(std::size_t ID, Schedule& schedule) const {
 	assert(IsRegistered(ID));
 	auto target = updateMap.find(ID);
 	if (target != updateMap.end())
 		target->second(schedule);
 }
 
-void SystemTraits::Deactivate(size_t ID, World* w) const {
+void SystemTraits::Deactivate(std::size_t ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = deactivateMap.find(ID);
 	if (target != deactivateMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Destroy(size_t ID, World* w) const {
+void SystemTraits::Destroy(std::size_t ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = destroyMap.find(ID);
 	if (target != destroyMap.end())

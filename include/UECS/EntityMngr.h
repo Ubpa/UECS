@@ -5,6 +5,8 @@
 #include "EntityQuery.h"
 #include "SingletonLocator.h"
 
+#include <memory_resource>
+
 namespace Ubpa::UECS {
 	class World;
 	class SystemFunc;
@@ -18,7 +20,7 @@ namespace Ubpa::UECS {
 	// - Singleton: IsSingleton, GetSingletonEntity, GetSingleton
 	// - other: EntityNum, AddCommand
 	// [important]
-	// - some API with CmptType need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
+	// - some API with TypeID need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
 	// - API with Entity require Entity exist  (throw std::invalid_argument)
 	// [details]
 	// - when free entries is empty, use new entity entry (version is 0)
@@ -35,8 +37,8 @@ namespace Ubpa::UECS {
 		std::tuple<Entity, Cmpts*...> Create();
 
 		// use RTDCmptTraits
-		Entity Create(Span<const CmptType> types);
-		Entity Create(CmptType type) { return Create({ &type, 1 }); }
+		Entity Create(std::span<const TypeID> types);
+		Entity Create(TypeID type) { return Create({ &type, 1 }); }
 
 		Entity Instantiate(Entity);
 
@@ -46,26 +48,26 @@ namespace Ubpa::UECS {
 		std::tuple<Cmpts*...> Attach(Entity);
 
 		// use RTDCmptTraits
-		void Attach(Entity, Span<const CmptType> types);
-		void Attach(Entity e, CmptType type) { Attach(e, { &type, 1 }); }
+		void Attach(Entity, std::span<const TypeID> types);
+		void Attach(Entity e, TypeID type) { Attach(e, { &type, 1 }); }
 
 		template<typename Cmpt, typename... Args>
 		Cmpt* Emplace(Entity, Args&&...);
 
-		void Detach(Entity, Span<const CmptType> types);
-		void Detach(Entity e, CmptType type) { Detach(e, { &type, 1 }); }
-		// use Detach(Entity, const CmptType*, size_t)
+		void Detach(Entity, std::span<const TypeID> types);
+		void Detach(Entity e, TypeID type) { Detach(e, { &type, 1 }); }
+		// use Detach(Entity, const TypeID*, std::size_t)
 		template<typename... Cmpts>
 		void Detach(Entity);
 
-		bool Have(Entity, CmptType) const;
-		// use Have(Entity, CmptType)
+		bool Have(Entity, TypeID) const;
+		// use Have(Entity, TypeID)
 		template<typename Cmpt>
 		bool Have(Entity) const;
 
-		// nullptr if not containts CmptType
-		CmptPtr Get(Entity, CmptType) const;
-		// use Get(Entity, CmptType)
+		// nullptr if not containts TypeID
+		CmptPtr Get(Entity, TypeID) const;
+		// use Get(Entity, TypeID)
 		template<typename Cmpt>
 		Cmpt* Get(Entity) const;
 
@@ -75,23 +77,23 @@ namespace Ubpa::UECS {
 
 		void Destroy(Entity);
 
-		size_t TotalEntityNum() const noexcept { return entityTable.size() - entityTableFreeEntry.size(); }
-		size_t EntityNum(const EntityQuery&) const;
+		std::size_t TotalEntityNum() const noexcept { return entityTable.size() - entityTableFreeEntry.size(); }
+		std::size_t EntityNum(const EntityQuery&) const;
 		// use entry in reverse
-		const std::vector<size_t>& GetEntityFreeEntries() const noexcept { return entityTableFreeEntry; }
-		size_t GetEntityVersion(size_t idx) const noexcept { return entityTable.at(idx).version; }
+		const std::vector<std::size_t>& GetEntityFreeEntries() const noexcept { return entityTableFreeEntry; }
+		std::size_t GetEntityVersion(std::size_t idx) const noexcept { return entityTable.at(idx).version; }
 
-		bool IsSingleton(CmptType) const;
-		Entity GetSingletonEntity(CmptType) const;
+		bool IsSingleton(TypeID) const;
+		Entity GetSingletonEntity(TypeID) const;
 		// nullptr if not singleton
-		CmptPtr GetSingleton(CmptType) const;
+		CmptPtr GetSingleton(TypeID) const;
 		template<typename Cmpt>
-		Cmpt* GetSingleton() const { return GetSingleton(CmptType::Of<Cmpt>).As<Cmpt>(); }
+		Cmpt* GetSingleton() const { return GetSingleton(TypeID_of<Cmpt>).As<Cmpt>(); }
 
 		// filter's all contains cmpt
 		template<typename Cmpt>
 		std::vector<Cmpt*> GetCmptArray(const ArchetypeFilter&) const;
-		std::vector<CmptPtr> GetCmptArray(const ArchetypeFilter&, CmptType) const;
+		std::vector<CmptPtr> GetCmptArray(const ArchetypeFilter&, TypeID) const;
 		std::vector<Entity> GetEntityArray(const ArchetypeFilter&) const;
 
 		void Accept(IListener* listener) const;
@@ -102,17 +104,17 @@ namespace Ubpa::UECS {
 		friend class World;
 		friend class Archetype;
 
-		static bool IsSet(Span<const CmptType> types) noexcept;
+		static bool IsSet(std::span<const TypeID> types) noexcept;
 
 		template<typename... Cmpts>
 		Archetype* GetOrCreateArchetypeOf();
 		// types not contain Entity
-		Archetype* GetOrCreateArchetypeOf(Span<const CmptType> types);
+		Archetype* GetOrCreateArchetypeOf(std::span<const TypeID> types);
 
 		// return original archetype
 		template<typename... Cmpts>
 		Archetype* AttachWithoutInit(Entity);
-		Archetype* AttachWithoutInit(Entity, Span<const CmptType> types);
+		Archetype* AttachWithoutInit(Entity, std::span<const TypeID> types);
 
 		std::vector<CmptAccessPtr> LocateSingletons(const SingletonLocator&) const;
 
@@ -130,16 +132,16 @@ namespace Ubpa::UECS {
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
-			size_t idxInArchetype{ static_cast<size_t>(-1) };
-			size_t version{ 0 }; // version
+			std::size_t idxInArchetype{ static_cast<std::size_t>(-1) };
+			std::size_t version{ 0 }; // version
 		};
 		std::vector<EntityInfo> entityTable;
-		std::vector<size_t> entityTableFreeEntry;
-		size_t RequestEntityFreeEntry();
+		std::vector<std::size_t> entityTableFreeEntry;
+		std::size_t RequestEntityFreeEntry();
 		void RecycleEntityEntry(Entity);
 
-		std::unique_ptr<Pool<Chunk>> sharedChunkPool;
-		std::unordered_map<CmptTypeSet, std::unique_ptr<Archetype>> ts2a; // archetype's CmptTypeSet to archetype
+		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
+		std::unordered_map<TypeIDSet, std::unique_ptr<Archetype>> ts2a; // archetype's TypeIDSet to archetype
 	};
 }
 

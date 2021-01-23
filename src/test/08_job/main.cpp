@@ -5,20 +5,20 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-struct Data { size_t value; };
+struct Data { std::size_t value; };
 
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
-		auto buffer = std::make_shared<std::vector<size_t>>();
+		auto buffer = std::make_shared<std::vector<std::size_t>>();
 		auto f = schedule.RegisterEntityJob(
-			[buffer](size_t idxInQuery, const Data* data) {
+			[buffer](std::size_t idxInQuery, const Data* data) {
 				buffer->at(idxInQuery) = data->value;
 			},
 			"use"
 		);
 		schedule.RegisterJob([buffer]() {
-			size_t sum = 0;
-			for (size_t i : *buffer)
+			std::size_t sum = 0;
+			for (std::size_t i : *buffer)
 				sum += i;
 				cout << sum << endl;
 			},
@@ -26,7 +26,7 @@ struct MySystem {
 		);
 		schedule.RegisterJob(
 			[buffer, f](World* w) {
-				size_t num = w->entityMngr.EntityNum(f->entityQuery);
+				std::size_t num = w->entityMngr.EntityNum(f->entityQuery);
 				buffer->resize(num);
 			},
 			"allocate"
@@ -41,7 +41,7 @@ int main() {
 	World w;
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
-	for (size_t i = 1; i <= 100; i++) {
+	for (std::size_t i = 1; i <= 100; i++) {
 		auto [e] = w.entityMngr.Create();
 		w.entityMngr.Emplace<Data>(e, i);
 	}

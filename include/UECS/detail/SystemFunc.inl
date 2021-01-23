@@ -24,7 +24,7 @@ namespace Ubpa::UECS {
 		randomAccessor{std::move(randomAccessor)},
 		mode{ Mode::Entity },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) },
+		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
 		func{ detail::Pack(std::forward<Func>(func)) }
 	{
@@ -54,7 +54,7 @@ namespace Ubpa::UECS {
 		randomAccessor{ std::move(randomAccessor) },
 		mode{ Mode::Chunk },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) },
+		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
 		func{ detail::Pack(std::forward<Func>(func)) }
 	{
@@ -86,7 +86,7 @@ namespace Ubpa::UECS {
 		randomAccessor {std::move(randomAccessor)},
 		mode{ Mode::Job },
 		name{ std::move(name) },
-		hashCode{ HashCode(this->name) },
+		hashCode{ GetValue(this->name) },
 		isParallel{ false },
 		func{ detail::Pack(std::forward<Func>(func)) }
 	{
@@ -97,7 +97,7 @@ namespace Ubpa::UECS {
 
 		static_assert(
 			!Contain_v<ArgList, Entity>
-			&& !Contain_v<ArgList, size_t>
+			&& !Contain_v<ArgList, std::size_t>
 			&& !Contain_v<ArgList, CmptsView>
 			&& !Contain_v<ArgList, ChunkView>,
 			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery CmptsView or ChunkView"
@@ -119,7 +119,7 @@ namespace Ubpa::UECS::detail {
 				World* w,
 				SingletonsView singletons,
 				Entity e,
-				size_t entityIndexInQuery,
+				std::size_t entityIndexInQuery,
 				CmptsView cmpts,
 				ChunkView chunkView)
 			{

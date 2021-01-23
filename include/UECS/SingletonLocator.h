@@ -1,16 +1,15 @@
 #pragma once
 
-#include "CmptType.h"
-
-#include <UContainer/Span.h>
+#include "AccessTypeID.h"
 
 #include <set>
+#include <span>
 
 namespace Ubpa::UECS {
 	class SingletonLocator {
 	public:
-		SingletonLocator(std::set<CmptAccessType> types) : singletonTypes{ std::move(types) } {}
-		SingletonLocator(Span<const CmptAccessType> types);
+		SingletonLocator(std::set<AccessTypeID> types) : singletonTypes{ std::move(types) } {}
+		SingletonLocator(std::span<const AccessTypeID> types);
 		SingletonLocator() = default;
 
 		template<typename Func>
@@ -19,12 +18,12 @@ namespace Ubpa::UECS {
 		template<typename Func>
 		SingletonLocator& Combine();
 
-		const std::set<CmptAccessType>& SingletonTypes() const noexcept { return singletonTypes; }
+		const std::set<AccessTypeID>& SingletonTypes() const noexcept { return singletonTypes; }
 
 		bool HasWriteSingletonType() const noexcept;
 
 	private:
-		std::set<CmptAccessType> singletonTypes;
+		std::set<AccessTypeID> singletonTypes;
 	};
 }
 

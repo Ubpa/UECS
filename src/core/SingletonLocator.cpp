@@ -3,7 +3,7 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-SingletonLocator::SingletonLocator(Span<const CmptAccessType> types) {
+SingletonLocator::SingletonLocator(std::span<const AccessTypeID> types) {
 	for (const auto& type : types)
 		singletonTypes.insert(type);
 }

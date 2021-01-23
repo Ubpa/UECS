@@ -9,13 +9,13 @@ Archetype::~Archetype() {
 		if(target == cmptTraits.destructors.end())
 			continue;
 		const auto& destructor = target->second;
-		size_t size = cmptTraits.Sizeof(type);
-		size_t offset = Offsetof(type);
-		for (size_t k = 0; k < chunks.size(); k++) {
-			size_t num = EntityNumOfChunk(k);
+		std::size_t size = cmptTraits.Sizeof(type);
+		std::size_t offset = Offsetof(type);
+		for (std::size_t k = 0; k < chunks.size(); k++) {
+			std::size_t num = EntityNumOfChunk(k);
 			byte* buffer = chunks[k]->Data();
 			byte* beg = buffer + offset;
-			for (size_t i = 0; i < num; i++) {
+			for (std::size_t i = 0; i < num; i++) {
 				byte* address = beg + i * size;
 				destructor(address);
 			}
@@ -26,8 +26,8 @@ Archetype::~Archetype() {
 	//	entityMngr->sharedChunkPool.Recycle(chunk);
 }
 
-Archetype::Archetype(Pool<Chunk>* pool, const Archetype& src)
-	: chunkPool{ pool }
+Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, const Archetype& src)
+	: chunkAllocator{ chunkAllocator }
 {
 	types = src.types;
 	cmptTraits = src.cmptTraits;
@@ -36,10 +36,10 @@ Archetype::Archetype(Pool<Chunk>* pool, const Archetype& src)
 	chunkCapacity = src.chunkCapacity;
 
 	chunks.resize(src.chunks.size(), nullptr);
-	for (size_t i = 0; i < src.chunks.size(); i++) {
+	for (std::size_t i = 0; i < src.chunks.size(); i++) {
 		auto* srcChunk = src.chunks[i];
-		auto* dstChunk = chunks[i] = chunkPool->Request();
-		size_t num = src.EntityNumOfChunk(i);
+		auto* dstChunk = chunks[i] = chunkAllocator.allocate(1);
+		std::size_t num = src.EntityNumOfChunk(i);
 		for (auto type : types.data) {
 			auto offset = Offsetof(type);
 			auto* srcBegin = srcChunk->Data() + offset;
@@ -48,7 +48,7 @@ Archetype::Archetype(Pool<Chunk>* pool, const Archetype& src)
 			auto target = cmptTraits.copy_constructors.find(type);
 			if (target != cmptTraits.copy_constructors.end()) {
 				const auto& copy_ctor = target->second;
-				for (size_t j = 0; j < num; j++) {
+				for (std::size_t j = 0; j < num; j++) {
 					auto offset_j = j * size;
 					copy_ctor(dstBegin + offset_j, srcBegin + offset_j);
 				}
@@ -60,10 +60,10 @@ Archetype::Archetype(Pool<Chunk>* pool, const Archetype& src)
 }
 
 void Archetype::SetLayout() {
-	vector<size_t> alignments;
-	vector<size_t> sizes;
+	vector<std::size_t> alignments;
+	vector<std::size_t> sizes;
 
-	const size_t numType = types.data.size();
+	const std::size_t numType = types.data.size();
 
 	alignments.reserve(numType);
 	sizes.reserve(numType);
@@ -77,17 +77,17 @@ void Archetype::SetLayout() {
 	auto layout = Chunk::GenLayout(alignments, sizes);
 	chunkCapacity = layout.capacity;
 
-	size_t i = 0;
+	std::size_t i = 0;
 	for (const auto& type : types.data)
 		type2offset.emplace(type, layout.offsets[i++]);
 }
 
-Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, Pool<Chunk>* chunkPool, Span<const CmptType> types) {
+Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, std::pmr::polymorphic_allocator<Chunk> chunkAllocator, std::span<const TypeID> types) {
 	assert(NotContainEntity(types));
 
-	auto* rst = new Archetype{ chunkPool };
+	auto* rst = new Archetype{ chunkAllocator };
 	rst->types.Insert(types);
-	rst->types.data.insert(CmptType::Of<Entity>);
+	rst->types.data.insert(TypeID_of<Entity>);
 	rst->cmptTraits.Register<Entity>();
 	for(const auto& type : types)
 		rst->cmptTraits.Register(rtdCmptTraits, type);
@@ -95,11 +95,11 @@ Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, Pool<Chunk>* chunkPool, 
 	return rst;
 }
 
-Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, Span<const CmptType> types) {
+Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, std::span<const TypeID> types) {
 	assert(NotContainEntity(types));
 	assert(!from->types.ContainsAll(types));
 
-	auto* rst = new Archetype{ from->chunkPool };
+	auto* rst = new Archetype{ from->chunkAllocator };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
@@ -112,11 +112,11 @@ Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, S
 	return rst;
 }
 
-Archetype* Archetype::Remove(const Archetype* from, Span<const CmptType> types) {
+Archetype* Archetype::Remove(const Archetype* from, std::span<const TypeID> types) {
 	assert(NotContainEntity(types));
 	assert(from->types.ContainsAny(types));
 	
-	auto* rst = new Archetype{ from->chunkPool };
+	auto* rst = new Archetype{ from->chunkAllocator };
 
 	rst->types = from->types;
 	rst->cmptTraits = from->cmptTraits;
@@ -129,15 +129,15 @@ Archetype* Archetype::Remove(const Archetype* from, Span<const CmptType> types) 
 	return rst;
 }
 
-size_t Archetype::Create(RTDCmptTraits& rtdCmptTraits, Entity e) {
-	size_t idx = RequestBuffer();
-	size_t idxInChunk = idx % chunkCapacity;
+std::size_t Archetype::Create(RTDCmptTraits& rtdCmptTraits, Entity e) {
+	std::size_t idx = RequestBuffer();
+	std::size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
 	for (const auto& type : types.data) {
 		if (type.Is<Entity>()) {
-			constexpr size_t size = sizeof(Entity);
-			size_t offset = Offsetof(type);
+			constexpr std::size_t size = sizeof(Entity);
+			std::size_t offset = Offsetof(type);
 			memcpy(buffer + offset + idxInChunk * size, &e, size);
 		}
 		else {
@@ -145,8 +145,8 @@ size_t Archetype::Create(RTDCmptTraits& rtdCmptTraits, Entity e) {
 			if (target == rtdCmptTraits.GetDefaultConstructors().end())
 				continue;
 			const auto& ctor = target->second;
-			size_t size = cmptTraits.Sizeof(type);
-			size_t offset = Offsetof(type);
+			std::size_t size = cmptTraits.Sizeof(type);
+			std::size_t offset = Offsetof(type);
 			byte* dst = buffer + offset + idxInChunk * size;
 			ctor(dst);
 		}
@@ -155,47 +155,47 @@ size_t Archetype::Create(RTDCmptTraits& rtdCmptTraits, Entity e) {
 	return idx;
 }
 
-size_t Archetype::RequestBuffer() {
+std::size_t Archetype::RequestBuffer() {
 	if (entityNum == chunks.size() * chunkCapacity) {
-		auto* chunk = chunkPool->Request();
+		auto* chunk = chunkAllocator.allocate(1);
 		chunks.push_back(chunk);
 	}
 	return entityNum++;
 }
 
-void* Archetype::At(CmptType type, size_t idx) const {
+void* Archetype::At(TypeID type, std::size_t idx) const {
 	assert(idx < entityNum);
 	
 	if (!types.Contains(type))
 		return nullptr;
 	
-	size_t size = cmptTraits.Sizeof(type);
-	size_t offset = Offsetof(type);
-	size_t idxInChunk = idx % chunkCapacity;
+	std::size_t size = cmptTraits.Sizeof(type);
+	std::size_t offset = Offsetof(type);
+	std::size_t idxInChunk = idx % chunkCapacity;
 	byte* buffer = chunks[idx / chunkCapacity]->Data();
 
 	return buffer + offset + idxInChunk * size;
 }
 
-size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
+std::size_t Archetype::Instantiate(Entity e, std::size_t srcIdx) {
 	assert(srcIdx < entityNum);
 
-	size_t dstIdx = RequestBuffer();
+	std::size_t dstIdx = RequestBuffer();
 
-	size_t srcIdxInChunk = srcIdx % chunkCapacity;
-	size_t dstIdxInChunk = dstIdx % chunkCapacity;
+	std::size_t srcIdxInChunk = srcIdx % chunkCapacity;
+	std::size_t dstIdxInChunk = dstIdx % chunkCapacity;
 	byte* srcBuffer = chunks[srcIdx / chunkCapacity]->Data();
 	byte* dstBuffer = chunks[dstIdx / chunkCapacity]->Data();
 
 	for (const auto& type : types.data) {
-		size_t offset = Offsetof(type);
+		std::size_t offset = Offsetof(type);
 
 		if (type.Is<Entity>()) {
-			constexpr size_t size = sizeof(Entity);
+			constexpr std::size_t size = sizeof(Entity);
 			memcpy(dstBuffer + offset + dstIdxInChunk * size, &e, size);
 		}
 		else {
-			size_t size = cmptTraits.Sizeof(type);
+			std::size_t size = cmptTraits.Sizeof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
 
@@ -206,33 +206,33 @@ size_t Archetype::Instantiate(Entity e, size_t srcIdx) {
 	return dstIdx;
 }
 
-tuple<vector<Entity*>, vector<vector<CmptAccessPtr>>, vector<size_t>> Archetype::Locate(const CmptLocator& locator) const {
+tuple<vector<Entity*>, vector<vector<CmptAccessPtr>>, vector<std::size_t>> Archetype::Locate(const CmptLocator& locator) const {
 	assert(types.IsMatch(locator));
 
-	const size_t numChunk = chunks.size();
-	const size_t numType = locator.CmptAccessTypes().size();
-	const size_t offsetEntity = Offsetof(CmptType::Of<Entity>);
+	const std::size_t numChunk = chunks.size();
+	const std::size_t numType = locator.AccessTypeIDs().size();
+	const std::size_t offsetEntity = Offsetof(TypeID_of<Entity>);
 
 	vector<vector<CmptAccessPtr>> chunkCmpts(numChunk);
 	vector<Entity*> chunkEntity(numChunk);
 
-	for (size_t i = 0; i < numChunk; i++) {
+	for (std::size_t i = 0; i < numChunk; i++) {
 		byte* data = chunks[i]->Data();
 		chunkCmpts[i].reserve(numType);
-		for (const auto& type : locator.CmptAccessTypes())
+		for (const auto& type : locator.AccessTypeIDs())
 			chunkCmpts[i].emplace_back(type, data + Offsetof(type));
 		chunkEntity[i] = reinterpret_cast<Entity*>(data + offsetEntity);
 	}
 
-	vector<size_t> sizes;
+	vector<std::size_t> sizes;
 	sizes.reserve(numType);
-	for (const auto& type : locator.CmptAccessTypes())
+	for (const auto& type : locator.AccessTypeIDs())
 		sizes.push_back(cmptTraits.Sizeof(type));
 
 	return { chunkEntity, chunkCmpts, sizes };
 }
 
-void* Archetype::Locate(size_t chunkIdx, CmptType t) const {
+void* Archetype::Locate(std::size_t chunkIdx, TypeID t) const {
 	assert(chunkIdx < chunks.size());
 	if (!types.Contains(t))
 		return nullptr;
@@ -241,23 +241,23 @@ void* Archetype::Locate(size_t chunkIdx, CmptType t) const {
 	return buffer + Offsetof(t);
 }
 
-size_t Archetype::Erase(size_t idx) {
+std::size_t Archetype::Erase(std::size_t idx) {
 	assert(idx < entityNum);
 
-	size_t dstIdxInChunk = idx % chunkCapacity;
+	std::size_t dstIdxInChunk = idx % chunkCapacity;
 	byte* dstBuffer = chunks[idx / chunkCapacity]->Data();
 
-	size_t movedIdx = static_cast<size_t>(-1);
+	std::size_t movedIdx = static_cast<std::size_t>(-1);
 	
 	if (idx != entityNum - 1) {
-		size_t movedIdxInArchetype = entityNum - 1;
+		std::size_t movedIdxInArchetype = entityNum - 1;
 
-		size_t srcIdxInChunk = movedIdxInArchetype % chunkCapacity;
+		std::size_t srcIdxInChunk = movedIdxInArchetype % chunkCapacity;
 		byte* srcBuffer = chunks[movedIdxInArchetype / chunkCapacity]->Data();
 
 		for (const auto& type : types.data) {
-			size_t size = cmptTraits.Sizeof(type);
-			size_t offset = Offsetof(type);
+			std::size_t size = cmptTraits.Sizeof(type);
+			std::size_t offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
 
@@ -270,8 +270,8 @@ size_t Archetype::Erase(size_t idx) {
 	}
 	else {
 		for (const auto& type : types.data) {
-			size_t size = cmptTraits.Sizeof(type);
-			size_t offset = Offsetof(type);
+			std::size_t size = cmptTraits.Sizeof(type);
+			std::size_t offset = Offsetof(type);
 			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
 			cmptTraits.Destruct(type, dst);
 		}
@@ -281,14 +281,14 @@ size_t Archetype::Erase(size_t idx) {
 
 	if (chunks.size() * chunkCapacity - entityNum >= chunkCapacity) {
 		Chunk* chunk = chunks.back();
-		chunkPool->Recycle(chunk);
+		chunkAllocator.deallocate(chunk, 1);
 		chunks.pop_back();
 	}
 
 	return movedIdx;
 }
 
-vector<CmptPtr> Archetype::Components(size_t idx) const {
+vector<CmptPtr> Archetype::Components(std::size_t idx) const {
 	vector<CmptPtr> rst;
 
 	for (const auto& type : types.data) {
@@ -300,7 +300,7 @@ vector<CmptPtr> Archetype::Components(size_t idx) const {
 	return rst;
 }
 
-size_t Archetype::EntityNumOfChunk(size_t chunkIdx) const noexcept {
+std::size_t Archetype::EntityNumOfChunk(std::size_t chunkIdx) const noexcept {
 	assert(chunkIdx < chunks.size());
 
 	if (chunkIdx == chunks.size() - 1)
@@ -309,15 +309,15 @@ size_t Archetype::EntityNumOfChunk(size_t chunkIdx) const noexcept {
 		return chunkCapacity;
 }
 
-CmptTypeSet Archetype::GenCmptTypeSet(Span<const CmptType> types) {
+TypeIDSet Archetype::GenTypeIDSet(std::span<const TypeID> types) {
 	assert(NotContainEntity(types));
-	CmptTypeSet typeset;
+	TypeIDSet typeset;
 	typeset.Insert(types);
-	typeset.data.insert(CmptType::Of<Entity>);
+	typeset.data.insert(TypeID_of<Entity>);
 	return typeset;
 }
 
-bool Archetype::NotContainEntity(Span<const CmptType> types) noexcept {
+bool Archetype::NotContainEntity(std::span<const TypeID> types) noexcept {
 	for (const auto& type : types) {
 		if (type.Is<Entity>())
 			return false;

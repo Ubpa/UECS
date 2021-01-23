@@ -10,7 +10,7 @@ namespace Ubpa::UECS {
 		ArchetypeFilter filter;
 		CmptLocator locator;
 
-		size_t HashCode() const noexcept { return hash_combine(filter.HashCode(), locator.HashCode()); }
+		std::size_t GetValue() const noexcept { return hash_combine(filter.GetValue(), locator.GetValue()); }
 
 		bool operator==(const EntityQuery& query) const noexcept {
 			return filter == query.filter && locator == query.locator;

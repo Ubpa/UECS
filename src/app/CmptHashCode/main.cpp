@@ -1,4 +1,4 @@
-#include <UECS/CmptType.h>
+#include <UTemplate/TypeID.h>
 
 #include <iostream>
 
@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 	if (argc != 2)
 		return 1;
 
-	std::cout << Ubpa::UECS::CmptType(argv[1]).HashCode() << std::endl;
+	std::cout << Ubpa::TypeID(argv[1]).GetValue() << std::endl;
 
 	return 0;
 }

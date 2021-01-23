@@ -1,5 +1,6 @@
 #include <UECS/World.h>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 
 struct Translation { float value{ 0.f }; };
@@ -26,14 +27,14 @@ struct TranslationSystem {
 	static void OnUpdate(Schedule& schedule) {
 		{
 			ArchetypeFilter filter;
-			filter.all.insert(CmptType::Of<Parent>);
+			filter.all.insert(TypeID_of<Parent>);
 			schedule.RegisterEntityJob([](LocalToParent* l2p, const Translation* t) {
 				l2p->value = t->value;
 			}, "T2LocalToParent", true, filter);
 		}
 		{
 			ArchetypeFilter filter;
-			filter.none.insert(CmptType::Of<Parent>);
+			filter.none.insert(TypeID_of<Parent>);
 			schedule.RegisterEntityJob([](LocalToWorld* l2w, const Translation* t) {
 				l2w->value = t->value;
 			}, "T2LocalToWorld", true, filter);
@@ -42,11 +43,11 @@ struct TranslationSystem {
 			ArchetypeFilter filter;
 			RandomAccessor randomAccessor;
 			randomAccessor.types = {
-				CmptAccessType::Of<Write<LocalToWorld>>,
-				CmptAccessType::Of<Latest<LocalToParent>>,
-				CmptAccessType::Of<Latest<Children>>
+				AccessTypeID_of<Write<LocalToWorld>>,
+				AccessTypeID_of<Latest<LocalToParent>>,
+				AccessTypeID_of<Latest<Children>>
 			};
-			filter.none.insert(CmptType::Of<Parent>);
+			filter.none.insert(TypeID_of<Parent>);
 			schedule.RegisterEntityJob([](World* w, Children* children, const LocalToWorld* l2w) {
 				for(const auto& child : children->value)
 					SetTreeL2W(w, child, l2w);

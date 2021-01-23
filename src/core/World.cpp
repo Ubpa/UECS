@@ -10,12 +10,14 @@ using namespace std;
 
 World::World(const World& w)
 	:
+	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	systemMngr{ w.systemMngr, this },
 	entityMngr{ w.entityMngr }
 {}
 
 World::World(World&& w) noexcept
 	:
+	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	systemMngr{ std::move(w.systemMngr), this },
 	entityMngr{ std::move(w.entityMngr) }
 {}
@@ -28,8 +30,10 @@ void World::Update() {
 	inRunningJobGraph = true;
 
 	schedule.Clear();
-	for (auto* job : jobs)
-		jobPool.Recycle(job);
+	for (auto* job : jobs) {
+		job->~Taskflow();
+		jobRsrc->deallocate(job, sizeof(Job), alignof(Job));
+	}
 	jobs.clear();
 	jobGraph.clear();
 
@@ -51,7 +55,8 @@ void World::Update() {
 	unordered_map<SystemFunc*, JobHandle> table;
 
 	for (const auto& [func, adjVs] : graph.GetAdjList()) {
-		auto* job = jobPool.Request(func->Name());
+		auto* job_buffer = jobRsrc->allocate(sizeof(Job), alignof(Job));
+		auto* job = new(job_buffer)Job{ func->Name() };
 		jobs.push_back(job);
 		entityMngr.AutoGen(this, job, func);
 		table.emplace(func, jobGraph.composed_of(*job));
@@ -168,18 +173,18 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		.RegisterGraphEdgeAttr("arrowhead", "curve")
 		.RegisterGraphEdgeAttr("arrowtail", "tee");
 
-	unordered_set<CmptType> cmptTypes;
-	unordered_set<CmptType> singletonTypes;
-	unordered_map<CmptType, size_t> cmptType2idx;
-	unordered_map<size_t, size_t> sysFuncHashcode2idx;
+	unordered_set<TypeID> cmptTypes;
+	unordered_set<TypeID> singletonTypes;
+	unordered_map<TypeID, std::size_t> cmptType2idx;
+	unordered_map<std::size_t, std::size_t> sysFuncHashcode2idx;
 
-	auto queryCmptName = [this](CmptType type) -> string {
+	auto queryCmptName = [this](TypeID type) -> string {
 		auto cmptName = entityMngr.cmptTraits.Nameof(type);
-		return cmptName.empty() ? std::to_string(type.HashCode()) : string{ cmptName };
+		return cmptName.empty() ? std::to_string(type.GetValue()) : string{ cmptName };
 	};
 
 	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
-		for (auto cmptType : sysFunc->entityQuery.locator.CmptAccessTypes())
+		for (auto cmptType : sysFunc->entityQuery.locator.AccessTypeIDs())
 			cmptTypes.insert(cmptType);
 		for (auto cmptType : sysFunc->entityQuery.filter.all)
 			cmptTypes.insert(cmptType);
@@ -209,8 +214,8 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 
 		subgraph_sys.AddNode(sysIdx);
 
-		for (const auto& cmptType : sysFunc->entityQuery.locator.CmptAccessTypes()) {
-			size_t edgeIdx;
+		for (const auto& cmptType : sysFunc->entityQuery.locator.AccessTypeIDs()) {
+			std::size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
@@ -234,7 +239,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		const bool isChunk = sysFunc->GetMode() == SystemFunc::Mode::Chunk;
 
 		for (const auto& cmptType : sysFunc->entityQuery.filter.all) {
-			size_t edgeIdx;
+			std::size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
@@ -256,7 +261,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		}
 
 		for (const auto& cmptType : sysFunc->entityQuery.filter.any) {
-			size_t edgeIdx;
+			std::size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
@@ -278,12 +283,12 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 		}
 
 		for (const auto& cmptType : sysFunc->entityQuery.filter.none) {
-			size_t edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
+			std::size_t edgeIdx = registry.RegisterEdge(sysIdx, cmptType2idx.at(cmptType));
 			subgraph_none.AddEdge(edgeIdx);
 		}
 
 		for (const auto& cmptType : sysFunc->randomAccessor.types) {
-			size_t edgeIdx;
+			std::size_t edgeIdx;
 			switch (cmptType.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:

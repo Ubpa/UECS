@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;
 
@@ -27,13 +28,13 @@ void print0(const World& w) {
 
 void print1(const World& w) {
 	ArchetypeFilter filter;
-	filter.all = { CmptAccessType::Of<Latest<Velocity>>, CmptAccessType::Of<Latest<Position>> };
+	filter.all = { AccessTypeID_of<Latest<Velocity>>, AccessTypeID_of<Latest<Position>> };
 	w.RunChunkJob(
 		[](const World* w, ChunkView chunk) {
 			auto velocities = chunk.GetCmptArray<Velocity>();
 			auto positions = chunk.GetCmptArray<Position>();
-			size_t N = chunk.EntityNum();
-			for (size_t i = 0; i < N; i++) {
+			std::size_t N = chunk.EntityNum();
+			for (std::size_t i = 0; i < N; i++) {
 				cout << velocities[i].val << ", " << positions[i].val << endl;
 			}
 		},

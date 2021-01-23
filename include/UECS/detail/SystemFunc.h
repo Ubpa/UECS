@@ -20,11 +20,11 @@ namespace Ubpa::UECS {
 	// common arguments : [const] World*, SingletonsView, {LastFrame|Latest}<Singleton<Cmpt>>
 	// 1. Mode::Entity: per entity function
 	// * Entity
-	// * size_t indexInQuery
+	// * std::size_t indexInQuery
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
 	// 2. Mode::Chunk
-	// * size_t entityBeginIndexInQuery
+	// * std::size_t entityBeginIndexInQuery
 	// * ChunkView (necessary)
 	// 3. Mode::Job
 	// * Write<Singleton<Cmpt>> (only job can write singletons)
@@ -54,12 +54,12 @@ namespace Ubpa::UECS {
 		
 		const std::string& Name() const noexcept { return name; }
 
-		static constexpr size_t HashCode(std::string_view name) noexcept { return hash_string(name); }
+		static constexpr std::size_t GetValue(std::string_view name) noexcept { return string_hash(name); }
 
-		size_t HashCode() const noexcept { return hashCode; }
+		std::size_t GetValue() const noexcept { return hashCode; }
 
-		void operator()(World*, SingletonsView, Entity, size_t entityIndexInQuery, CmptsView) const;
-		void operator()(World*, SingletonsView, size_t entityBeginIndexInQuery, ChunkView) const;
+		void operator()(World*, SingletonsView, Entity, std::size_t entityIndexInQuery, CmptsView) const;
+		void operator()(World*, SingletonsView, std::size_t entityBeginIndexInQuery, ChunkView) const;
 		void operator()(World*, SingletonsView) const;
 
 		Mode GetMode() const noexcept { return mode; }
@@ -69,9 +69,9 @@ namespace Ubpa::UECS {
 	private:
 		Mode mode;
 		std::string name;
-		size_t hashCode; // after name
+		std::size_t hashCode; // after name
 		bool isParallel;
-		std::function<void(World*, SingletonsView, Entity, size_t, CmptsView, ChunkView)> func;
+		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView)> func;
 	};
 }
 

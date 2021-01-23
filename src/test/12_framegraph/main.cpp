@@ -17,9 +17,9 @@ struct G {};
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
 		ArchetypeFilter filter;
-		filter.all = { CmptAccessType::Of<D> };
-		filter.any = { CmptAccessType::Of<E>, CmptAccessType::Of<F> };
-		filter.none = { CmptType::Of<G> };
+		filter.all = { AccessTypeID_of<D> };
+		filter.any = { AccessTypeID_of<E>, AccessTypeID_of<F> };
+		filter.none = { TypeID_of<G> };
 		schedule.RegisterEntityJob(
 			[](LastFrame<A> a, Write<B> b, Latest<C> c) {},
 			"System Func",
@@ -34,13 +34,13 @@ int main() {
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	w.entityMngr.cmptTraits
-		.RegisterName(CmptType::Of<A>, "A")
-		.RegisterName(CmptType::Of<B>, "B")
-		.RegisterName(CmptType::Of<C>, "C")
-		.RegisterName(CmptType::Of<D>, "D")
-		.RegisterName(CmptType::Of<E>, "E")
-		.RegisterName(CmptType::Of<F>, "F")
-		.RegisterName(CmptType::Of<G>, "G")
+		.RegisterName(TypeID_of<A>, "A")
+		.RegisterName(TypeID_of<B>, "B")
+		.RegisterName(TypeID_of<C>, "C")
+		.RegisterName(TypeID_of<D>, "D")
+		.RegisterName(TypeID_of<E>, "E")
+		.RegisterName(TypeID_of<F>, "F")
+		.RegisterName(TypeID_of<G>, "G")
 		;
 
 	w.entityMngr.Create<A, B, C, D, E>();

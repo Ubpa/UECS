@@ -4,18 +4,18 @@
 
 using namespace Ubpa::UECS;
 
-size_t ArchetypeFilter::HashCode() const noexcept {
-	size_t rst = TypeID<ArchetypeFilter>;
+std::size_t ArchetypeFilter::GetValue() const noexcept {
+	std::size_t rst = TypeID_of<ArchetypeFilter>.GetValue();
 	for (const auto& type : all)
-		rst = hash_combine(rst, type.HashCode());
+		rst = hash_combine(rst, type.GetValue());
 	for (const auto& type : any)
-		rst = hash_combine(rst, type.HashCode());
+		rst = hash_combine(rst, type.GetValue());
 	for (const auto& type : none)
-		rst = hash_combine(rst, type.HashCode());
+		rst = hash_combine(rst, type.GetValue());
 	return rst;
 }
 
-bool ArchetypeFilter::HaveWriteCmptType() const noexcept {
+bool ArchetypeFilter::HaveWriteTypeID() const noexcept {
 	for (const auto& type : all) {
 		if (type.GetAccessMode() == AccessMode::WRITE)
 			return true;

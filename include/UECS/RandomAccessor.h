@@ -1,12 +1,12 @@
 #pragma once
 
-#include "CmptType.h"
+#include "AccessTypeID.h"
 
 #include <set>
 
 namespace Ubpa::UECS {
 	class RandomAccessor {
 	public:
-		CmptAccessTypeSet types;
+		AccessTypeIDSet types;
 	};
 }

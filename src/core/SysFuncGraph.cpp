@@ -84,7 +84,7 @@ SysFuncGraph SysFuncGraph::SubGraph(const std::vector<SystemFunc*>& vertices) co
 }
 
 tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
-	unordered_map<SystemFunc*, size_t> in_degree_map;
+	unordered_map<SystemFunc*, std::size_t> in_degree_map;
 
 	for (const auto& [parent, children] : adjList)
 		in_degree_map.emplace(parent, 0);

@@ -1,33 +1,31 @@
 #pragma once
 
-#include <nameof.hpp>
-
-#include <UTemplate/Concept.h>
+#include <UTemplate/Name.h>
 
 namespace Ubpa::UECS::detail {
 	template<typename System>
-	Concept(HaveOnCreate,     static_cast<SystemTraits::OnCreate*    >(&System::OnCreate    ));
+	concept HaveOnCreate     = requires(World* w) { { System::OnCreate(w) }; };
 	template<typename System>
-	Concept(HaveOnActivate,   static_cast<SystemTraits::OnActivate*  >(&System::OnActivate  ));
+	concept HaveOnActivate   = requires(World * w) { { System::OnActivate(w) }; };
 	template<typename System>
-	Concept(HaveOnUpdate,     static_cast<SystemTraits::OnUpdate*    >(&System::OnUpdate    ));
+	concept HaveOnUpdate     = requires(Schedule& schedule){ { System::OnUpdate(schedule) }; };
 	template<typename System>
-	Concept(HaveOnDeactivate, static_cast<SystemTraits::OnDeactivate*>(&System::OnDeactivate));
+	concept HaveOnDeactivate = requires(World * w) { { System::OnDeactivate(w) }; };
 	template<typename System>
-	Concept(HaveOnDestroy,    static_cast<SystemTraits::OnDestroy*   >(&System::OnDestroy   ));
+	concept HaveOnDestroy    = requires(World * w) { { System::OnDestroy(w) }; };
 	
 	template<typename System>
-	size_t Register(SystemTraits& traits) {
-		size_t ID = traits.Register(std::string{ SystemTraits::StaticNameof<System>() });
-		if constexpr (Require<HaveOnCreate, System>)
-			traits.RegisterOnCreate    (ID, static_cast<SystemTraits::OnCreate*   >(&System::OnCreate     ));
-		if constexpr (Require<HaveOnActivate, System>)
+	std::size_t Register(SystemTraits& traits) {
+		std::size_t ID = traits.Register(std::string{ SystemTraits::StaticNameof<System>() });
+		if constexpr (HaveOnCreate<System>)
+			traits.RegisterOnCreate    (ID, static_cast<SystemTraits::OnCreate*    >(&System::OnCreate     ));
+		if constexpr (HaveOnActivate<System>)
 			traits.RegisterOnActivate  (ID, static_cast<SystemTraits::OnActivate*  >(&System::OnActivate  ));
-		if constexpr (Require<HaveOnUpdate, System>)
+		if constexpr (HaveOnUpdate<System>)
 			traits.RegisterOnUpdate    (ID, static_cast<SystemTraits::OnUpdate*    >(&System::OnUpdate    ));
-		if constexpr (Require<HaveOnDeactivate, System>)
+		if constexpr (HaveOnDeactivate<System>)
 			traits.RegisterOnDeactivate(ID, static_cast<SystemTraits::OnDeactivate*>(&System::OnDeactivate));
-		if constexpr (Require<HaveOnDeactivate, System>)
+		if constexpr (HaveOnDeactivate<System>)
 			traits.RegisterOnDestroy   (ID, static_cast<SystemTraits::OnDestroy*   >(&System::OnDestroy   ));
 		return ID;
 	}
@@ -35,12 +33,12 @@ namespace Ubpa::UECS::detail {
 
 namespace Ubpa::UECS {
 	template<typename... Systems>
-	std::array<size_t, sizeof...(Systems)> SystemTraits::Register() {
+	std::array<std::size_t, sizeof...(Systems)> SystemTraits::Register() {
 		return { detail::Register<Systems>(*this)... };
 	}
 
 	template<typename System>
 	std::string_view SystemTraits::StaticNameof() noexcept {
-		return nameof::nameof_type<System>();
+		return type_name<System>().View();
 	}
 }

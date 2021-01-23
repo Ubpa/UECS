@@ -1,17 +1,18 @@
 #pragma once
 
 #include "CmptPtr.h"
-#include <UContainer/Span.h>
+
+#include <span>
 
 namespace Ubpa::UECS {
 	class CmptsView {
 	public:
 		CmptsView() noexcept = default;
-		CmptsView(Span<const CmptAccessPtr> cmpts) noexcept : cmpts{ cmpts } {}
+		CmptsView(std::span<const CmptAccessPtr> cmpts) noexcept : cmpts{ cmpts } {}
 
-		CmptAccessPtr GetCmpt(CmptAccessType) const noexcept;
-		Span<const CmptAccessPtr> Components() const noexcept { return cmpts; }
+		CmptAccessPtr GetCmpt(AccessTypeID) const noexcept;
+		std::span<const CmptAccessPtr> Components() const noexcept { return cmpts; }
 	private:
-		Span<const CmptAccessPtr> cmpts;
+		std::span<const CmptAccessPtr> cmpts;
 	};
 }

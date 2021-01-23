@@ -1,13 +1,12 @@
 #pragma once
 
 #include <UTemplate/Func.h>
-#include <UContainer/Algorithm.h>
 
 namespace Ubpa::UECS::detail {
 	template<typename... Singletons>
 	SingletonLocator GenerateSingletonLocator(TypeList<Singletons...>) {
 		if constexpr (sizeof...(Singletons) > 0) {
-			constexpr std::array types{ CmptAccessType::Of<Singletons>... };
+			constexpr std::array types{ AccessTypeID_of<Singletons>... };
 			return SingletonLocator{ types };
 		}
 		else
@@ -26,7 +25,8 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	SingletonLocator& SingletonLocator::Combine() {
 		SingletonLocator funcLocator = Generate<Func>();
-		singletonTypes = SetUnion(singletonTypes, funcLocator.singletonTypes);
+		for (const auto& type : funcLocator.singletonTypes)
+			singletonTypes.insert(type);
 		return *this;
 	}
 }

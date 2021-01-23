@@ -15,8 +15,8 @@ constexpr float dt = 0.003f;
 struct SAB_System {
 	static void OnUpdate(Schedule& schedule) {
 		ArchetypeFilter filter;
-		filter.all = { CmptAccessType::Of<Write<S>> };
-		filter.any = { CmptAccessType::Of<Latest<A>>, CmptAccessType::Of<Latest<B>> };
+		filter.all = { AccessTypeID_of<Write<S>> };
+		filter.any = { AccessTypeID_of<Latest<A>>, AccessTypeID_of<Latest<B>> };
 
 		schedule.RegisterChunkJob([](ChunkView chunk) {
 			auto arrayS = chunk.GetCmptArray<S>();
@@ -28,19 +28,19 @@ struct SAB_System {
 
 			if (containsAB) {
 				cout << "[AB]" << endl;
-				for (size_t i = 0; i < chunk.EntityNum(); i++) {
+				for (std::size_t i = 0; i < chunk.EntityNum(); i++) {
 					arrayS[i].value += arrayA[i].value * arrayB[i].value;
 				}
 			}
 			else if (containsA) {
 				cout << "[A]" << endl;
-				for (size_t i = 0; i < chunk.EntityNum(); i++) {
+				for (std::size_t i = 0; i < chunk.EntityNum(); i++) {
 					arrayS[i].value += arrayA[i].value;
 				}
 			}
 			else { // containsB
 				cout << "[B]" << endl;
-				for (size_t i = 0; i < chunk.EntityNum(); i++) {
+				for (std::size_t i = 0; i < chunk.EntityNum(); i++) {
 					arrayS[i].value += arrayB[i].value;
 				}
 			}

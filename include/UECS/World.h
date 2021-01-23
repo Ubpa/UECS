@@ -15,7 +15,9 @@ namespace Ubpa::UECS {
 	// SystemMngr + EntityMngr
 	class World {
 	public:
-		World() : systemMngr{ this }{}
+		World() :
+			jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+			systemMngr { this } {}
 		// not copy/move schedule, so you can't use DumpUpdateJobGraph() and GenUpdateFrameGraph() before Update()
 		World(const World&);
 		World(World&&) noexcept;
@@ -49,7 +51,7 @@ namespace Ubpa::UECS {
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		// Entity
-		// size_t indexInQuery
+		// std::size_t indexInQuery
 		// <tagged-components>: [const] <Cmpt>*...
 		// CmptsView
 		template<typename Func>
@@ -66,7 +68,7 @@ namespace Ubpa::UECS {
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
 		// Entity
-		// size_t indexInQuery
+		// std::size_t indexInQuery
 		// <tagged-components>: const <Cmpt>*...
 		// CmptsView
 		// --
@@ -84,7 +86,7 @@ namespace Ubpa::UECS {
 		// [const] World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
-		// size_t entityBeginIndexInQuery
+		// std::size_t entityBeginIndexInQuery
 		// ChunkView (necessary)
 		template<typename Func>
 		void RunChunkJob(
@@ -98,7 +100,7 @@ namespace Ubpa::UECS {
 		// const World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
 		// SingletonsView
-		// size_t entityBeginIndexInQuery
+		// std::size_t entityBeginIndexInQuery
 		// ChunkView (necessary)
 		// --
 		// ArchetypeFilter's Cmpt AccessMode can't be WRITE
@@ -118,7 +120,7 @@ namespace Ubpa::UECS {
 
 		Job jobGraph;
 		std::vector<Job*> jobs;
-		Pool<Job> jobPool;
+		std::unique_ptr<std::pmr::unsynchronized_pool_resource> jobRsrc;
 
 		// command
 		std::map<int, std::vector<std::function<void()>>> commandBuffer;

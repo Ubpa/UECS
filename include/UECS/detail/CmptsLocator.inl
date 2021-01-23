@@ -1,13 +1,12 @@
 #pragma once
 
 #include <UTemplate/Func.h>
-#include <UContainer/Algorithm.h>
 
 namespace Ubpa::UECS::detail {
 	template<typename... Cmpts>
 	CmptLocator GenerateCmptLocator(TypeList<Cmpts...>) {
 		if constexpr (sizeof...(Cmpts) > 0) {
-			constexpr std::array types{ CmptAccessType::Of<Cmpts>... };
+			constexpr std::array types{ AccessTypeID_of<Cmpts>... };
 			return CmptLocator{ types };
 		}
 		else
@@ -26,8 +25,9 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	CmptLocator& CmptLocator::Combine() {
 		CmptLocator funcLocator = Generate<Func>();
-		cmptTypes = SetUnion(cmptTypes, funcLocator.cmptTypes);
-		UpdateHashCode();
+		for (const auto& type : funcLocator.cmptTypes)
+			cmptTypes.insert(type);
+		UpdateGetValue();
 		return *this;
 	}
 }

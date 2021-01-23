@@ -3,18 +3,18 @@
 #include <stdexcept>
 
 namespace Ubpa::UECS {
-	inline size_t ArchetypeCmptTraits::Sizeof(CmptType type) const {
+	inline std::size_t ArchetypeCmptTraits::Sizeof(TypeID type) const {
 		auto target = sizeofs.find(type);
 		assert(target != sizeofs.end());
 		return target->second;
 	}
 
-	inline size_t ArchetypeCmptTraits::Alignof(CmptType type) const {
+	inline std::size_t ArchetypeCmptTraits::Alignof(TypeID type) const {
 		auto target = alignments.find(type);
 		return target != alignments.end() ? target->second : RTDCmptTraits::DefaultAlignment();
 	}
 
-	inline void ArchetypeCmptTraits::CopyConstruct(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
 		auto target = copy_constructors.find(type);
 
 		if (target != copy_constructors.end())
@@ -23,7 +23,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void ArchetypeCmptTraits::MoveConstruct(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
 		auto target = move_constructors.find(type);
 
 		if (target != move_constructors.end())
@@ -32,7 +32,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void ArchetypeCmptTraits::MoveAssign(CmptType type, void* dst, void* src) const {
+	inline void ArchetypeCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
 		auto target = move_assignments.find(type);
 
 		if (target != move_assignments.end())
@@ -41,7 +41,7 @@ namespace Ubpa::UECS {
 			memcpy(dst, src, Sizeof(type));
 	}
 
-	inline void ArchetypeCmptTraits::Destruct(CmptType type, void* cmpt) const {
+	inline void ArchetypeCmptTraits::Destruct(TypeID type, void* cmpt) const {
 		auto target = destructors.find(type);
 		if (target != destructors.end())
 			target->second(cmpt);
@@ -56,7 +56,7 @@ namespace Ubpa::UECS {
 		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
-		constexpr CmptType type = CmptType::Of<Cmpt>;
+		constexpr TypeID type = TypeID_of<Cmpt>;
 
 		sizeofs.emplace(type, sizeof(Cmpt));
 		alignments.emplace(type, alignof(Cmpt));
@@ -83,10 +83,10 @@ namespace Ubpa::UECS {
 		}
 	}
 
-	inline void ArchetypeCmptTraits::Register(const RTDCmptTraits& rtdct, CmptType type) {
+	inline void ArchetypeCmptTraits::Register(const RTDCmptTraits& rtdct, TypeID type) {
 		auto size_target = rtdct.GetSizeofs().find(type);
 		if (size_target == rtdct.GetSizeofs().end())
-			throw std::logic_error("ArchetypeCmptTraits::Register: RTDCmptTraits hasn't registered <CmptType>");
+			throw std::logic_error("ArchetypeCmptTraits::Register: RTDCmptTraits hasn't registered <TypeID>");
 		sizeofs[type] = size_target->second;
 		
 		auto alignment_target = rtdct.GetAlignments().find(type);
@@ -110,7 +110,7 @@ namespace Ubpa::UECS {
 
 	template<typename Cmpt>
 	void ArchetypeCmptTraits::Deregister() noexcept {
-		constexpr CmptType type = CmptType::Of<Cmpt>;
+		constexpr TypeID type = TypeID_of<Cmpt>;
 
 		sizeofs.erase(type);
 		alignments.erase(type);
@@ -125,7 +125,7 @@ namespace Ubpa::UECS {
 			move_assignments.erase(type);
 	}
 
-	inline void ArchetypeCmptTraits::Deregister(CmptType type) noexcept {
+	inline void ArchetypeCmptTraits::Deregister(TypeID type) noexcept {
 		sizeofs.erase(type);
 		alignments.erase(type);
 		copy_constructors.erase(type);

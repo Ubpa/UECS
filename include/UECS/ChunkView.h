@@ -1,30 +1,31 @@
 #pragma once
 
-#include "CmptType.h"
+#include "AccessTypeID.h"
+#include "Entity.h"
 
-#include <UContainer/Span.h>
+#include <span>
 
 namespace Ubpa::UECS {
 	class Archetype;
 
 	class ChunkView {
 	public:
-		ChunkView(Archetype* archetype, size_t chunkIdx) noexcept;
+		ChunkView(Archetype* archetype, std::size_t chunkIdx) noexcept;
 		ChunkView() noexcept = default;
 
-		bool Contains(CmptType) const;
-		size_t EntityNum() const noexcept { return entityNum; }
+		bool Contains(TypeID) const;
+		std::size_t EntityNum() const noexcept { return entityNum; }
 
 		// nullptr if not contain
-		void* GetCmptArray(CmptType) const;
+		void* GetCmptArray(TypeID) const;
 		template<typename Cmpt>
-		Span<Cmpt> GetCmptArray() const;
-		Span<const Entity> GetEntityArray() const;
+		std::span<Cmpt> GetCmptArray() const;
+		std::span<const Entity> GetEntityArray() const;
 
 	private:
 		Archetype* archetype{ nullptr };
-		size_t chunkIdx{ static_cast<size_t>(-1) };
-		size_t entityNum{ 0 };
+		std::size_t chunkIdx{ static_cast<std::size_t>(-1) };
+		std::size_t entityNum{ 0 };
 	};
 }
 
