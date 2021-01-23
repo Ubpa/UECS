@@ -8,7 +8,8 @@
 #include "TypeIDSet.h"
 #include "Chunk.h"
 
-#include <UTemplate/Typelist.h>
+#include <UTemplate/TypeList.h>
+#include <memory_resource>
 
 namespace Ubpa::UECS {
 	class EntityMngr;

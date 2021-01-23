@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <array>
+#include <string>
 
 namespace Ubpa::UECS {
 	class World;

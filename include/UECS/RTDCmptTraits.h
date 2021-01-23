@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <functional>
+#include <string>
 
 namespace Ubpa::UECS {
 	// run-time dynamic component traits

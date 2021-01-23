@@ -25,8 +25,11 @@ bool SysFuncGraph::HaveEdge(SystemFunc* x, SystemFunc* y) const {
 	assert(HaveVertex(x) && HaveVertex(y));
 	assert(x != y);
 	const auto& adjVs = adjList.at(x);
-	auto target = find(adjVs.begin(), adjVs.end(), y);
-	return target != adjVs.end();
+	for(auto* adjV : adjVs){
+		if(adjV == y)
+			return true;
+	}
+	return false;
 }
 
 bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {

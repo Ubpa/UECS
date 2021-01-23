@@ -2,7 +2,7 @@
 
 #include "../CmptTag.h"
 
-#include <UTemplate/Typelist.h>
+#include <UTemplate/TypeList.h>
 #include <UTemplate/Func.h>
 
 namespace Ubpa::UECS {
@@ -151,7 +151,7 @@ namespace Ubpa::UECS {
 
 		std::vector<Cmpt*> rst;
 
-		const auto& archetypes = QueryArchetypes(filter);
+		const auto& archetypes = QueryArchetypes(EntityQuery{filter});
 		std::size_t num = 0;
 		for (const auto& archetype : archetypes)
 			num += archetype->EntityNum();

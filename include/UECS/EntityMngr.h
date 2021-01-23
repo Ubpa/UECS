@@ -88,7 +88,7 @@ namespace Ubpa::UECS {
 		// nullptr if not singleton
 		CmptPtr GetSingleton(TypeID) const;
 		template<typename Cmpt>
-		Cmpt* GetSingleton() const { return GetSingleton(TypeID_of<Cmpt>).As<Cmpt>(); }
+		Cmpt* GetSingleton() const { return GetSingleton(TypeID_of<Cmpt>).template As<Cmpt>(); }
 
 		// filter's all contains cmpt
 		template<typename Cmpt>
