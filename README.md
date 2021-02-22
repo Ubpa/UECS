@@ -24,6 +24,16 @@
 - GCC >= 10.0
 - MSVC >= 1926
 
+> Tested platforms:
+>
+> - Windows 10: VS2019 16.8.5
+>
+> - Ubuntu 20: GCC 10.2, Clang 11.0
+>
+> - MacOS 11.0 : GCC 10.2
+>
+>   > AppleClang 12 and Clang 11 is not supported
+
 ## Documentation
 
 - [changelog](doc/changelog.md) 
