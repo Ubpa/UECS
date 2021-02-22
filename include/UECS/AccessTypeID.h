@@ -31,4 +31,9 @@ namespace Ubpa::UECS {
 	using AccessTypeIDSet = std::set<AccessTypeID, std::less<>>;
 }
 
-#include "details/AccessTypeID.inl"
+template<>
+struct std::hash<Ubpa::UECS::AccessTypeID> {
+	constexpr std::size_t operator()(const Ubpa::UECS::AccessTypeID& id) const noexcept {
+		return id.GetValue();
+	}
+};

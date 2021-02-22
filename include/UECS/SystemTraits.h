@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <array>
 #include <string>
+#include <vector>
 
 namespace Ubpa::UECS {
 	class World;

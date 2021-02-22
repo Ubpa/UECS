@@ -18,4 +18,9 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "details/EntityQuery.inl"
+template<>
+struct std::hash<Ubpa::UECS::EntityQuery> {
+	std::size_t operator()(const Ubpa::UECS::EntityQuery& query) const noexcept {
+		return query.GetValue();
+	}
+};

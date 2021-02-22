@@ -88,11 +88,9 @@ namespace Ubpa::UECS {
 	}
 }
 
-namespace std {
-	template<>
-	struct hash<Ubpa::UECS::TypeIDSet> {
-		std::size_t operator()(const Ubpa::UECS::TypeIDSet& types) const noexcept {
-			return types.GetValue();
-		}
-	};
-}
+template<>
+struct std::hash<Ubpa::UECS::TypeIDSet> {
+	std::size_t operator()(const Ubpa::UECS::TypeIDSet& types) const noexcept {
+		return types.GetValue();
+	}
+};
