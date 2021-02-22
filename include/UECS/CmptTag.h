@@ -14,9 +14,9 @@ namespace Ubpa::UECS {
 	// 6. Latest<Singleton<Cmpt>>
 
 	enum class AccessMode : std::size_t {
-		LAST_FRAME           = 0b000, // LastFrame<Cmpt>
-		WRITE                = 0b001, // Write<Cmpt> / Cmpt*
-		LATEST               = 0b010, // Latest<Cmpt> / const Cmpt*
+		LAST_FRAME = 0b000, // LastFrame<Cmpt>
+		WRITE      = 0b001, // Write<Cmpt> / Cmpt*
+		LATEST     = 0b010, // Latest<Cmpt> / const Cmpt*
 	};
 
 	template<typename Cmpt>

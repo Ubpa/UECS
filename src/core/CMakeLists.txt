@@ -6,6 +6,16 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   list(APPEND c_options "-pthread")
 endif()
+
+set(c_options_private "")
+if(MSVC)
+  list(APPEND c_options_private "/MP")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  #
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  #
+endif()
+
 set(l_options "")
 if(MSVC)
   #..
@@ -27,6 +37,8 @@ Ubpa_AddTarget(
     "${PROJECT_SOURCE_DIR}/include"
   C_OPTION
     ${c_options}
+  C_OPTION_PRIVATE
+    ${c_options_private}
   L_OPTION
     ${l_options}
 )

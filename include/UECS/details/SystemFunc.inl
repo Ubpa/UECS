@@ -143,7 +143,7 @@ namespace Ubpa::UECS::details {
 		using ArgList = FuncTraits_ArgList<Func>;
 
 		using DecayedArgList = Transform_t<ArgList, DecayArg>;
-		static_assert(IsSet_v<DecayedArgList>, "details::System_::Pack: <Func>'s argument types must be a set");
+		static_assert(IsUnique_v<DecayedArgList>, "details::System_::Pack: <Func>'s argument types must be a set");
 
 		using TaggedCmptList = Filter_t<ArgList, IsTaggedCmpt>;
 

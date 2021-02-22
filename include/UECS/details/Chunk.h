@@ -9,8 +9,8 @@
 namespace Ubpa::UECS {
 	using byte = uint8_t;
 	static_assert(sizeof(byte) == 1);
-	struct alignas(CHUNK_ALIGNMENT) Chunk {
-		static constexpr std::size_t size = CHUNK_SIZE;
+	struct alignas(ChunkAlignment) Chunk {
+		static constexpr std::size_t size = ChunkSize;
 
 		struct Layout {
 			std::size_t capacity;
