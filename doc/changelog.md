@@ -1,5 +1,7 @@
 # Change Log
 
+- 0.15.1
+  - support MacOS GCC 10.2
 - 0.15.0
   - use C++20: `span`, `concept`, ...
   - `CmptType` -> `TypeID`, `CmptAccessType` -> `AccessTypeID` 
