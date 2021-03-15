@@ -28,6 +28,7 @@ struct alignas(8) E {
 
 int main() {
 	World w;
-	w.entityMngr.Create<A, B, C, D, E>();
+	w.entityMngr.cmptTraits.Register<A, B, C, D, E>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E>);
 	return 0;
 }

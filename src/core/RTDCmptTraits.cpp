@@ -3,8 +3,13 @@
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 
+RTDCmptTraits::RTDCmptTraits() {
+	Register<Entity>();
+}
+
 RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
 	sizeofs{other.sizeofs},
+	trivials{other.trivials},
 	alignments{other.alignments},
 	default_constructors{other.default_constructors },
 	copy_constructors{other.copy_constructors },
@@ -23,6 +28,7 @@ RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
 
 RTDCmptTraits& RTDCmptTraits::operator=(const RTDCmptTraits& rhs) {
 	sizeofs = rhs.sizeofs;
+	trivials = rhs.trivials;
 	alignments = rhs.alignments;
 	default_constructors = rhs.default_constructors;
 	copy_constructors = rhs.copy_constructors;
@@ -90,8 +96,14 @@ RTDCmptTraits& RTDCmptTraits::RegisterName(Type type) {
 	return *this;
 }
 
+RTDCmptTraits& RTDCmptTraits::RegisterTrivial(TypeID type) {
+	trivials.insert(type);
+	return *this;
+}
+
 RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
 	names.erase(type);
+	trivials.erase(type);
 	sizeofs.erase(type);
 	alignments.erase(type);
 	default_constructors.erase(type);
@@ -104,6 +116,7 @@ RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
 
 RTDCmptTraits& RTDCmptTraits::Clear() {
 	names.clear();
+	trivials.clear();
 	sizeofs.clear();
 	alignments.clear();
 	default_constructors.clear();

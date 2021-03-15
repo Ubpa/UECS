@@ -21,9 +21,10 @@ struct DataSystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<DataSystem>();
 	w.systemMngr.RegisterAndActivate<DataSystem>();
 
-	w.entityMngr.Create<Data>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<DataSystem>);
 
 	w.Update();
 

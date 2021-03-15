@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../Entity.h"
-#include "../CmptPtr.h"
-#include "../CmptLocator.h"
-
 #include "ArchetypeCmptTraits.h"
-#include "TypeIDSet.h"
 #include "Chunk.h"
+
+#include <UECS/Entity.h>
+#include <UECS/CmptPtr.h>
+#include <UECS/CmptLocator.h>
+#include <UECS/details/TypeIDSet.h>
 
 #include <UTemplate/TypeList.h>
 #include <memory_resource>
@@ -20,11 +20,6 @@ namespace Ubpa::UECS {
 	public:
 		Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator) noexcept : chunkAllocator{ chunkAllocator } {}
 
-		// argument TypeList<Cmpts...> is for type deduction
-		// auto add Entity
-		template<typename... Cmpts>
-		Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, TypeList<Cmpts...>);
-
 		// copy
 		Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, const Archetype&);
 		Archetype(const Archetype&) = delete;
@@ -34,9 +29,6 @@ namespace Ubpa::UECS {
 		// auto add Entity
 		static Archetype* New(RTDCmptTraits&, std::pmr::polymorphic_allocator<Chunk> chunkAllocator, std::span<const TypeID> types);
 
-		// auto add Entity
-		template<typename... Cmpts>
-		static Archetype* Add(const Archetype* from);
 		static Archetype* Add(RTDCmptTraits&, const Archetype* from, std::span<const TypeID> types);
 
 		// auto add Entity
@@ -68,11 +60,6 @@ namespace Ubpa::UECS {
 		// no init
 		std::size_t RequestBuffer();
 
-		// init cmpts, set Entity
-		// std::size_t: index in archetype
-		template<typename... Cmpts>
-		std::tuple<std::size_t, std::tuple<Cmpts*...>> Create(Entity);
-
 		std::size_t Create(RTDCmptTraits&, Entity);
 		
 		// return index in archetype
@@ -95,8 +82,6 @@ namespace Ubpa::UECS {
 
 		// add Entity
 		static TypeIDSet GenTypeIDSet(std::span<const TypeID> types);
-		template<typename... Cmpts>
-		static TypeIDSet GenTypeIDSet();
 
 	private:
 		// set type2alignment
@@ -119,5 +104,3 @@ namespace Ubpa::UECS {
 		std::size_t entityNum{ 0 }; // number of entities
 	};
 }
-
-#include "Archetype.inl"

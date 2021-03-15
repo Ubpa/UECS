@@ -1,17 +1,19 @@
 #include <UECS/EntityMngr.h>
 
+#include "Archetype.h"
+
 #include <UECS/details/SystemFunc.h>
 #include <UECS/IListener.h>
 
 using namespace Ubpa::UECS;
 using namespace std;
 
-EntityMngr::EntityMngr()
-	: rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() }
-{}
+EntityMngr::EntityMngr() :
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() } {}
 
-EntityMngr::EntityMngr(const EntityMngr& em)
-	:
+EntityMngr::EntityMngr(EntityMngr&&) noexcept = default;
+
+EntityMngr::EntityMngr(const EntityMngr& em) :
 	cmptTraits{ em.cmptTraits },
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() }
 {
@@ -40,6 +42,23 @@ EntityMngr::EntityMngr(const EntityMngr& em)
 
 EntityMngr::~EntityMngr() {
 	ts2a.clear();
+}
+
+bool EntityMngr::Have(Entity e, TypeID type) const {
+	assert(!type.Is<Entity>());
+	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Have: Entity is invalid");
+	return entityTable[e.Idx()].archetype->GetTypeIDSet().Contains(type);
+}
+
+CmptPtr EntityMngr::Get(Entity e, TypeID type) const {
+	assert(!type.Is<Entity>());
+	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Get: Entity is invalid");
+	const auto& info = entityTable[e.Idx()];
+	return { type, info.archetype->At(type, info.idxInArchetype) };
+}
+
+bool EntityMngr::Exist(Entity e) const noexcept {
+	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
 }
 
 std::size_t EntityMngr::RequestEntityFreeEntry() {
@@ -92,7 +111,7 @@ Entity EntityMngr::Create(std::span<const TypeID> types) {
 	return e;
 }
 
-Archetype* EntityMngr::AttachWithoutInit(Entity e, std::span<const TypeID> types) {
+void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 	assert(IsSet(types));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
@@ -119,7 +138,7 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, std::span<const TypeID> types
 	else {
 		dstArchetype = target->second.get();
 		if (dstArchetype == srcArchetype)
-			return srcArchetype;
+			return;
 	}
 
 	// move src to dst
@@ -140,14 +159,8 @@ Archetype* EntityMngr::AttachWithoutInit(Entity e, std::span<const TypeID> types
 	info.archetype = dstArchetype;
 	info.idxInArchetype = dstIdxInArchetype;
 
-	return srcArchetype;
-}
-
-void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
-	auto* origArchetype = AttachWithoutInit(e, types);
-	const auto& info = entityTable[e.Idx()];
 	for (const auto& type : types) {
-		if (origArchetype->GetTypeIDSet().Contains(type))
+		if (srcArchetype->GetTypeIDSet().Contains(type))
 			continue;
 
 		auto target = cmptTraits.GetDefaultConstructors().find(type);

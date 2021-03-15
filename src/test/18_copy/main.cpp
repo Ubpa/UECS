@@ -27,12 +27,13 @@ struct MoverSystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<Position, Velocity>();
 	w.systemMngr.RegisterAndActivate<MoverSystem>();
-	w.entityMngr.Create<Position, Velocity>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<Position, Velocity>);
 
 	World cpW = w;
 	
 	cpW.Update();
-	cpW.entityMngr.Create<Position, Velocity>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<Position, Velocity>);
 	cpW.Update();
 }

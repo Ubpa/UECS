@@ -1,5 +1,6 @@
 #include <UECS/World.h>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 
 struct Position { float val; };
@@ -18,7 +19,8 @@ struct MoverSystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<Position, Velocity>();
 	w.systemMngr.RegisterAndActivate<MoverSystem>();
-	w.entityMngr.Create<Position, Velocity>();
+	w.entityMngr.Create(TypeIDs_of<Position, Velocity>);
 	w.Update();
 }

@@ -3,6 +3,10 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa::UECS {
+	inline bool RTDCmptTraits::IsTrivial(TypeID type) const {
+		return trivials.contains(type);
+	}
+
 	inline std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
 		auto target = sizeofs.find(type);
 		assert(target != sizeofs.end());
@@ -80,6 +84,9 @@ namespace Ubpa::UECS {
 
 		constexpr Type type = Type_of<Cmpt>;
 
+		if constexpr (std::is_trivial_v<Cmpt>)
+			trivials.insert(TypeID_of<Cmpt>);
+
 		sizeofs.emplace(type.GetID(), sizeof(Cmpt));
 		alignments.emplace(type.GetID(), alignof(Cmpt));
 		names.emplace(type.GetID(), type.GetName());
@@ -118,6 +125,9 @@ namespace Ubpa::UECS {
 		sizeofs.erase(type);
 		alignments.erase(type);
 		names.erase(type);
+
+		if constexpr (std::is_trivial_v<Cmpt>)
+			trivials.erase(TypeID_of<Cmpt>);
 
 		if constexpr (!std::is_trivially_constructible_v<Cmpt>)
 			default_constructors.erase(type);

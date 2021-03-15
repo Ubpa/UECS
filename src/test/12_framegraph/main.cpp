@@ -43,7 +43,7 @@ int main() {
 		.RegisterName(Type_of<G>)
 		;
 
-	w.entityMngr.Create<A, B, C, D, E>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E>);
 	w.Update();
 
 	cout << w.DumpUpdateJobGraph() << endl;

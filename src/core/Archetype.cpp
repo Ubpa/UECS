@@ -1,12 +1,12 @@
-#include <UECS/details/Archetype.h>
+#include "Archetype.h"
 
 using namespace Ubpa::UECS;
 using namespace std;
 
 Archetype::~Archetype() {
 	for (const auto& type : types.data) {
-		auto destructor = cmptTraits.GetDestruct(type);
-		if(!destructor)
+		auto trait = cmptTraits.GetTraits(type);
+		if(!trait || !trait->dtor)
 			continue;
 		std::size_t size = cmptTraits.Sizeof(type);
 		std::size_t offset = Offsetof(type);
@@ -16,7 +16,7 @@ Archetype::~Archetype() {
 			byte* beg = buffer + offset;
 			for (std::size_t i = 0; i < num; i++) {
 				byte* address = beg + i * size;
-				(*destructor)(address);
+				trait->dtor(address);
 			}
 		}
 	}
@@ -44,11 +44,11 @@ Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, cons
 			auto* srcBegin = srcChunk->Data() + offset;
 			auto* dstBegin = dstChunk->Data() + offset;
 			auto size = cmptTraits.Sizeof(type);
-			auto copy_ctor = cmptTraits.GetCopyConstruct(type);
-			if (copy_ctor) {
+			auto trait = cmptTraits.GetTraits(type);
+			if (trait && trait->copy_ctor) {
 				for (std::size_t j = 0; j < num; j++) {
 					auto offset_j = j * size;
-					(*copy_ctor)(dstBegin + offset_j, srcBegin + offset_j);
+					trait->copy_ctor(dstBegin + offset_j, srcBegin + offset_j);
 				}
 			}
 			else
@@ -86,7 +86,8 @@ Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, std::pmr::polymorphic_al
 	auto* rst = new Archetype{ chunkAllocator };
 	rst->types.Insert(types);
 	rst->types.data.insert(TypeID_of<Entity>);
-	rst->cmptTraits.Register<Entity>();
+	rst->cmptTraits.Register(rtdCmptTraits, TypeID_of<Entity>);
+	
 	for(const auto& type : types)
 		rst->cmptTraits.Register(rtdCmptTraits, type);
 	rst->SetLayout();

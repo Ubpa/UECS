@@ -50,14 +50,13 @@ struct SAB_System {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<S, A, B>();
 	w.systemMngr.RegisterAndActivate<SAB_System>();
 
-	w.entityMngr.cmptTraits.Register<S, A, B>();
-
-	w.entityMngr.Create<S>();
-	w.entityMngr.Create<S, A>();
-	w.entityMngr.Create<S, B>();
-	w.entityMngr.Create<S, A, B>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<S>);
+	w.entityMngr.Create(Ubpa::TypeIDs_of<S, A>);
+	w.entityMngr.Create(Ubpa::TypeIDs_of<S, B>);
+	w.entityMngr.Create(Ubpa::TypeIDs_of<S, A, B>);
 
 	w.Update();
 

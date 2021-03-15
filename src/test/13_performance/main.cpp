@@ -23,11 +23,12 @@ int main() {
 	std::size_t numEntities = 65536;
 	std::size_t numUpdate = 144 * 10;
 	World w;
+	w.entityMngr.cmptTraits.Register<A, B>();
 	w.systemMngr.RegisterAndActivate<TestSystem>();
 
 	auto t0 = std::chrono::steady_clock::now();
 	for (std::size_t i = 0; i < numEntities; i++)
-		w.entityMngr.Create<A, B>();
+		w.entityMngr.Create(Ubpa::TypeIDs_of<A, B>);
 	auto t1 = std::chrono::steady_clock::now();
 	for (std::size_t i = 0; i < numUpdate; i++)
 		w.Update();

@@ -17,10 +17,11 @@ struct MySystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<A>();
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
-	auto [e] = w.entityMngr.Create<>();
-	w.entityMngr.Emplace<A>(e, 1.f);
+	auto e = w.entityMngr.Create(Ubpa::TypeIDs_of<A>);
+	w.entityMngr.Get<A>(e)->val = 1.f;
 	w.entityMngr.Instantiate(e);
 	w.Update();
 

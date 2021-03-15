@@ -25,12 +25,9 @@ int main() {
 	World w;
 	w.systemMngr.RegisterAndActivate<DataSystem>();
 
-	w.entityMngr.cmptTraits.Register<
-		Data1,
-		Data2
-	>();
+	w.entityMngr.cmptTraits.Register<Data1, Data2>();
 
-	w.entityMngr.Create<Data1, Data2>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<Data1, Data2>);
 
 	w.Update();
 

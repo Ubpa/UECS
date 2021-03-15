@@ -18,7 +18,7 @@ struct MySystem {
 					[e, w]() {
 						if (!w->entityMngr.Have(e, TypeID_of<C>)) {
 							cout << "Attach C" << endl;
-							w->entityMngr.Attach<C>(e);
+							w->entityMngr.Attach(e, TypeIDs_of<C>);
 						}
 					}
 				);
@@ -31,7 +31,7 @@ struct MySystem {
 					[e, w]() {
 						if (w->entityMngr.Have(e, TypeID_of<C>)) {
 							cout << "Dettach C" << endl;
-							w->entityMngr.Detach<C>(e);
+							w->entityMngr.Detach(e, TypeIDs_of<C>);
 						}
 					}
 				);
@@ -43,9 +43,10 @@ struct MySystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<A, B, C>();
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
-	w.entityMngr.Create<A, B>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B>);
 
 	w.Update();
 	w.Update();

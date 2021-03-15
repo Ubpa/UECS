@@ -39,11 +39,12 @@ struct MySystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<Data>();
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	for (std::size_t i = 1; i <= 100; i++) {
-		auto [e] = w.entityMngr.Create();
-		w.entityMngr.Emplace<Data>(e, i);
+		auto e = w.entityMngr.Create(Ubpa::TypeIDs_of<Data>);
+		w.entityMngr.Get<Data>(e)->value = i;
 	}
 
 	w.Update();

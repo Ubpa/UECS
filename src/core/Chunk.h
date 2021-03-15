@@ -1,10 +1,10 @@
 #pragma once
 
+#include <UECS/config.h>
+
 #include <cstdint>
 #include <array>
 #include <vector>
-
-#include "../config.h"
 
 namespace Ubpa::UECS {
 	using byte = uint8_t;

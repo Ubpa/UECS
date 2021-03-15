@@ -1,16 +1,21 @@
 #pragma once
 
-#include "details/Archetype.h"
-#include "details/Job.h"
+#include "RTDCmptTraits.h"
 #include "EntityQuery.h"
 #include "SingletonLocator.h"
+#include "CmptPtr.h"
+
+#include "details/Job.h"
+#include "details/TypeIDSet.h"
 
 #include <memory_resource>
+#include <small_vector.h>
 
 namespace Ubpa::UECS {
 	class World;
 	class SystemFunc;
 	class IListener;
+	class Archetype;
 
 	// Entity Manager of World
 	// auto maintain Component's lifecycle ({default|copy|move} constructor, destructor)
@@ -28,48 +33,26 @@ namespace Ubpa::UECS {
 	public:
 		EntityMngr();
 		EntityMngr(const EntityMngr& em);
-		EntityMngr(EntityMngr&&) noexcept = default;
+		EntityMngr(EntityMngr&&) noexcept;
 		~EntityMngr();
 
 		RTDCmptTraits cmptTraits;
 
-		template<typename... Cmpts>
-		std::tuple<Entity, Cmpts*...> Create();
-
-		// use RTDCmptTraits
-		Entity Create(std::span<const TypeID> types);
+		Entity Create(std::span<const TypeID> types = {});
 		Entity Create(TypeID type) { return Create({ &type, 1 }); }
 
 		Entity Instantiate(Entity);
 
 		// TODO: CreateEntities
 
-		template<typename... Cmpts>
-		std::tuple<Cmpts*...> Attach(Entity);
-
-		// use RTDCmptTraits
 		void Attach(Entity, std::span<const TypeID> types);
-		void Attach(Entity e, TypeID type) { Attach(e, { &type, 1 }); }
-
-		template<typename Cmpt, typename... Args>
-		Cmpt* Emplace(Entity, Args&&...);
-
 		void Detach(Entity, std::span<const TypeID> types);
-		void Detach(Entity e, TypeID type) { Detach(e, { &type, 1 }); }
-		// use Detach(Entity, const TypeID*, std::size_t)
-		template<typename... Cmpts>
-		void Detach(Entity);
-
 		bool Have(Entity, TypeID) const;
-		// use Have(Entity, TypeID)
-		template<typename Cmpt>
-		bool Have(Entity) const;
 
 		// nullptr if not containts TypeID
 		CmptPtr Get(Entity, TypeID) const;
-		// use Get(Entity, TypeID)
 		template<typename Cmpt>
-		Cmpt* Get(Entity) const;
+		Cmpt* Get(Entity e) const { return Get(e, TypeID_of<Cmpt>).template As<Cmpt>(); }
 
 		std::vector<CmptPtr> Components(Entity) const;
 
@@ -90,9 +73,6 @@ namespace Ubpa::UECS {
 		template<typename Cmpt>
 		Cmpt* GetSingleton() const { return GetSingleton(TypeID_of<Cmpt>).template As<Cmpt>(); }
 
-		// filter's all contains cmpt
-		template<typename Cmpt>
-		std::vector<Cmpt*> GetCmptArray(const ArchetypeFilter&) const;
 		std::vector<CmptPtr> GetCmptArray(const ArchetypeFilter&, TypeID) const;
 		std::vector<Entity> GetEntityArray(const ArchetypeFilter&) const;
 
@@ -106,15 +86,8 @@ namespace Ubpa::UECS {
 
 		static bool IsSet(std::span<const TypeID> types) noexcept;
 
-		template<typename... Cmpts>
-		Archetype* GetOrCreateArchetypeOf();
 		// types not contain Entity
 		Archetype* GetOrCreateArchetypeOf(std::span<const TypeID> types);
-
-		// return original archetype
-		template<typename... Cmpts>
-		Archetype* AttachWithoutInit(Entity);
-		Archetype* AttachWithoutInit(Entity, std::span<const TypeID> types);
 
 		small_vector<CmptAccessPtr, 16> LocateSingletons(const SingletonLocator&) const;
 
@@ -144,5 +117,3 @@ namespace Ubpa::UECS {
 		std::unordered_map<TypeIDSet, std::unique_ptr<Archetype>> ts2a; // archetype's TypeIDSet to archetype
 	};
 }
-
-#include "details/EntityMngr.inl"

@@ -27,11 +27,11 @@ struct MoverSystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<Timer, Position, Velocity>();
 	w.systemMngr.RegisterAndActivate<MoverSystem>();
-	w.entityMngr.Create<Position, Velocity>();
-	w.entityMngr.Create<Timer>();
-	w.entityMngr.cmptTraits.Register
-		<Timer, Velocity, Position>();
+
+	w.entityMngr.Create(Ubpa::TypeIDs_of<Position, Velocity>);
+	w.entityMngr.Create(Ubpa::TypeIDs_of<Timer>);
 
 	w.Update();
 	std::cout << w.DumpUpdateJobGraph() << std::endl;
