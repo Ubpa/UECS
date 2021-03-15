@@ -31,6 +31,10 @@
 - [x] random access
 - [x] system traits
 - [ ] change filter
+- [ ] resource
+  - [ ] world
+  - [ ] frame
+- [ ] view + iterator
 
 ### maybe support in future
 

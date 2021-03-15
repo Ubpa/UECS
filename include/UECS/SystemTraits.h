@@ -48,6 +48,7 @@ namespace Ubpa::UECS {
 		// register system's name and get an ID
 		// if it is already registered, return it's ID directly
 		Name Register(std::string_view name);
+		void Unregister(NameID);
 
 		// ID must exist
 		void RegisterOnCreate    (NameID, std::function<OnCreate>    );

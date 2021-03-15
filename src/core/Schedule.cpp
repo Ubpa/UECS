@@ -6,6 +6,10 @@ using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;
 
+std::pmr::polymorphic_allocator<SystemFunc> Schedule::GetSysFuncAllocator() {
+	return &sysfuncRsrc;
+}
+
 Schedule& Schedule::Order(string_view x, string_view y) {
 	sysFuncOrder.emplace(SystemFunc::GetValue(x), SystemFunc::GetValue(y));
 	return *this;
@@ -28,9 +32,10 @@ Schedule& Schedule::EraseNone(string_view sys, TypeID type) {
 }
 
 void Schedule::Clear() {
+	auto alloc = GetSysFuncAllocator();
 	for (const auto& [hash, sysFunc] : sysFuncs) {
 		sysFunc->~SystemFunc();
-		sysFuncAllocator.deallocate(sysFunc, 1);
+		alloc.deallocate(sysFunc, 1);
 	}
 	sysFuncs.clear();
 	sysFuncOrder.clear();

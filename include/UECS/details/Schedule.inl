@@ -58,7 +58,7 @@ namespace Ubpa::UECS {
 
 	template<typename... Args>
 	const SystemFunc* Schedule::Request(Args&&... args) {
-		SystemFunc* sysFunc = sysFuncAllocator.allocate(1);
+		SystemFunc* sysFunc = GetSysFuncAllocator().allocate(1);
 		new(sysFunc)SystemFunc(std::forward<Args>(args)...);
 		sysFuncs.emplace(sysFunc->GetValue(), sysFunc);
 		return sysFunc;

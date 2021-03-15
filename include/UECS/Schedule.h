@@ -25,10 +25,6 @@ namespace Ubpa::UECS {
 	// schedule will be clear at the beginning of the next World::Update()
 	class Schedule {
 	public:
-		Schedule() :
-			rsrc{std::make_unique<std::pmr::unsynchronized_pool_resource>()},
-			sysFuncAllocator{ rsrc.get() } {}
-
 		// Func's argument list:
 		// [const] World*
 		// {LastFrame|Latest}<Singleton<Cmpt>>
@@ -115,8 +111,8 @@ namespace Ubpa::UECS {
 
 		std::map<int, std::vector<std::function<void(World*)>>> commandBuffer;
 
-		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
-		std::pmr::polymorphic_allocator<SystemFunc> sysFuncAllocator;
+		std::pmr::unsynchronized_pool_resource sysfuncRsrc;
+		std::pmr::polymorphic_allocator<SystemFunc> GetSysFuncAllocator();
 		friend class World;
 	};
 }

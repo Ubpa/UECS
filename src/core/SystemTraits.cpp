@@ -54,6 +54,19 @@ Name SystemTraits::Register(std::string_view name) {
 	return { newname, id };
 }
 
+void SystemTraits::Unregister(NameID ID) {
+	auto target = names.find(ID);
+	if (target == names.end())
+		return;
+
+	names.erase(target);
+	createMap.erase(ID);
+	activateMap.erase(ID);
+	updateMap.erase(ID);
+	deactivateMap.erase(ID);
+	destroyMap.erase(ID);
+}
+
 bool SystemTraits::IsRegistered(NameID ID) const noexcept {
 	return names.contains(ID);
 }
