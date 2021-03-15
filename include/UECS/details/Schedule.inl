@@ -63,9 +63,4 @@ namespace Ubpa::UECS {
 		sysFuncs.emplace(sysFunc->GetValue(), sysFunc);
 		return sysFunc;
 	}
-
-	inline Schedule& Schedule::LockFilter(std::string_view sys) {
-		sysLockFilter.insert(SystemFunc::GetValue(sys));
-		return *this;
-	}
 }

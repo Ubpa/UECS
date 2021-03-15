@@ -81,8 +81,6 @@ namespace Ubpa::UECS {
 
 		Schedule& Order(std::string_view x, std::string_view y);
 
-		Schedule& LockFilter(std::string_view sys);
-
 		Schedule& InsertNone(std::string_view sys, TypeID);
 		Schedule& EraseNone(std::string_view sys, TypeID);
 
@@ -114,7 +112,6 @@ namespace Ubpa::UECS {
 			std::set<TypeID> eraseNones;
 		};
 		std::unordered_map<std::size_t, FilterChange> sysFilterChange;
-		std::unordered_set<std::size_t> sysLockFilter;
 
 		std::map<int, std::vector<std::function<void(World*)>>> commandBuffer;
 

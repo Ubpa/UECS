@@ -75,7 +75,6 @@ int main() {
 - [job function](src/test/08_job/main.cpp) 
 - system function with [`Entity`](src/test/03_query_entity/main.cpp) 
 - [chunk layout optimization with alignment](src/test/05_alignment/main.cpp) 
-- [parrallel with `None` filter](src/test/06_none_parallel/main.cpp) 
 - [system **overload**](src/test/07_overload/main.cpp) 
 - [runtime dynamic component](src/test/11_runtime_cmpt/main.cpp) 
 - [generate **frame graph** in **Graphviz**](src/test/12_framegraph/main.cpp) 

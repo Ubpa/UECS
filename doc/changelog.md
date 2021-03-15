@@ -1,5 +1,7 @@
 # Change Log
 
+- 0.16.0
+  - remove none-parallel
 - 0.15.1
   - support MacOS GCC 10.2
 - 0.15.0

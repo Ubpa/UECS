@@ -4,8 +4,7 @@
 
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
-	Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, TypeList<Cmpts...>)
-		:
+	Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, TypeList<Cmpts...>) :
 		types(GenTypeIDSet<Cmpts...>()),
 		chunkAllocator{ chunkAllocator }
 	{
