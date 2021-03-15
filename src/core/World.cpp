@@ -37,8 +37,8 @@ void World::Update() {
 	jobs.clear();
 	jobGraph.clear();
 
-	for (auto id : systemMngr.GetActiveSystemsIDs())
-		systemMngr.Update(id, schedule);
+	for (const auto& ID : systemMngr.GetActiveSystemIDs())
+		systemMngr.Update(ID, schedule);
 
 	for (auto& [layer, scheduleCommands] : schedule.commandBuffer) {
 		auto& worldCommands = commandBuffer[layer];

@@ -1,119 +1,124 @@
 #include <cassert>
 #include <UECS/SystemTraits.h>
 
+using namespace Ubpa;
 using namespace Ubpa::UECS;
 
-SystemTraits::SystemTraits(const SystemTraits& traits)
-	:
-	names{ traits.names },
+SystemTraits::SystemTraits(const SystemTraits& traits) :
 	createMap{ traits.createMap },
 	activateMap{ traits.activateMap },
 	updateMap{ traits.updateMap },
 	deactivateMap{ traits.deactivateMap },
 	destroyMap{ traits.destroyMap }
 {
-	for (std::size_t i = 0; i < names.size(); i++) {
-		const auto& name = names[i];
-		name2id.emplace(std::string_view{ name }, i);
+	for (const auto& [id, name] : traits.names) {
+		char* buffer = (char*)rsrc.allocate((name.size() + 1) * sizeof(char), alignof(char));
+		std::memcpy(buffer, name.data(), name.size() * sizeof(char));
+		buffer[name.size()] = 0;
+		names.emplace(id, std::string_view{ buffer, name.size() });
+		buffer += name.size() + 1;
 	}
 }
 
-SystemTraits& SystemTraits::operator=(SystemTraits& rhs) {
-	names = rhs.names;
+SystemTraits& SystemTraits::operator=(const SystemTraits& rhs) {
 	createMap = rhs.createMap;
 	activateMap = rhs.activateMap;
 	updateMap = rhs.updateMap;
 	deactivateMap = rhs.deactivateMap;
 	destroyMap = rhs.destroyMap;
-	for (std::size_t i = 0; i < names.size(); i++) {
-		const auto& name = names[i];
-		name2id.emplace(std::string_view{ name }, i);
+	rsrc.release();
+	for (const auto& [id, name] : rhs.names) {
+		char* buffer = (char*)rsrc.allocate((name.size() + 1) * sizeof(char), alignof(char));
+		std::memcpy(buffer, name.data(), name.size() * sizeof(char));
+		buffer[name.size()] = 0;
+		names.emplace(id, std::string_view{ buffer, name.size() });
+		buffer += name.size() + 1;
 	}
 	return *this;
 }
 
-std::size_t SystemTraits::Register(std::string name) {
+Name SystemTraits::Register(std::string_view name) {
 	assert(!name.empty());
 	
-	auto target = name2id.find(name);
-	if (target != name2id.end())
-		return target->second;
+	NameID id{ name };
+	auto target = names.find(id);
+	if (target != names.end())
+		return { target->second, id };
 
-	std::size_t idx = names.size();
-	names.push_back(std::move(name));
-	name2id.emplace_hint(target, std::pair{ std::string_view{names[idx]}, idx });
+	auto* buffer = (char*)rsrc.allocate((name.size() + 1) * sizeof(char), alignof(char));
+	std::memcpy(buffer, name.data(), name.size() * sizeof(char));
+	buffer[name.size()] = 0;
+	std::string_view newname{ buffer, name.size() };
+	names.emplace(id, newname);
 
-	return idx;
+	return { newname, id };
 }
 
-bool SystemTraits::IsRegistered(std::size_t ID) const noexcept {
-	return ID < names.size();
+bool SystemTraits::IsRegistered(NameID ID) const noexcept {
+	return names.contains(ID);
 }
 
-std::size_t SystemTraits::GetID(std::string_view name) const {
-	auto target = name2id.find(name);
-	return target == name2id.end() ? static_cast<std::size_t>(-1) : target->second;
-}
-
-void SystemTraits::RegisterOnCreate(std::size_t ID, std::function<OnCreate> func) {
+void SystemTraits::RegisterOnCreate(NameID ID, std::function<OnCreate> func) {
 	assert(IsRegistered(ID));
 	createMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnActivate(std::size_t ID, std::function<OnActivate> func) {
+void SystemTraits::RegisterOnActivate(NameID ID, std::function<OnActivate> func) {
 	assert(IsRegistered(ID));
 	activateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnUpdate(std::size_t ID, std::function<OnUpdate> func) {
+void SystemTraits::RegisterOnUpdate(NameID ID, std::function<OnUpdate> func) {
 	assert(IsRegistered(ID));
 	updateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnDeactivate(std::size_t ID, std::function<OnDeactivate> func) {
+void SystemTraits::RegisterOnDeactivate(NameID ID, std::function<OnDeactivate> func) {
 	assert(IsRegistered(ID));
 	deactivateMap[ID] = std::move(func);
 }
 
-void SystemTraits::RegisterOnDestroy(std::size_t ID, std::function<OnDestroy> func) {
+void SystemTraits::RegisterOnDestroy(NameID ID, std::function<OnDestroy> func) {
 	assert(IsRegistered(ID));
 	destroyMap[ID] = std::move(func);
 }
 
-std::string_view SystemTraits::Nameof(std::size_t ID) const noexcept {
-	assert(ID < names.size());
-	return names[ID];
+std::string_view SystemTraits::Nameof(NameID ID) const noexcept {
+	auto target = names.find(ID);
+	if (target == names.end())
+		return {};
+	return target->second;
 }
 
-void SystemTraits::Create(std::size_t ID, World* w) const {
+void SystemTraits::Create(NameID ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = createMap.find(ID);
 	if (target != createMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Activate(std::size_t ID, World* w) const {
+void SystemTraits::Activate(NameID ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = activateMap.find(ID);
 	if (target != activateMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Update(std::size_t ID, Schedule& schedule) const {
+void SystemTraits::Update(NameID ID, Schedule& schedule) const {
 	assert(IsRegistered(ID));
 	auto target = updateMap.find(ID);
 	if (target != updateMap.end())
 		target->second(schedule);
 }
 
-void SystemTraits::Deactivate(std::size_t ID, World* w) const {
+void SystemTraits::Deactivate(NameID ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = deactivateMap.find(ID);
 	if (target != deactivateMap.end())
 		target->second(w);
 }
 
-void SystemTraits::Destroy(std::size_t ID, World* w) const {
+void SystemTraits::Destroy(NameID ID, World* w) const {
 	assert(IsRegistered(ID));
 	auto target = destroyMap.find(ID);
 	if (target != destroyMap.end())

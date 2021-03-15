@@ -1,15 +1,18 @@
 #pragma once
 
+#include <UTemplate/Type.h>
+
 #include <functional>
 #include <unordered_map>
 #include <array>
 #include <string>
 #include <vector>
+#include <memory_resource>
 
 namespace Ubpa::UECS {
 	class World;
 	class Schedule;
-	
+
 	class SystemTraits {
 	public:
 		// [life cycle]
@@ -39,60 +42,56 @@ namespace Ubpa::UECS {
 		SystemTraits() = default;
 		SystemTraits(const SystemTraits&);
 		SystemTraits(SystemTraits&&) noexcept = default;
-		SystemTraits& operator=(SystemTraits&);
+		SystemTraits& operator=(const SystemTraits&);
 		SystemTraits& operator=(SystemTraits&&) noexcept = default;
 
 		// register system's name and get an ID
 		// if it is already registered, return it's ID directly
-		std::size_t Register(std::string name);
+		Name Register(std::string_view name);
 
 		// ID must exist
-		void RegisterOnCreate    (std::size_t ID, std::function<OnCreate>);
-		void RegisterOnActivate  (std::size_t ID, std::function<OnActivate>);
-		void RegisterOnUpdate    (std::size_t ID, std::function<OnUpdate>);
-		void RegisterOnDeactivate(std::size_t ID, std::function<OnDeactivate>);
-		void RegisterOnDestroy   (std::size_t ID, std::function<OnDestroy>);
+		void RegisterOnCreate    (NameID, std::function<OnCreate>    );
+		void RegisterOnActivate  (NameID, std::function<OnActivate>  );
+		void RegisterOnUpdate    (NameID, std::function<OnUpdate>    );
+		void RegisterOnDeactivate(NameID, std::function<OnDeactivate>);
+		void RegisterOnDestroy   (NameID, std::function<OnDestroy>   );
 
-		std::string_view Nameof(std::size_t ID) const noexcept;
-		std::size_t GetID(std::string_view name) const;
-		bool IsRegistered(std::size_t ID) const noexcept;
-		const auto& GetNameIDMap() const noexcept { return name2id; }
+		std::string_view Nameof(NameID ID) const noexcept;
+		bool IsRegistered(NameID ID) const noexcept;
+		const auto& GetNames() const noexcept { return names; }
 
 		// [ Template ] functions
 		///////////////////////////
 
-		template<typename System>
-		static std::string_view StaticNameof() noexcept;
+		template<typename Sys>
+		static constexpr Name Nameof() noexcept;
 
 		// for each <System> in <Systems...>
 		// 1. Register(StaticNameof<System>())
 		// 2. RegisterOn{Create|Activate|Update|Deactivate|Destroy} if <System> has them
 		template<typename... Systems>
-		std::array<std::size_t, sizeof...(Systems)> Register();
+		std::array<Name, sizeof...(Systems)> Register();
 
 		template<typename System>
-		std::size_t GetID() const { return GetID(StaticNameof<System>()); }
+		bool IsRegistered() const;
 
-		template<typename System>
-		bool IsRegistered() const { return GetID<System>(); }
-		
 	private:
 		friend class SystemMngr;
-		
-		void Create    (std::size_t ID, World*) const;
-		void Activate  (std::size_t ID, World*) const;
-		void Update    (std::size_t ID, Schedule&) const;
-		void Deactivate(std::size_t ID, World*) const;
-		void Destroy   (std::size_t ID, World*) const;
 
-		std::vector<std::string> names;
-		std::unordered_map<std::string_view, std::size_t> name2id;
+		void Create    (NameID, World*) const;
+		void Activate  (NameID, World*) const;
+		void Update    (NameID, Schedule&) const;
+		void Deactivate(NameID, World*) const;
+		void Destroy   (NameID, World*) const;
 
-		std::unordered_map<std::size_t, std::function<OnCreate    >> createMap;
-		std::unordered_map<std::size_t, std::function<OnActivate  >> activateMap;
-		std::unordered_map<std::size_t, std::function<OnUpdate    >> updateMap;
-		std::unordered_map<std::size_t, std::function<OnDeactivate>> deactivateMap;
-		std::unordered_map<std::size_t, std::function<OnDestroy   >> destroyMap;
+		std::pmr::synchronized_pool_resource rsrc;
+		std::unordered_map<NameID, std::string_view> names;
+
+		std::unordered_map<NameID, std::function<OnCreate    >> createMap;
+		std::unordered_map<NameID, std::function<OnActivate  >> activateMap;
+		std::unordered_map<NameID, std::function<OnUpdate    >> updateMap;
+		std::unordered_map<NameID, std::function<OnDeactivate>> deactivateMap;
+		std::unordered_map<NameID, std::function<OnDestroy   >> destroyMap;
 	};
 }
 

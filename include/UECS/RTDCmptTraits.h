@@ -2,6 +2,7 @@
 
 #include "AccessTypeID.h"
 
+#include <memory_resource>
 #include <unordered_map>
 #include <functional>
 #include <string>
@@ -21,6 +22,12 @@ namespace Ubpa::UECS {
 	public:
 		static constexpr std::size_t default_alignment = alignof(std::max_align_t);
 
+		RTDCmptTraits() = default;
+		RTDCmptTraits(const RTDCmptTraits& other);
+		RTDCmptTraits(RTDCmptTraits&& other) noexcept = default;
+		RTDCmptTraits& operator=(const RTDCmptTraits & other);
+		RTDCmptTraits& operator=(RTDCmptTraits&& other) noexcept = default;
+
 		RTDCmptTraits& Clear();
 
 		RTDCmptTraits& RegisterSize(TypeID, std::size_t size);
@@ -30,7 +37,7 @@ namespace Ubpa::UECS {
 		RTDCmptTraits& RegisterMoveConstructor(TypeID, std::function<void(void*,void*)>);
 		RTDCmptTraits& RegisterMoveAssignment(TypeID, std::function<void(void*,void*)>);
 		RTDCmptTraits& RegisterDestructor(TypeID, std::function<void(void*)>);
-		RTDCmptTraits& RegisterName(TypeID, std::string name);
+		RTDCmptTraits& RegisterName(Type);
 
 		const auto& GetSizeofs() const noexcept { return sizeofs; }
 		const auto& GetAlignments() const noexcept { return alignments; };
@@ -68,7 +75,9 @@ namespace Ubpa::UECS {
 		// - is_destructible_v
 		template<typename Cmpt>
 		void RegisterOne();
-
+		
+		std::pmr::synchronized_pool_resource rsrc;
+		std::unordered_map<TypeID, std::string_view> names;
 		std::unordered_map<TypeID, std::size_t> sizeofs;
 		std::unordered_map<TypeID, std::size_t> alignments;
 		std::unordered_map<TypeID, std::function<void(void*)>> default_constructors; // dst <- src
@@ -76,7 +85,6 @@ namespace Ubpa::UECS {
 		std::unordered_map<TypeID, std::function<void(void*,void*)>> move_constructors; // dst <- src
 		std::unordered_map<TypeID, std::function<void(void*,void*)>> move_assignments; // dst <- src
 		std::unordered_map<TypeID, std::function<void(void*)>> destructors;
-		std::unordered_map<TypeID, std::string> names;
 	};
 }
 

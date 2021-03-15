@@ -3,46 +3,6 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa::UECS {
-	inline RTDCmptTraits& RTDCmptTraits::RegisterSize(TypeID type, std::size_t size) {
-		sizeofs.emplace(type, size);
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterAlignment(TypeID type, std::size_t alignment) {
-		alignments.emplace(type, alignment);
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*)> f) {
-		default_constructors.emplace(type, std::move(f));
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*,void*)> f) {
-		copy_constructors.emplace(type, std::move(f));
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*,void*)> f) {
-		move_constructors.emplace(type, std::move(f));
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(TypeID type, std::function<void(void*,void*)> f) {
-		move_assignments.emplace(type, std::move(f));
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterDestructor(TypeID type, std::function<void(void*)> f) {
-		destructors.emplace(type, std::move(f));
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::RegisterName(TypeID type, std::string name) {
-		names.emplace(type, std::move(name));
-		return *this;
-	}
-
 	inline std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
 		auto target = sizeofs.find(type);
 		assert(target != sizeofs.end());
@@ -118,34 +78,34 @@ namespace Ubpa::UECS {
 		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");
 
-		constexpr TypeID type = TypeID_of<Cmpt>;
+		constexpr Type type = Type_of<Cmpt>;
 
-		sizeofs.emplace(type, sizeof(Cmpt));
-		alignments.emplace(type, alignof(Cmpt));
-		names.emplace(type, std::string{ type_name<Cmpt>().View() });
+		sizeofs.emplace(type.GetID(), sizeof(Cmpt));
+		alignments.emplace(type.GetID(), alignof(Cmpt));
+		names.emplace(type.GetID(), type.GetName());
 
 		if constexpr (!std::is_trivially_default_constructible_v<Cmpt>) {
-			default_constructors.emplace(type, [](void* cmpt) {
+			default_constructors.emplace(type.GetID(), [](void* cmpt) {
 				new(cmpt)Cmpt;
 			});
 		}
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
-			destructors.emplace(type, [](void* cmpt) {
+			destructors.emplace(type.GetID(), [](void* cmpt) {
 				static_cast<Cmpt*>(cmpt)->~Cmpt();
 			});
 		}
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>) {
-			move_constructors.emplace(type, [](void* dst, void* src) {
+			move_constructors.emplace(type.GetID(), [](void* dst, void* src) {
 				new(dst)Cmpt(std::move(*static_cast<Cmpt*>(src)));
 			});
 		}
 		if constexpr (!std::is_trivially_move_assignable_v<Cmpt>) {
-			move_assignments.emplace(type, [](void* dst, void* src) {
+			move_assignments.emplace(type.GetID(), [](void* dst, void* src) {
 				*static_cast<Cmpt*>(dst) = std::move(*static_cast<Cmpt*>(src));
 			});
 		}
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>) {
-			copy_constructors.emplace(type, [](void* dst, void* src) {
+			copy_constructors.emplace(type.GetID(), [](void* dst, void* src) {
 				new(dst)Cmpt(*static_cast<Cmpt*>(src));
 			});
 		}
@@ -169,29 +129,5 @@ namespace Ubpa::UECS {
 			move_assignments.erase(type);
 		if constexpr (!std::is_trivially_copy_constructible_v<Cmpt>)
 			copy_constructors.erase(type);
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
-		names.erase(type);
-		sizeofs.erase(type);
-		alignments.erase(type);
-		default_constructors.erase(type);
-		copy_constructors.erase(type);
-		move_constructors.erase(type);
-		move_assignments.erase(type);
-		destructors.erase(type);
-		return *this;
-	}
-
-	inline RTDCmptTraits& RTDCmptTraits::Clear() {
-		names.clear();
-		sizeofs.clear();
-		alignments.clear();
-		default_constructors.clear();
-		copy_constructors.clear();
-		move_constructors.clear();
-		move_assignments.clear();
-		destructors.clear();
-		return *this;
 	}
 }

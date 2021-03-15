@@ -15,30 +15,38 @@ namespace Ubpa::UECS::details {
 	concept HaveOnDestroy    = requires(World * w) { { System::OnDestroy(w) }; };
 	
 	template<typename System>
-	std::size_t Register(SystemTraits& traits) {
-		std::size_t ID = traits.Register(std::string{ SystemTraits::StaticNameof<System>() });
+	Name Register(SystemTraits& traits) {
+		Name name = traits.Register(type_name<System>().View());
 		if constexpr (HaveOnCreate<System>)
-			traits.RegisterOnCreate    (ID, static_cast<SystemTraits::OnCreate*    >(&System::OnCreate     ));
+			traits.RegisterOnCreate(name, static_cast<SystemTraits::OnCreate*>(&System::OnCreate));
 		if constexpr (HaveOnActivate<System>)
-			traits.RegisterOnActivate  (ID, static_cast<SystemTraits::OnActivate*  >(&System::OnActivate  ));
+			traits.RegisterOnActivate(name, static_cast<SystemTraits::OnActivate*>(&System::OnActivate));
 		if constexpr (HaveOnUpdate<System>)
-			traits.RegisterOnUpdate    (ID, static_cast<SystemTraits::OnUpdate*    >(&System::OnUpdate    ));
+			traits.RegisterOnUpdate(name, static_cast<SystemTraits::OnUpdate*>(&System::OnUpdate));
 		if constexpr (HaveOnDeactivate<System>)
-			traits.RegisterOnDeactivate(ID, static_cast<SystemTraits::OnDeactivate*>(&System::OnDeactivate));
+			traits.RegisterOnDeactivate(name, static_cast<SystemTraits::OnDeactivate*>(&System::OnDeactivate));
 		if constexpr (HaveOnDeactivate<System>)
-			traits.RegisterOnDestroy   (ID, static_cast<SystemTraits::OnDestroy*   >(&System::OnDestroy   ));
-		return ID;
+			traits.RegisterOnDestroy(name, static_cast<SystemTraits::OnDestroy*>(&System::OnDestroy));
+		return name;
 	}
 }
 
 namespace Ubpa::UECS {
+	template<typename Sys>
+	constexpr Name SystemTraits::Nameof() noexcept {
+		static_assert(std::is_same_v<std::remove_cvref_t<Sys>, Sys>);
+		constexpr auto v = type_name<Sys>().View();
+		constexpr Name n{ v };
+		return n;
+	}
+
 	template<typename... Systems>
-	std::array<std::size_t, sizeof...(Systems)> SystemTraits::Register() {
+	std::array<Name, sizeof...(Systems)> SystemTraits::Register() {
 		return { details::Register<Systems>(*this)... };
 	}
 
 	template<typename System>
-	std::string_view SystemTraits::StaticNameof() noexcept {
+	bool SystemTraits::IsRegistered() const {
 		return type_name<System>().View();
 	}
 }

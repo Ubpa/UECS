@@ -34,13 +34,13 @@ int main() {
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	w.entityMngr.cmptTraits
-		.RegisterName(TypeID_of<A>, "A")
-		.RegisterName(TypeID_of<B>, "B")
-		.RegisterName(TypeID_of<C>, "C")
-		.RegisterName(TypeID_of<D>, "D")
-		.RegisterName(TypeID_of<E>, "E")
-		.RegisterName(TypeID_of<F>, "F")
-		.RegisterName(TypeID_of<G>, "G")
+		.RegisterName(Type_of<A>)
+		.RegisterName(Type_of<B>)
+		.RegisterName(Type_of<C>)
+		.RegisterName(Type_of<D>)
+		.RegisterName(Type_of<E>)
+		.RegisterName(Type_of<F>)
+		.RegisterName(Type_of<G>)
 		;
 
 	w.entityMngr.Create<A, B, C, D, E>();

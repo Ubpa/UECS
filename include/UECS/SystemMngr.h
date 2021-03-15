@@ -17,51 +17,41 @@ namespace Ubpa::UECS {
 		~SystemMngr();
 
 		const auto& GetAliveSystemIDs() const noexcept { return aliveSystemIDs; }
-		const auto& GetActiveSystemsIDs() const noexcept { return activeSystemIDs; }
+		const auto& GetActiveSystemIDs() const noexcept { return activeSystemIDs; }
 
 		// not alive -> create
-		void Create(std::size_t systemID);
+		void Create(NameID);
 		
 		// 1. not alive create -> create and activate
 		// 2. not active -> then activate
-		void Activate(std::size_t systemID);
+		void Activate(NameID);
 
 		// active -> deactavate
-		void Deactivate(std::size_t systemID);
+		void Deactivate(NameID);
 		
 		// 1. active -> deactavite
 		// 2. alive -> destroy
-		void Destroy(std::size_t systemID);
+		void Destroy(NameID);
 
-		bool IsAlive(std::size_t systemID) const;
-		bool IsActive(std::size_t systemID) const;
+		bool IsAlive(NameID) const;
+		bool IsActive(NameID) const;
 
+		//
 		// [ Template ] Functions
 		///////////////////////////
 
-		template<typename... Systems>
-		void Create() { (Create(systemTraits.GetID<Systems>()), ...); }
+		template<typename... Systems> void Create();
+		template<typename... Systems> void Activate();
+		template<typename... Systems> void Deactivate();
+		template<typename... Systems> void Destroy();
+		template<typename System> bool IsAlive() const;
+		template<typename System> bool IsActive() const;
 
 		template<typename... Systems>
-		void Activate() { (Activate(systemTraits.GetID<Systems>()), ...); }
+		std::array<Name, sizeof...(Systems)> RegisterAndCreate();
 
 		template<typename... Systems>
-		void Deactivate() { (Deactivate(systemTraits.GetID<Systems>()), ...); }
-
-		template<typename... Systems>
-		void Destroy() { (Destroy(systemTraits.GetID<Systems>()), ...); }
-
-		template<typename System>
-		bool IsAlive() const { return IsAlive(systemTraits.GetID<System>()); }
-
-		template<typename System>
-		bool IsActive() const { return IsActive(systemTraits.GetID<System>()); }
-
-		template<typename... Systems>
-		std::array<std::size_t, sizeof...(Systems)> RegisterAndCreate();
-
-		template<typename... Systems>
-		std::array<std::size_t, sizeof...(Systems)> RegisterAndActivate();
+		std::array<Name, sizeof...(Systems)> RegisterAndActivate();
 
 		SystemMngr(const SystemMngr&) = delete;
 		SystemMngr(SystemMngr&&) noexcept = delete;
@@ -71,11 +61,11 @@ namespace Ubpa::UECS {
 	private:
 		friend class World;
 		World* w;
-		void Update(std::size_t systemID, Schedule&) const;
+		void Update(NameID, Schedule&) const;
 		void Clear();
 		
-		std::unordered_set<std::size_t> aliveSystemIDs;
-		std::unordered_set<std::size_t> activeSystemIDs;
+		std::unordered_set<NameID> aliveSystemIDs;
+		std::unordered_set<NameID> activeSystemIDs;
 	};
 }
 
