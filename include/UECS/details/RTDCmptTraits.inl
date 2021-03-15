@@ -52,7 +52,7 @@ namespace Ubpa::UECS {
 	inline std::size_t RTDCmptTraits::Alignof(TypeID type) const {
 		auto target = alignments.find(type);
 
-		return target != alignments.end() ? target->second : DefaultAlignment();
+		return target != alignments.end() ? target->second : default_alignment;
 	}
 
 	inline void RTDCmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {

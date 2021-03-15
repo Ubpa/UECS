@@ -33,6 +33,7 @@ Ubpa_AddTarget(
   LIB
     Ubpa::UTemplate_core
     Ubpa::UGraphviz_core
+    Ubpa::USmallVector_core
   INC
     "${PROJECT_SOURCE_DIR}/include"
   C_OPTION

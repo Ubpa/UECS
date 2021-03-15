@@ -5,10 +5,9 @@ using namespace std;
 
 Archetype::~Archetype() {
 	for (const auto& type : types.data) {
-		auto target = cmptTraits.destructors.find(type);
-		if(target == cmptTraits.destructors.end())
+		auto destructor = cmptTraits.GetDestruct(type);
+		if(!destructor)
 			continue;
-		const auto& destructor = target->second;
 		std::size_t size = cmptTraits.Sizeof(type);
 		std::size_t offset = Offsetof(type);
 		for (std::size_t k = 0; k < chunks.size(); k++) {
@@ -17,7 +16,7 @@ Archetype::~Archetype() {
 			byte* beg = buffer + offset;
 			for (std::size_t i = 0; i < num; i++) {
 				byte* address = beg + i * size;
-				destructor(address);
+				(*destructor)(address);
 			}
 		}
 	}
@@ -45,12 +44,11 @@ Archetype::Archetype(std::pmr::polymorphic_allocator<Chunk> chunkAllocator, cons
 			auto* srcBegin = srcChunk->Data() + offset;
 			auto* dstBegin = dstChunk->Data() + offset;
 			auto size = cmptTraits.Sizeof(type);
-			auto target = cmptTraits.copy_constructors.find(type);
-			if (target != cmptTraits.copy_constructors.end()) {
-				const auto& copy_ctor = target->second;
+			auto copy_ctor = cmptTraits.GetCopyConstruct(type);
+			if (copy_ctor) {
 				for (std::size_t j = 0; j < num; j++) {
 					auto offset_j = j * size;
-					copy_ctor(dstBegin + offset_j, srcBegin + offset_j);
+					(*copy_ctor)(dstBegin + offset_j, srcBegin + offset_j);
 				}
 			}
 			else

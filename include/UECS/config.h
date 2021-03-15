@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 namespace Ubpa::UECS {
 	// compile time config
 
@@ -11,4 +13,3 @@ namespace Ubpa::UECS {
 	// it has to be a multiple of ChunkAlignment and an exponent of 2
 	constexpr std::size_t ChunkSize = 16384;
 }
-
