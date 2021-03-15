@@ -279,9 +279,9 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
-vector<CmptAccessPtr> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
+Ubpa::small_vector<CmptAccessPtr, 16> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
 	std::size_t numSingletons = 0;
-	vector<CmptAccessPtr> rst;
+	small_vector<CmptAccessPtr, 16> rst;
 	rst.reserve(locator.SingletonTypes().size());
 	for (const auto& t : locator.SingletonTypes()) {
 		auto ptr = GetSingleton(t);

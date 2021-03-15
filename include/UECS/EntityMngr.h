@@ -80,8 +80,8 @@ namespace Ubpa::UECS {
 		std::size_t TotalEntityNum() const noexcept { return entityTable.size() - entityTableFreeEntry.size(); }
 		std::size_t EntityNum(const EntityQuery&) const;
 		// use entry in reverse
-		const std::vector<std::size_t>& GetEntityFreeEntries() const noexcept { return entityTableFreeEntry; }
-		std::size_t GetEntityVersion(std::size_t idx) const noexcept { return entityTable.at(idx).version; }
+		std::span<const std::size_t> GetEntityFreeEntries() const noexcept { return { entityTableFreeEntry.data(), entityTableFreeEntry.size() }; }
+		std::size_t GetEntityVersion(std::size_t idx) const noexcept { return entityTable[idx].version; }
 
 		bool IsSingleton(TypeID) const;
 		Entity GetSingletonEntity(TypeID) const;
@@ -116,7 +116,7 @@ namespace Ubpa::UECS {
 		Archetype* AttachWithoutInit(Entity);
 		Archetype* AttachWithoutInit(Entity, std::span<const TypeID> types);
 
-		std::vector<CmptAccessPtr> LocateSingletons(const SingletonLocator&) const;
+		small_vector<CmptAccessPtr, 16> LocateSingletons(const SingletonLocator&) const;
 
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery&) const;
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
