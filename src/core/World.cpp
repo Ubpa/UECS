@@ -24,11 +24,13 @@ World::World(World&& w) noexcept
 
 World::~World() {
 	systemMngr.Clear();
+	entityMngr.Clear();
 }
 
 void World::Update() {
 	inRunningJobGraph = true;
 
+	frame_sync_rsrc.release();
 	schedule.Clear();
 	for (auto* job : jobs) {
 		job->~Taskflow();

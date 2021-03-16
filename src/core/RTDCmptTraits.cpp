@@ -46,6 +46,71 @@ RTDCmptTraits& RTDCmptTraits::operator=(const RTDCmptTraits& rhs) {
 	return *this;
 }
 
+
+bool RTDCmptTraits::IsTrivial(TypeID type) const {
+	return trivials.contains(type);
+}
+
+std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
+	auto target = sizeofs.find(type);
+	assert(target != sizeofs.end());
+	return target->second;
+}
+
+std::size_t RTDCmptTraits::Alignof(TypeID type) const {
+	auto target = alignments.find(type);
+
+	return target != alignments.end() ? target->second : default_alignment;
+}
+
+void RTDCmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
+	auto target = default_constructors.find(type);
+
+	if (target != default_constructors.end())
+		target->second(cmpt);
+}
+
+void RTDCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
+	auto target = copy_constructors.find(type);
+
+	if (target != copy_constructors.end())
+		target->second(dst, src);
+	else
+		memcpy(dst, src, Sizeof(type));
+}
+
+void RTDCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
+	auto target = move_constructors.find(type);
+
+	if (target != move_constructors.end())
+		target->second(dst, src);
+	else
+		memcpy(dst, src, Sizeof(type));
+}
+
+void RTDCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
+	auto target = move_assignments.find(type);
+
+	if (target != move_assignments.end())
+		target->second(dst, src);
+	else
+		memcpy(dst, src, Sizeof(type));
+}
+
+void RTDCmptTraits::Destruct(TypeID type, void* cmpt) const {
+	auto target = destructors.find(type);
+	if (target != destructors.end())
+		target->second(cmpt);
+}
+
+std::string_view RTDCmptTraits::Nameof(TypeID type) const {
+	auto target = names.find(type);
+	if (target != names.end())
+		return target->second;
+	else
+		return {};
+}
+
 RTDCmptTraits& RTDCmptTraits::RegisterSize(TypeID type, std::size_t size) {
 	sizeofs.emplace(type, size);
 	return *this;

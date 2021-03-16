@@ -21,8 +21,12 @@ SystemMngr::SystemMngr(SystemMngr&& mngr, World* w) noexcept
 {}
 
 SystemMngr::~SystemMngr() {
-	assert(activeSystemIDs.empty());
-	assert(aliveSystemIDs.empty());
+	for (auto name : activeSystemIDs)
+		systemTraits.Deactivate(name, w);
+	for (auto name : aliveSystemIDs)
+		systemTraits.Destroy(name, w);
+	activeSystemIDs.clear();
+	aliveSystemIDs.clear();
 }
 
 void SystemMngr::Clear() {

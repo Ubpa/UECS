@@ -15,32 +15,35 @@ namespace Ubpa::UECS {
 	// run-time static component traits
 	class ArchetypeCmptTraits {
 	public:
-		bool IsTrivial(TypeID) const;
-		std::size_t Sizeof(TypeID) const;
-		std::size_t Alignof(TypeID) const;
-		void CopyConstruct(TypeID, void* dst, void* src) const;
-		void MoveConstruct(TypeID, void* dst, void* src) const;
-		void MoveAssign(TypeID, void* dst, void* src) const;
-		void Destruct(TypeID, void* cmpt) const;
-
-		struct CmptTraits {
+		struct CmptTrait {
 			TypeID ID;
 			bool trivial;
-			size_t size;
-			size_t alignment;
+			std::size_t size;
+			std::size_t alignment;
+			std::size_t offset{ 0 }; // offset in chunk (include Entity)
+
 			std::function<void(void*, void*)> copy_ctor; // dst <- src
 			std::function<void(void*, void*)> move_ctor; // dst <- src
 			std::function<void(void*, void*)> move_assign; // dst <- src
 			std::function<void(void*)> dtor;
+
+			void CopyConstruct(void* dst, void* src) const;
+			void MoveConstruct(void* dst, void* src) const;
+			void MoveAssign(void* dst, void* src) const;
+			void Destruct(void* cmpt) const;
 		};
 
-		const CmptTraits* GetTraits(TypeID ID) const noexcept;
+		std::span<CmptTrait> GetTraits() noexcept { return { cmpt_traits.data(),cmpt_traits.size() }; }
+		std::span<const CmptTrait> GetTraits() const noexcept { return { cmpt_traits.data(),cmpt_traits.size() }; }
+		CmptTrait* GetTrait(TypeID ID) noexcept;
+		const CmptTrait* GetTrait(TypeID ID) const noexcept
+		{ return const_cast<ArchetypeCmptTraits*>(this)->GetTrait(ID); }
 
 		void Register(const RTDCmptTraits&, TypeID);
 
 		void Deregister(TypeID) noexcept;
 
 	private:
-		small_vector<CmptTraits, 16> cmpt_traits;
+		small_vector<CmptTrait, 16> cmpt_traits;
 	};
 }

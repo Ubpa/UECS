@@ -88,14 +88,12 @@ namespace Ubpa::UECS {
 		// call after setting type2size and type2offset
 		void SetLayout();
 
-		std::size_t Offsetof(TypeID type) const { return type2offset.at(type); }
 		static bool NotContainEntity(std::span<const TypeID> types) noexcept;
 
 		friend class EntityMngr;
 
 		TypeIDSet types; // Entity + Components
 		ArchetypeCmptTraits cmptTraits;
-		std::unordered_map<TypeID, std::size_t> type2offset; // TypeID to offset in chunk (include Entity)
 
 		std::size_t chunkCapacity{ static_cast<std::size_t>(-1) };
 		std::pmr::polymorphic_allocator<Chunk> chunkAllocator;

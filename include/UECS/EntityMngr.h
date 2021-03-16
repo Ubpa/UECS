@@ -80,6 +80,8 @@ namespace Ubpa::UECS {
 
 		EntityMngr& operator=(EntityMngr&&) noexcept = delete;
 		EntityMngr& operator=(const EntityMngr&) = delete;
+
+		void Clear();
 	private:
 		friend class World;
 		friend class Archetype;

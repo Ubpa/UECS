@@ -1,10 +1,11 @@
 #pragma once
 
+#include <small_vector.h>
+
 #include <UECS/config.h>
 
 #include <cstdint>
-#include <array>
-#include <vector>
+#include <span>
 
 namespace Ubpa::UECS {
 	using byte = uint8_t;
@@ -14,9 +15,9 @@ namespace Ubpa::UECS {
 
 		struct Layout {
 			std::size_t capacity;
-			std::vector<std::size_t> offsets;
+			small_vector<std::size_t, 16> offsets;
 		};
-		static Layout GenLayout(const std::vector<std::size_t>& alignments, const std::vector<std::size_t>& sizes) noexcept;
+		static Layout GenLayout(std::span<const std::size_t> alignments, std::span<const std::size_t> sizes) noexcept;
 
 		byte* Data() noexcept { return buffer.data(); }
 

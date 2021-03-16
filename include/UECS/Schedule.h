@@ -80,6 +80,9 @@ namespace Ubpa::UECS {
 		Schedule& InsertNone(std::string_view sys, TypeID);
 		Schedule& EraseNone(std::string_view sys, TypeID);
 
+		std::pmr::monotonic_buffer_resource* GetFrameMonotonicResource() { return &frame_rsrc; }
+
+		~Schedule();
 	private:
 		template<typename... Args>
 		const SystemFunc* Request(Args&&...);
@@ -111,8 +114,11 @@ namespace Ubpa::UECS {
 
 		std::map<int, std::vector<std::function<void(World*)>>> commandBuffer;
 
+		std::pmr::monotonic_buffer_resource frame_rsrc; // release in every frame
+
 		std::pmr::unsynchronized_pool_resource sysfuncRsrc;
 		std::pmr::polymorphic_allocator<SystemFunc> GetSysFuncAllocator();
+
 		friend class World;
 	};
 }

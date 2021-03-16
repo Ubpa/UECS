@@ -3,70 +3,6 @@
 #include "../RTDCmptTraits.h"
 
 namespace Ubpa::UECS {
-	inline bool RTDCmptTraits::IsTrivial(TypeID type) const {
-		return trivials.contains(type);
-	}
-
-	inline std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
-		auto target = sizeofs.find(type);
-		assert(target != sizeofs.end());
-		return target->second;
-	}
-
-	inline std::size_t RTDCmptTraits::Alignof(TypeID type) const {
-		auto target = alignments.find(type);
-
-		return target != alignments.end() ? target->second : default_alignment;
-	}
-
-	inline void RTDCmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
-		auto target = default_constructors.find(type);
-
-		if (target != default_constructors.end())
-			target->second(cmpt);
-	}
-
-	inline void RTDCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
-		auto target = copy_constructors.find(type);
-
-		if (target != copy_constructors.end())
-			target->second(dst, src);
-		else
-			memcpy(dst, src, Sizeof(type));
-	}
-
-	inline void RTDCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
-		auto target = move_constructors.find(type);
-
-		if (target != move_constructors.end())
-			target->second(dst, src);
-		else
-			memcpy(dst, src, Sizeof(type));
-	}
-
-	inline void RTDCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
-		auto target = move_assignments.find(type);
-
-		if (target != move_assignments.end())
-			target->second(dst, src);
-		else
-			memcpy(dst, src, Sizeof(type));
-	}
-
-	inline void RTDCmptTraits::Destruct(TypeID type, void* cmpt) const {
-		auto target = destructors.find(type);
-		if (target != destructors.end())
-			target->second(cmpt);
-	}
-
-	inline std::string_view RTDCmptTraits::Nameof(TypeID type) const {
-		auto target = names.find(type);
-		if (target != names.end())
-			return target->second;
-		else
-			return {};
-	}
-
 	template<typename... Cmpts>
 	void RTDCmptTraits::Register() {
 		(RegisterOne<Cmpts>(), ...);
@@ -91,11 +27,9 @@ namespace Ubpa::UECS {
 		alignments.emplace(type.GetID(), alignof(Cmpt));
 		names.emplace(type.GetID(), type.GetName());
 
-		if constexpr (!std::is_trivially_default_constructible_v<Cmpt>) {
-			default_constructors.emplace(type.GetID(), [](void* cmpt) {
-				new(cmpt)Cmpt;
-			});
-		}
+		default_constructors.emplace(type.GetID(), [](void* cmpt) {
+			new(cmpt)Cmpt{};
+		});
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>) {
 			destructors.emplace(type.GetID(), [](void* cmpt) {
 				static_cast<Cmpt*>(cmpt)->~Cmpt();
@@ -129,8 +63,7 @@ namespace Ubpa::UECS {
 		if constexpr (std::is_trivial_v<Cmpt>)
 			trivials.erase(TypeID_of<Cmpt>);
 
-		if constexpr (!std::is_trivially_constructible_v<Cmpt>)
-			default_constructors.erase(type);
+		default_constructors.erase(type);
 		if constexpr (!std::is_trivially_destructible_v<Cmpt>)
 			destructors.erase(type);
 		if constexpr (!std::is_trivially_move_constructible_v<Cmpt>)

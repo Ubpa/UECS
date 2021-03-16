@@ -10,6 +10,10 @@ std::pmr::polymorphic_allocator<SystemFunc> Schedule::GetSysFuncAllocator() {
 	return &sysfuncRsrc;
 }
 
+Schedule::~Schedule() {
+	Clear();
+}
+
 Schedule& Schedule::Order(string_view x, string_view y) {
 	sysFuncOrder.emplace(SystemFunc::GetValue(x), SystemFunc::GetValue(y));
 	return *this;
@@ -40,6 +44,7 @@ void Schedule::Clear() {
 	sysFuncs.clear();
 	sysFuncOrder.clear();
 	sysFilterChange.clear();
+	frame_rsrc.release();
 }
 
 unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {

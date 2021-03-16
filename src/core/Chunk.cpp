@@ -5,7 +5,7 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-Chunk::Layout Chunk::GenLayout(const vector<std::size_t>& alignments, const vector<std::size_t>& sizes) noexcept {
+Chunk::Layout Chunk::GenLayout(std::span<const std::size_t> alignments, std::span<const std::size_t> sizes) noexcept {
 	Layout layout;
 
 	// alignment isn't sorted
@@ -16,7 +16,7 @@ Chunk::Layout Chunk::GenLayout(const vector<std::size_t>& alignments, const vect
 			return alignment < y.alignment;
 		}
 	};
-	vector<Item> items(sizes.size());
+	small_vector<Item, 16> items(sizes.size());
 	for (std::size_t i = 0; i < sizes.size(); i++)
 		items[i] = Item{ alignments[i], i };
 	sort(items.begin(), items.end());

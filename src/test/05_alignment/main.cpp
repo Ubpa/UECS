@@ -25,10 +25,18 @@ struct alignas(8) E {
 	E() { cout << "E: " << this << endl; }
 	char pad[24];
 };
+struct alignas(16) F {
+	F() { cout << "F: " << this << endl; }
+	char pad[32];
+};
+struct alignas(256) G {
+	G() { cout << "G: " << this << endl; }
+	char pad[256];
+};
 
 int main() {
 	World w;
-	w.entityMngr.cmptTraits.Register<A, B, C, D, E>();
-	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E>);
+	w.entityMngr.cmptTraits.Register<A, B, C, D, E, F, G>();
+	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E, F, G>);
 	return 0;
 }

@@ -44,6 +44,13 @@ EntityMngr::~EntityMngr() {
 	ts2a.clear();
 }
 
+void EntityMngr::Clear() {
+	entityTableFreeEntry.clear();
+	entityTable.clear();
+	queryCache.clear();
+	ts2a.clear();
+}
+
 bool EntityMngr::Have(Entity e, TypeID type) const {
 	assert(!type.Is<Entity>());
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Have: Entity is invalid");
@@ -148,7 +155,7 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 	for (const auto& type : srcTypeIDSet.data) {
 		auto* srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto* dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
-		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
+		srcCmptTraits.GetTrait(type)->MoveConstruct(dstCmpt, srcCmpt);
 	}
 
 	// erase
@@ -210,7 +217,7 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 	for (const auto& type : dstTypeIDSet.data) {
 		auto* srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
 		auto* dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
-		srcCmptTraits.MoveConstruct(type, dstCmpt, srcCmpt);
+		srcCmptTraits.GetTrait(type)->MoveConstruct(dstCmpt, srcCmpt);
 	}
 
 	// erase
@@ -563,9 +570,9 @@ std::vector<CmptPtr> EntityMngr::GetCmptArray(const ArchetypeFilter& filter, Typ
 			rst[idx++] = *archetype->At(type, i);*/
 
 		// speed up
-
-		std::size_t size = archetype->cmptTraits.Sizeof(type);
-		std::size_t offset = archetype->Offsetof(type);
+		auto trait = archetype->cmptTraits.GetTrait(type);
+		std::size_t size = trait->size;
+		std::size_t offset = trait->offset;
 		for (std::size_t c = 0; c < archetype->chunks.size(); c++) {
 			auto* buffer = archetype->chunks[c]->Data();
 			auto* beg = buffer + offset;
@@ -594,7 +601,7 @@ std::vector<Entity> EntityMngr::GetEntityArray(const ArchetypeFilter& filter) co
 
 		// speed up
 
-		std::size_t offset = archetype->Offsetof(TypeID_of<Entity>);
+		std::size_t offset = archetype->cmptTraits.GetTrait(TypeID_of<Entity>)->offset;
 		for (std::size_t c = 0; c < archetype->chunks.size(); c++) {
 			auto* buffer = archetype->chunks[c]->Data();
 			auto* beg = buffer + offset;

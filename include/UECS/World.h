@@ -112,6 +112,7 @@ namespace Ubpa::UECS {
 			SingletonLocator = {}
 		) const;
 
+		std::pmr::synchronized_pool_resource* GetFrameSyncResource() { return &frame_sync_rsrc; }
 	private:
 		bool inRunningJobGraph{ false };
 
@@ -128,6 +129,8 @@ namespace Ubpa::UECS {
 		void RunCommands();
 
 		void Run(SystemFunc*);
+
+		std::pmr::synchronized_pool_resource frame_sync_rsrc;
 	};
 }
 

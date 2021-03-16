@@ -26,13 +26,13 @@ int main() {
 	w.entityMngr.cmptTraits.Register<A, B>();
 	w.systemMngr.RegisterAndActivate<TestSystem>();
 
-	auto t0 = std::chrono::steady_clock::now();
+	auto t0 = std::chrono::high_resolution_clock::now();
 	for (std::size_t i = 0; i < numEntities; i++)
 		w.entityMngr.Create(Ubpa::TypeIDs_of<A, B>);
-	auto t1 = std::chrono::steady_clock::now();
+	auto t1 = std::chrono::high_resolution_clock::now();
 	for (std::size_t i = 0; i < numUpdate; i++)
 		w.Update();
-	auto t2 = std::chrono::steady_clock::now();
+	auto t2 = std::chrono::high_resolution_clock::now();
 
 	// G5400 : 2 cores 4 threads
 	// about 10s
@@ -41,7 +41,7 @@ int main() {
 	// about 6s
 
 	// i5 10400 : 6 cores 12 threads
-	// about 3.10435s
+	// about 2.76294s
 
 	auto d0 = t1 - t0;
 	auto d1 = t2 - t1;
