@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UTemplate/Util.h>
+#include <UTemplate/Util.hpp>
 
 namespace Ubpa::UECS {
 	class Entity;

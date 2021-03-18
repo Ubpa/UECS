@@ -4,7 +4,7 @@
 
 #include "details/Util.h"
 
-#include <UTemplate/Type.h>
+#include <UTemplate/Type.hpp>
 
 #include <set>
 

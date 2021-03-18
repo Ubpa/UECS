@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UTemplate/Func.h>
+#include <UTemplate/Func.hpp>
 
 namespace Ubpa::UECS::details {
 	template<typename... Cmpts>

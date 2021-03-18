@@ -9,7 +9,7 @@
 #include "details/TypeIDSet.h"
 
 #include <memory_resource>
-#include <small_vector.h>
+#include <USmallFlat/small_vector.hpp>
 
 namespace Ubpa::UECS {
 	class World;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UTemplate/Type.h>
+#include <UTemplate/Type.hpp>
 
 namespace Ubpa::UECS {
     constexpr std::size_t hash_combine(std::size_t x, std::size_t y) noexcept {

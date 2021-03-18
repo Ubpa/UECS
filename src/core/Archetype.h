@@ -8,7 +8,7 @@
 #include <UECS/CmptLocator.h>
 #include <UECS/details/TypeIDSet.h>
 
-#include <UTemplate/TypeList.h>
+#include <UTemplate/TypeList.hpp>
 #include <memory_resource>
 
 namespace Ubpa::UECS {

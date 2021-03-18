@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UTemplate/Type.h>
+#include <UTemplate/Type.hpp>
 
 #include <functional>
 #include <unordered_map>

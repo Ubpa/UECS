@@ -1,6 +1,6 @@
 #pragma once
 
-#include <small_vector.h>
+#include <USmallFlat/small_vector.hpp>
 
 #include <UECS/config.h>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <UTemplate/Type.h>
+#include <UTemplate/Type.hpp>
 
-#include <small_vector.h>
+#include <USmallFlat/small_vector.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
