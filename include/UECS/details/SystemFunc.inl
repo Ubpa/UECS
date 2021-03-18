@@ -12,7 +12,7 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	SystemFunc::SystemFunc(
 		Func&& func,
-		std::string name,
+		std::string_view name,
 		ArchetypeFilter archetypeFilter,
 		CmptLocator cmptLocator,
 		SingletonLocator singletonLocator,
@@ -23,7 +23,7 @@ namespace Ubpa::UECS {
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		randomAccessor{std::move(randomAccessor)},
 		mode{ Mode::Entity },
-		name{ std::move(name) },
+		name{ name },
 		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
 		func{ details::Pack(std::forward<Func>(func)) }
@@ -43,7 +43,7 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	SystemFunc::SystemFunc(
 		Func&& func,
-		std::string name,
+		std::string_view name,
 		ArchetypeFilter archetypeFilter,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor,
@@ -53,7 +53,7 @@ namespace Ubpa::UECS {
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		randomAccessor{ std::move(randomAccessor) },
 		mode{ Mode::Chunk },
-		name{ std::move(name) },
+		name{ name },
 		hashCode{ GetValue(this->name) },
 		isParallel{ isParallel },
 		func{ details::Pack(std::forward<Func>(func)) }
@@ -80,12 +80,12 @@ namespace Ubpa::UECS {
 
 	// Mode::Job
 	template<typename Func>
-	SystemFunc::SystemFunc(Func&& func, std::string name, SingletonLocator singletonLocator, RandomAccessor randomAccessor)
+	SystemFunc::SystemFunc(Func&& func, std::string_view name, SingletonLocator singletonLocator, RandomAccessor randomAccessor)
 		:
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		randomAccessor {std::move(randomAccessor)},
 		mode{ Mode::Job },
-		name{ std::move(name) },
+		name{ name },
 		hashCode{ GetValue(this->name) },
 		isParallel{ false },
 		func{ details::Pack(std::forward<Func>(func)) }

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../EntityQuery.h"
-#include "../SingletonLocator.h"
-#include "../RandomAccessor.h"
-#include "../Entity.h"
-#include "../CmptsView.h"
-#include "../SingletonsView.h"
-#include "../ChunkView.h"
+#include "EntityQuery.h"
+#include "SingletonLocator.h"
+#include "RandomAccessor.h"
+#include "Entity.h"
+#include "CmptsView.h"
+#include "SingletonsView.h"
+#include "ChunkView.h"
 
 #include <functional>
 
@@ -42,17 +42,17 @@ namespace Ubpa::UECS {
 
 		// Mode::Entity
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, CmptLocator, SingletonLocator, RandomAccessor, bool isParallel);
+		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, CmptLocator, SingletonLocator, RandomAccessor, bool isParallel);
 
 		// Mode::Chunk
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, ArchetypeFilter, SingletonLocator, RandomAccessor, bool isParallel);
+		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, SingletonLocator, RandomAccessor, bool isParallel);
 
 		// Mode::Job
 		template<typename Func>
-		SystemFunc(Func&&, std::string name, SingletonLocator, RandomAccessor);
+		SystemFunc(Func&&, std::string_view name, SingletonLocator, RandomAccessor);
 		
-		const std::string& Name() const noexcept { return name; }
+		std::string_view Name() const noexcept { return name; }
 
 		static constexpr std::size_t GetValue(std::string_view name) noexcept { return string_hash(name); }
 
@@ -68,11 +68,11 @@ namespace Ubpa::UECS {
 		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
 		Mode mode;
-		std::string name;
+		std::string_view name;
 		std::size_t hashCode; // after name
 		bool isParallel;
 		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView)> func;
 	};
 }
 
-#include "SystemFunc.inl"
+#include "details/SystemFunc.inl"

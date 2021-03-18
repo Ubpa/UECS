@@ -2,7 +2,7 @@
 
 #include "Archetype.h"
 
-#include <UECS/details/SystemFunc.h>
+#include <UECS/SystemFunc.h>
 #include <UECS/IListener.h>
 
 using namespace Ubpa::UECS;

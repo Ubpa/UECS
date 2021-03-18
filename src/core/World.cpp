@@ -52,22 +52,23 @@ void World::Update() {
 	}
 	schedule.commandBuffer.clear();
 
-	const auto graph = schedule.GenSysFuncGraph();
+	const auto* graph = schedule.GenSysFuncGraph(); // no need to delete
 
-	unordered_map<SystemFunc*, JobHandle> table;
+	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
+		(std::pmr::unordered_map<SystemFunc*, JobHandle>::allocator_type{ schedule.GetFrameMonotonicResource() });
 
-	for (const auto& [func, adjVs] : graph.GetAdjList()) {
+	for (const auto& [func, adjVs] : graph->GetAdjList()) {
 		auto* job_buffer = jobRsrc->allocate(sizeof(Job), alignof(Job));
-		auto* job = new(job_buffer)Job{ func->Name() };
+		auto* job = new(job_buffer)Job{ std::string{func->Name()} };
 		jobs.push_back(job);
 		entityMngr.AutoGen(this, job, func);
-		table.emplace(func, jobGraph.composed_of(*job));
+		table->emplace(func, jobGraph.composed_of(*job));
 	}
 
-	for (const auto& [v, adjVs] : graph.GetAdjList()) {
-		auto vJob = table.at(v);
+	for (const auto& [v, adjVs] : graph->GetAdjList()) {
+		auto vJob = table->at(v);
 		for (auto* adjV : adjVs)
-			vJob.precede(table.at(adjV));
+			vJob.precede(table->at(adjV));
 	}
 
 	executor.run(jobGraph).wait();
@@ -211,7 +212,7 @@ UGraphviz::Graph World::GenUpdateFrameGraph() const {
 	}
 
 	for (const auto& [hash, sysFunc] : schedule.sysFuncs) {
-		auto sysIdx = registry.RegisterNode(sysFunc->Name());
+		auto sysIdx = registry.RegisterNode(std::string{ sysFunc->Name() });
 		sysFuncHashcode2idx.emplace(hash, sysIdx);
 
 		subgraph_sys.AddNode(sysIdx);

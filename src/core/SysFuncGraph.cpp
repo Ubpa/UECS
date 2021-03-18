@@ -13,7 +13,7 @@ bool SysFuncGraph::HaveVertex(SystemFunc* x) const {
 	return adjList.find(x) != adjList.end();
 }
 
-bool SysFuncGraph::HaveVertices(const std::vector<SystemFunc*>& vertices) const {
+bool SysFuncGraph::HaveVertices(std::span<SystemFunc* const> vertices) const {
 	for (auto v : vertices) {
 		if (!HaveVertex(v))
 			return false;
@@ -58,7 +58,7 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 void SysFuncGraph::AddVertex(SystemFunc* x) {
 	if (HaveVertex(x))
 		return;
-	adjList.emplace(x, unordered_set<SystemFunc*>{});
+	adjList.emplace(x, std::pmr::unordered_set<SystemFunc*>(std::pmr::polymorphic_allocator<SystemFunc*>{adjList.get_allocator().resource()}));
 }
 
 void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
@@ -68,9 +68,9 @@ void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
 	adjList[x].insert(y);
 }
 
-SysFuncGraph SysFuncGraph::SubGraph(const std::vector<SystemFunc*>& vertices) const {
+SysFuncGraph SysFuncGraph::SubGraph(std::span<SystemFunc* const> vertices) const {
 	assert(HaveVertices(vertices));
-	SysFuncGraph subgraph;
+	SysFuncGraph subgraph{ adjList.get_allocator().resource() };
 	for (auto* v : vertices)
 		subgraph.AddVertex(v);
 
@@ -86,7 +86,7 @@ SysFuncGraph SysFuncGraph::SubGraph(const std::vector<SystemFunc*>& vertices) co
 	return subgraph;
 }
 
-tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
+tuple<bool, std::pmr::vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 	unordered_map<SystemFunc*, std::size_t> in_degree_map;
 
 	for (const auto& [parent, children] : adjList)
@@ -96,9 +96,10 @@ tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 		for (const auto& child : children)
 			in_degree_map[child] += 1;
 	}
+	std::pmr::polymorphic_allocator<SystemFunc*> alloc{ adjList.get_allocator().resource() };
 
-	stack<SystemFunc*> zero_in_degree_vertices;
-	vector<SystemFunc*> sorted_vertices;
+	stack<SystemFunc*, small_vector<SystemFunc*>> zero_in_degree_vertices;
+	std::pmr::vector<SystemFunc*> sorted_vertices(alloc);
 
 	for (const auto& [v, d] : in_degree_map) {
 		if (d == 0)
@@ -121,7 +122,7 @@ tuple<bool, vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 	}
 
 	if (!in_degree_map.empty())
-		return { false, vector<SystemFunc*>{} };
+		return { false, std::pmr::vector<SystemFunc*>(alloc) };
 	
 	return { true, sorted_vertices };
 }

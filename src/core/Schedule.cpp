@@ -10,6 +10,13 @@ Schedule::~Schedule() {
 	Clear();
 }
 
+std::string_view Schedule::RegisterFrameString(std::string_view str) {
+	auto* buffer = (char*)frame_rsrc.allocate((str.size() + 1) * sizeof(char), alignof(char));
+	std::memcpy(buffer, str.data(), str.size() * sizeof(char));
+	buffer[str.size()] = 0;
+	return str;
+}
+
 Schedule& Schedule::Order(string_view x, string_view y) {
 	sysFuncOrder.emplace(SystemFunc::GetValue(x), SystemFunc::GetValue(y));
 	return *this;
@@ -32,10 +39,11 @@ Schedule& Schedule::EraseNone(string_view sys, TypeID type) {
 }
 
 void Schedule::Clear() {
-	auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ &frame_rsrc };
+	//auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ &frame_rsrc };
 	for (const auto& [hash, sysFunc] : sysFuncs) {
 		sysFunc->~SystemFunc();
-		alloc.deallocate(sysFunc, 1);
+		// no need to release
+		//alloc.deallocate(sysFunc, 1);
 	}
 	sysFuncs.clear();
 	sysFuncOrder.clear();
@@ -43,20 +51,22 @@ void Schedule::Clear() {
 	frame_rsrc.release();
 }
 
-unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() const {
-	unordered_map<TypeID, CmptSysFuncs> rst;
+Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap() const {
+	CmptSysFuncsMap* rst = CreateFrameObject<CmptSysFuncsMap>(CmptSysFuncsMap::allocator_type{ &frame_rsrc });
+
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
 		for (const auto& type : sysFunc->entityQuery.locator.AccessTypeIDs()) {
+			auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 			switch (type.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
-				rst[type].lastFrameSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::WRITE:
-				rst[type].writeSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::LATEST:
-				rst[type].latestSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
 				break;
 			default:
 				assert(false);
@@ -64,16 +74,17 @@ unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() con
 			}
 		}
 		for (const auto& type : sysFunc->singletonLocator.SingletonTypes()) {
+			auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 			switch (type.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
-				rst[type].lastFrameSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::WRITE:
-				rst[type].writeSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::LATEST:
-				rst[type].latestSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
 				break;
 			default:
 				assert(false);
@@ -81,16 +92,17 @@ unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() con
 			}
 		}
 		for (const auto& type : sysFunc->randomAccessor.types) {
+			auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 			switch (type.GetAccessMode())
 			{
 			case AccessMode::LAST_FRAME:
-				rst[type].lastFrameSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.lastFrameSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::WRITE:
-				rst[type].writeSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.writeSysFuncs.push_back(sysFunc);
 				break;
 			case AccessMode::LATEST:
-				rst[type].latestSysFuncs.push_back(sysFunc);
+				cmptSysFuncs.latestSysFuncs.push_back(sysFunc);
 				break;
 			default:
 				assert(false);
@@ -101,7 +113,7 @@ unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() con
 		if (sysFunc->GetMode() == SystemFunc::Mode::Chunk) {
 			const auto& filter = sysFunc->entityQuery.filter;
 			for (const auto& type : filter.all) {
-				auto& cmptSysFuncs = rst[type];
+				auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 				switch (type.GetAccessMode())
 				{
 				case AccessMode::LAST_FRAME:
@@ -120,7 +132,7 @@ unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() con
 			}
 
 			for (const auto& type : filter.any) {
-				auto& cmptSysFuncs = rst[type];
+				auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 				switch (type.GetAccessMode())
 				{
 				case AccessMode::LAST_FRAME:
@@ -142,7 +154,7 @@ unordered_map<TypeID, Schedule::CmptSysFuncs> Schedule::GenCmptSysFuncsMap() con
 	return rst;
 }
 
-SysFuncGraph Schedule::GenSysFuncGraph() const {
+SysFuncGraph* Schedule::GenSysFuncGraph() const {
 	// [change func Filter]
 	for (const auto& [hashcode, change] : sysFilterChange) {
 		auto target = sysFuncs.find(hashcode);
@@ -157,14 +169,14 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 			func->entityQuery.filter.none.erase(type);
 	}
 
-	auto cmptSysFuncsMap = GenCmptSysFuncsMap();
+	CmptSysFuncsMap* cmptSysFuncsMap = GenCmptSysFuncsMap(); // use frame rsrc, no need to release
 
 	// [gen graph]
-	SysFuncGraph graph;
+	SysFuncGraph* graph = CreateFrameObject<SysFuncGraph>(&frame_rsrc);
 
 	// [gen graph] - vertex
 	for (const auto& [hashcode, sysFunc] : sysFuncs)
-		graph.AddVertex(sysFunc);
+		graph->AddVertex(sysFunc);
 	
 	// [gen graph] - edge - order
 	for (const auto& [x, y] : sysFuncOrder) {
@@ -177,22 +189,22 @@ SysFuncGraph Schedule::GenSysFuncGraph() const {
 
 		auto* sysFunc_x = target_x->second;
 		auto* sysFunc_y = target_y->second;
-		graph.AddEdge(sysFunc_x, sysFunc_y);
+		graph->AddEdge(sysFunc_x, sysFunc_y);
 	}
 
 	// [gen graph] - edge - last frame -> write -> latest
-	for (const auto& [type, cmptSysFuncs] : cmptSysFuncsMap) {
+	for (const auto& [type, cmptSysFuncs] : *cmptSysFuncsMap) {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
-		auto [success, sorted_wirtes] = graph.SubGraph(cmptSysFuncs.writeSysFuncs).Toposort();
+		auto [success, sorted_wirtes] = graph->SubGraph({ cmptSysFuncs.writeSysFuncs.data(), cmptSysFuncs.writeSysFuncs.size() }).Toposort();
 		assert(success);
 		for (auto* sys : cmptSysFuncs.lastFrameSysFuncs)
-			graph.AddEdge(sys, sorted_wirtes.front());
+			graph->AddEdge(sys, sorted_wirtes.front());
 		for (auto* sys : cmptSysFuncs.latestSysFuncs)
-			graph.AddEdge(sorted_wirtes.back(), sys);
+			graph->AddEdge(sorted_wirtes.back(), sys);
 		for (std::size_t i = 0; i < sorted_wirtes.size() - 1; i++)
-			graph.AddEdge(sorted_wirtes[i], sorted_wirtes[i + 1]);
+			graph->AddEdge(sorted_wirtes[i], sorted_wirtes[i + 1]);
 	}
 
 	return graph;

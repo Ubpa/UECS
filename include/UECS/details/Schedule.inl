@@ -1,10 +1,16 @@
 #pragma once
 
 namespace Ubpa::UECS {
+	template<typename T, typename... Args>
+	T* Schedule::CreateFrameObject(Args&&... args) const {
+		void* buffer = frame_rsrc.allocate(sizeof(T), alignof(T));
+		return new(buffer)T(std::forward<Args>(args)...);
+	}
+
 	template<typename Func>
 	const SystemFunc* Schedule::RegisterEntityJob(
 		Func&& func,
-		std::string name,
+		std::string_view name,
 		bool isParallel,
 		ArchetypeFilter filter,
 		CmptLocator cmptLocator,
@@ -13,7 +19,7 @@ namespace Ubpa::UECS {
 	) {
 		return Request(
 			std::forward<Func>(func),
-			std::move(name),
+			RegisterFrameString(name),
 			std::move(filter),
 			std::move(cmptLocator),
 			std::move(singletonLocator),
@@ -25,7 +31,7 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	const SystemFunc* Schedule::RegisterChunkJob(
 		Func&& func,
-		std::string name,
+		std::string_view name,
 		ArchetypeFilter filter,
 		bool isParallel,
 		SingletonLocator singletonLocator,
@@ -33,7 +39,7 @@ namespace Ubpa::UECS {
 	) {
 		return Request(
 			std::forward<Func>(func),
-			std::move(name),
+			RegisterFrameString(name),
 			std::move(filter),
 			std::move(singletonLocator),
 			std::move(randomAccessor),
@@ -44,13 +50,13 @@ namespace Ubpa::UECS {
 	template<typename Func>
 	const SystemFunc* Schedule::RegisterJob(
 		Func&& func,
-		std::string name,
+		std::string_view name,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor
 	) {
 		return Request(
 			std::forward<Func>(func),
-			std::move(name),
+			RegisterFrameString(name),
 			std::move(singletonLocator),
 			std::move(randomAccessor)
 		);
