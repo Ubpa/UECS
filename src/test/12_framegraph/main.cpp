@@ -31,17 +31,8 @@ struct MySystem {
 
 int main() {
 	World w;
+	w.entityMngr.cmptTraits.Register<A, B, C, D, E, F, G>();
 	w.systemMngr.RegisterAndActivate<MySystem>();
-
-	w.entityMngr.cmptTraits
-		.RegisterName(Type_of<A>)
-		.RegisterName(Type_of<B>)
-		.RegisterName(Type_of<C>)
-		.RegisterName(Type_of<D>)
-		.RegisterName(Type_of<E>)
-		.RegisterName(Type_of<F>)
-		.RegisterName(Type_of<G>)
-		;
 
 	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E>);
 	w.Update();

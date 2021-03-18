@@ -6,7 +6,7 @@
 
 #include <UTemplate/Type.hpp>
 
-#include <set>
+#include <USmallFlat/small_flat_set.hpp>
 
 namespace Ubpa::UECS {
 	// TypeID with AccessMode
@@ -28,7 +28,7 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	static constexpr AccessTypeID AccessTypeID_of = { TypeID_of<RemoveTag_t<Cmpt>>, AccessMode_of<Cmpt> };
 
-	using AccessTypeIDSet = std::set<AccessTypeID, std::less<>>;
+	using AccessTypeIDSet = small_flat_set<AccessTypeID, 16, std::less<>>;
 }
 
 template<>

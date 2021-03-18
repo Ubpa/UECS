@@ -2,13 +2,9 @@
 
 #include "../EntityQuery.h"
 
-#include <span>
-
-#include <set>
-
 namespace Ubpa::UECS {
 	struct TypeIDSet {
-		std::set<TypeID> data;
+		small_flat_set<TypeID> data;
 
 		std::size_t GetValue() const noexcept;
 

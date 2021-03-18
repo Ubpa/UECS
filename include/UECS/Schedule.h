@@ -108,8 +108,8 @@ namespace Ubpa::UECS {
 		std::unordered_map<std::size_t, std::size_t> sysFuncOrder;
 
 		struct FilterChange {
-			std::set<TypeID> insertNones;
-			std::set<TypeID> eraseNones;
+			small_flat_set<TypeID> insertNones;
+			small_flat_set<TypeID> eraseNones;
 		};
 		std::unordered_map<std::size_t, FilterChange> sysFilterChange;
 
