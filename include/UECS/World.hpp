@@ -5,7 +5,7 @@
 #include "EntityMngr.hpp"
 #include "Schedule.hpp"
 
-#include <UGraphviz/UGraphviz.h>
+#include <UGraphviz/UGraphviz.hpp>
 
 #include <mutex>
 
