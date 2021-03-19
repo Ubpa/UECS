@@ -37,19 +37,20 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 	//if (x == y)
 	//	return false; // acyclic
 
-	unordered_set<SystemFunc*> visited;
-	queue<SystemFunc*> q;
-	q.push(x);
-	while (!q.empty()) {
-		auto* v = q.front();
+	auto alloc = std::pmr::polymorphic_allocator<SystemFunc*>(adjList.get_allocator().resource());
+	std::pmr::unordered_set<SystemFunc*> visited(alloc);
+	small_vector<SystemFunc*, 64> s; // TODO: O(d) space
+	s.push_back(x);
+	while (!s.empty()) {
+		auto* v = s.back();
 		visited.insert(v);
-		q.pop();
+		s.pop_back();
 		for (auto* adjV : adjList.at(v)) {
 			if (visited.find(adjV) != visited.end())
 				continue;
 			if (y == adjV)
 				return true;
-			q.push(adjV);
+			s.push_back(adjV);
 		}
 	}
 	return false;
@@ -68,22 +69,21 @@ void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {
 	adjList[x].insert(y);
 }
 
-SysFuncGraph SysFuncGraph::SubGraph(std::span<SystemFunc* const> vertices) const {
+void SysFuncGraph::SubGraph(SysFuncGraph& rst, std::span<SystemFunc* const> vertices) const {
+	assert(rst.adjList.empty());
 	assert(HaveVertices(vertices));
-	SysFuncGraph subgraph{ adjList.get_allocator().resource() };
+
 	for (auto* v : vertices)
-		subgraph.AddVertex(v);
+		rst.AddVertex(v);
 
 	for (auto* x : vertices) {
 		for (auto* y : vertices) {
 			if (y == x)
 				continue;
 			if (HavePath(x, y))
-				subgraph.AddEdge(x, y);
+				rst.AddEdge(x, y);
 		}
 	}
-
-	return subgraph;
 }
 
 tuple<bool, std::pmr::vector<SystemFunc*>> SysFuncGraph::Toposort() const {
@@ -98,8 +98,9 @@ tuple<bool, std::pmr::vector<SystemFunc*>> SysFuncGraph::Toposort() const {
 	}
 	std::pmr::polymorphic_allocator<SystemFunc*> alloc{ adjList.get_allocator().resource() };
 
-	stack<SystemFunc*, small_vector<SystemFunc*>> zero_in_degree_vertices;
+	stack<SystemFunc*, small_vector<SystemFunc*, 64>> zero_in_degree_vertices;
 	std::pmr::vector<SystemFunc*> sorted_vertices(alloc);
+	sorted_vertices.reserve(adjList.size());
 
 	for (const auto& [v, d] : in_degree_map) {
 		if (d == 0)

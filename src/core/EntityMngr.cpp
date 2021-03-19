@@ -312,17 +312,20 @@ Ubpa::small_vector<CmptAccessPtr, 16> EntityMngr::LocateSingletons(const Singlet
 	return rst;
 }
 
-void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Entity);
 
 	auto singletons = LocateSingletons(sys->singletonLocator);
 	if (!sys->singletonLocator.SingletonTypes().empty() && singletons.empty())
-		return;
+		return false;
 	
 	if (sys->IsParallel()) {
 		assert(job);
+		const auto& archetypes = QueryArchetypes(sys->entityQuery);
+		if (archetypes.empty())
+			return false;
 		std::size_t indexOffsetInQuery = 0;
-		for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
+		for (Archetype* archetype : archetypes) {
 			auto [chunkEntity, chunkCmpts, sizes] = archetype->Locate(sys->entityQuery.locator);
 
 			std::size_t num = archetype->EntityNum();
@@ -393,19 +396,24 @@ void EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 		else
 			work();
 	}
+
+	return true;
 }
 
-void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Chunk);
 
 	auto singletons = LocateSingletons(sys->singletonLocator);
 	if (!sys->singletonLocator.SingletonTypes().empty() && singletons.empty())
-		return;
+		return false;
 
 	if (sys->IsParallel()) {
 		assert(job != nullptr);
+		const auto& archetypes = QueryArchetypes(sys->entityQuery);
+		if (archetypes.empty())
+			return false;
 		std::size_t indexOffsetInQuery = 0;
-		for (Archetype* archetype : QueryArchetypes(sys->entityQuery)) {
+		for (Archetype* archetype : archetypes) {
 			std::size_t num = archetype->EntityNum();
 			std::size_t chunkNum = archetype->ChunkNum();
 			std::size_t chunkCapacity = archetype->ChunkCapacity();
@@ -454,14 +462,16 @@ void EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 		else
 			work();
 	}
+
+	return true;
 }
 
-void EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Job);
 
 	auto singletons = LocateSingletons(sys->singletonLocator);
 	if (!sys->singletonLocator.SingletonTypes().empty() && singletons.empty())
-		return;
+		return false;
 
 	auto work = [=, singletons = std::move(singletons)]() {
 		(*sys)(
@@ -474,23 +484,22 @@ void EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
 		job->emplace(std::move(work));
 	else
 		work();
+
+	return true;
 }
 
-void EntityMngr::AutoGen(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::AutoGen(World* w, Job* job, SystemFunc* sys) const {
 	switch (sys->GetMode())
 	{
 	case SystemFunc::Mode::Entity:
-		GenEntityJob(w, job, sys);
-		break;
+		return GenEntityJob(w, job, sys);
 	case SystemFunc::Mode::Chunk:
-		GenChunkJob(w, job, sys);
-		break;
+		return GenChunkJob(w, job, sys);
 	case SystemFunc::Mode::Job:
-		GenJob(w, job, sys);
-		break;
+		return GenJob(w, job, sys);
 	default:
 		assert("not support" && false);
-		break;
+		return false;
 	}
 }
 

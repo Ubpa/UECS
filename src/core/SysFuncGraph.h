@@ -20,7 +20,7 @@ namespace Ubpa::UECS {
 		bool HaveEdge(SystemFunc* x, SystemFunc* y) const;
 		bool HavePath(SystemFunc* x, SystemFunc* y) const;
 
-		SysFuncGraph SubGraph(std::span<SystemFunc* const> vertices) const;
+		void SubGraph(SysFuncGraph& rst, std::span<SystemFunc* const> vertices) const;
 		std::tuple<bool, std::pmr::vector<SystemFunc*>> Toposort() const;
 		bool IsDAG() const;
 

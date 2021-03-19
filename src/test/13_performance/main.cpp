@@ -41,7 +41,7 @@ int main() {
 	// about 6s
 
 	// i5 10400 : 6 cores 12 threads
-	// about 2.76294s
+	// about 2.6s
 
 	auto d0 = t1 - t0;
 	auto d1 = t2 - t1;

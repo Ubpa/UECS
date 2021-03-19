@@ -52,18 +52,20 @@ void World::Update() {
 	}
 	schedule.commandBuffer.clear();
 
-	const auto* graph = schedule.GenSysFuncGraph(); // no need to delete
-
+	// SystemFunc* -> JobHandle
 	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
 		(std::pmr::unordered_map<SystemFunc*, JobHandle>::allocator_type{ schedule.GetFrameMonotonicResource() });
 
-	for (const auto& [func, adjVs] : graph->GetAdjList()) {
+	for (const auto& [hashcode, func] : schedule.sysFuncs) {
 		auto* job_buffer = jobRsrc->allocate(sizeof(Job), alignof(Job));
 		auto* job = new(job_buffer)Job{ std::string{func->Name()} };
 		jobs.push_back(job);
-		entityMngr.AutoGen(this, job, func);
+		if (!entityMngr.AutoGen(this, job, func))
+			schedule.Disable(func->Name());
 		table->emplace(func, jobGraph.composed_of(*job));
 	}
+
+	const auto* graph = schedule.GenSysFuncGraph(); // no need to delete
 
 	for (const auto& [v, adjVs] : graph->GetAdjList()) {
 		auto vJob = table->at(v);

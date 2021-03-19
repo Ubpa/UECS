@@ -22,19 +22,14 @@ Schedule& Schedule::Order(string_view x, string_view y) {
 	return *this;
 }
 
-Schedule& Schedule::InsertNone(string_view sys, TypeID type) {
+Schedule& Schedule::AddNone(string_view sys, TypeID type) {
 	std::size_t hashcode = SystemFunc::GetValue(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseNones.erase(type);
-	change.insertNones.insert(type);
+	sysNones[hashcode].push_back(type);
 	return *this;
 }
 
-Schedule& Schedule::EraseNone(string_view sys, TypeID type) {
-	std::size_t hashcode = SystemFunc::GetValue(sys);
-	auto& change = sysFilterChange[hashcode];
-	change.eraseNones.insert(type);
-	change.insertNones.erase(type);
+Schedule& Schedule::Disable(std::string_view sys) {
+	disabledSysFuncs.insert(SystemFunc::GetValue(sys));
 	return *this;
 }
 
@@ -42,12 +37,12 @@ void Schedule::Clear() {
 	//auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ &frame_rsrc };
 	for (const auto& [hash, sysFunc] : sysFuncs) {
 		sysFunc->~SystemFunc();
-		// no need to release
+		// no need to deallocate
 		//alloc.deallocate(sysFunc, 1);
 	}
 	sysFuncs.clear();
 	sysFuncOrder.clear();
-	sysFilterChange.clear();
+	sysNones.clear();
 	frame_rsrc.release();
 }
 
@@ -55,6 +50,9 @@ Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap() const {
 	CmptSysFuncsMap* rst = CreateFrameObject<CmptSysFuncsMap>(CmptSysFuncsMap::allocator_type{ &frame_rsrc });
 
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
+		if (disabledSysFuncs.contains(hashcode))
+			continue;
+
 		for (const auto& type : sysFunc->entityQuery.locator.AccessTypeIDs()) {
 			auto& cmptSysFuncs = rst->try_emplace(type, &frame_rsrc).first->second;
 			switch (type.GetAccessMode())
@@ -156,27 +154,28 @@ Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap() const {
 
 SysFuncGraph* Schedule::GenSysFuncGraph() const {
 	// [change func Filter]
-	for (const auto& [hashcode, change] : sysFilterChange) {
+	for (const auto& [hashcode, nones] : sysNones) {
 		auto target = sysFuncs.find(hashcode);
 		if (target == sysFuncs.end())
 			continue;
 
 		auto* func = target->second;
 
-		for (const auto& type : change.insertNones)
+		for (const auto& type : nones)
 			func->entityQuery.filter.none.insert(type);
-		for (const auto& type : change.eraseNones)
-			func->entityQuery.filter.none.erase(type);
 	}
 
+	// not contains disabled system functions
 	CmptSysFuncsMap* cmptSysFuncsMap = GenCmptSysFuncsMap(); // use frame rsrc, no need to release
 
 	// [gen graph]
 	SysFuncGraph* graph = CreateFrameObject<SysFuncGraph>(&frame_rsrc);
 
 	// [gen graph] - vertex
-	for (const auto& [hashcode, sysFunc] : sysFuncs)
-		graph->AddVertex(sysFunc);
+	for (const auto& [hashcode, sysFunc] : sysFuncs) {
+		if(disabledSysFuncs.contains(hashcode))
+			graph->AddVertex(sysFunc);
+	}
 	
 	// [gen graph] - edge - order
 	for (const auto& [x, y] : sysFuncOrder) {
@@ -197,7 +196,9 @@ SysFuncGraph* Schedule::GenSysFuncGraph() const {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
-		auto [success, sorted_wirtes] = graph->SubGraph({ cmptSysFuncs.writeSysFuncs.data(), cmptSysFuncs.writeSysFuncs.size() }).Toposort();
+		SysFuncGraph* subgraph = CreateFrameObject<SysFuncGraph>(&frame_rsrc);
+		graph->SubGraph(*subgraph, std::span{ cmptSysFuncs.writeSysFuncs.data(), cmptSysFuncs.writeSysFuncs.size() });
+		auto [success, sorted_wirtes] = subgraph->Toposort();
 		assert(success);
 		for (auto* sys : cmptSysFuncs.lastFrameSysFuncs)
 			graph->AddEdge(sys, sorted_wirtes.front());
