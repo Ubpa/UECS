@@ -1,4 +1,4 @@
-#include <UECS/CmptsView.h>
+#include <UECS/CmptsView.hpp>
 
 using namespace Ubpa::UECS;
 

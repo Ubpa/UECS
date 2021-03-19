@@ -1,5 +1,5 @@
 #include <cassert>
-#include <UECS/SystemTraits.h>
+#include <UECS/SystemTraits.hpp>
 
 using namespace Ubpa;
 using namespace Ubpa::UECS;

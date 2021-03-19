@@ -1,4 +1,4 @@
-#include <UECS/SingletonLocator.h>
+#include <UECS/SingletonLocator.hpp>
 
 using namespace Ubpa::UECS;
 using namespace std;

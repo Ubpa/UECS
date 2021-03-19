@@ -1,4 +1,4 @@
-#include <UECS/RTDCmptTraits.h>
+#include <UECS/RTDCmptTraits.hpp>
 
 using namespace Ubpa;
 using namespace Ubpa::UECS;

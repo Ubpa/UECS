@@ -1,6 +1,6 @@
 #pragma	once
 
-#include "../EntityQuery.h"
+#include "../EntityQuery.hpp"
 
 namespace Ubpa::UECS {
 	struct TypeIDSet {

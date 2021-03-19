@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ArchetypeFilter.h"
-#include "CmptLocator.h"
-#include "details/Util.h"
+#include "ArchetypeFilter.hpp"
+#include "CmptLocator.hpp"
+#include "details/Util.hpp"
 
 namespace Ubpa::UECS {
 	// ArchetypeFilter + CmptLocator

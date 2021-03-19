@@ -1,4 +1,4 @@
-#include <UECS/SingletonsView.h>
+#include <UECS/SingletonsView.hpp>
 
 using namespace Ubpa::UECS;
 

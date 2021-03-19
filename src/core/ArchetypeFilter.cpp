@@ -1,6 +1,6 @@
-#include <UECS/ArchetypeFilter.h>
+#include <UECS/ArchetypeFilter.hpp>
 
-#include <UECS/details/Util.h>
+#include <UECS/details/Util.hpp>
 
 using namespace Ubpa::UECS;
 

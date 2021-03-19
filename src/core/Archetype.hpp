@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ArchetypeCmptTraits.h"
-#include "Chunk.h"
+#include "ArchetypeCmptTraits.hpp"
+#include "Chunk.hpp"
 
-#include <UECS/Entity.h>
-#include <UECS/CmptPtr.h>
-#include <UECS/CmptLocator.h>
-#include <UECS/details/TypeIDSet.h>
+#include <UECS/Entity.hpp>
+#include <UECS/CmptPtr.hpp>
+#include <UECS/CmptLocator.hpp>
+#include <UECS/details/TypeIDSet.hpp>
 
 #include <UTemplate/TypeList.hpp>
 #include <memory_resource>

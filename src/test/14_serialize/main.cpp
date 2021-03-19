@@ -1,5 +1,5 @@
-#include <UECS/World.h>
-#include <UECS/IListener.h>
+#include <UECS/UECS.hpp>
+#include <UECS/IListener.hpp>
 
 #include <iostream>
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "RTDCmptTraits.h"
-#include "EntityQuery.h"
-#include "SingletonLocator.h"
-#include "CmptPtr.h"
+#include "RTDCmptTraits.hpp"
+#include "EntityQuery.hpp"
+#include "SingletonLocator.hpp"
+#include "CmptPtr.hpp"
 
-#include "details/Job.h"
-#include "details/TypeIDSet.h"
+#include "details/Job.hpp"
+#include "details/TypeIDSet.hpp"
 
 #include <memory_resource>
 #include <USmallFlat/small_vector.hpp>

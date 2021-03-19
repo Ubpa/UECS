@@ -1,8 +1,8 @@
-#include <UECS/World.h>
+#include <UECS/World.hpp>
 
-#include <UECS/IListener.h>
+#include <UECS/IListener.hpp>
 
-#include "SysFuncGraph.h"
+#include "SysFuncGraph.hpp"
 
 using namespace Ubpa::UECS;
 using namespace Ubpa;

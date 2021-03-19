@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Entity.h"
-#include "SystemMngr.h"
-#include "EntityMngr.h"
-#include "Schedule.h"
+#include "Entity.hpp"
+#include "SystemMngr.hpp"
+#include "EntityMngr.hpp"
+#include "Schedule.hpp"
 
 #include <UGraphviz/UGraphviz.h>
 

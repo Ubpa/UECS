@@ -1,6 +1,6 @@
-#include <UECS/ChunkView.h>
+#include <UECS/ChunkView.hpp>
 
-#include "Archetype.h"
+#include "Archetype.hpp"
 
 using namespace Ubpa::UECS;
 

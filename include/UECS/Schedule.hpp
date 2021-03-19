@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SystemFunc.h"
-#include "details/Job.h"
+#include "SystemFunc.hpp"
+#include "details/Job.hpp"
 
 #include <map>
 #include <memory>

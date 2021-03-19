@@ -42,7 +42,7 @@
 ## Example
 
 ```c++
-#include <UECS/World.h>
+#include <UECS/UECS.h>
 
 using namespace Ubpa::UECS;
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AccessTypeID.h"
-#include "Entity.h"
+#include "AccessTypeID.hpp"
+#include "Entity.hpp"
 
 #include <span>
 

@@ -1,4 +1,4 @@
-#include <UECS/World.h>
+#include <UECS/UECS.hpp>
 
 #include <iostream>
 

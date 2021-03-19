@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SystemTraits.h"
+#include "SystemTraits.hpp"
 
 #include <unordered_set>
 

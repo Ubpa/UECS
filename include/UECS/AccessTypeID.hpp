@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CmptTag.h"
+#include "CmptTag.hpp"
 
-#include "details/Util.h"
+#include "details/Util.hpp"
 
 #include <UTemplate/Type.hpp>
 

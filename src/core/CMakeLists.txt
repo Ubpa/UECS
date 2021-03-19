@@ -44,4 +44,4 @@ Ubpa_AddTarget(
     ${l_options}
 )
 
-target_precompile_headers(${tname} PRIVATE "${PROJECT_SOURCE_DIR}/include/UECS/World.h")
+target_precompile_headers(${tname} PRIVATE "${PROJECT_SOURCE_DIR}/include/UECS/UECS.hpp")

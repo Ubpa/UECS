@@ -2,7 +2,7 @@
 
 #include <USmallFlat/small_vector.hpp>
 
-#include <UECS/config.h>
+#include <UECS/config.hpp>
 
 #include <cstdint>
 #include <span>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CmptTag.h"
-#include "AccessTypeID.h"
+#include "CmptTag.hpp"
+#include "AccessTypeID.hpp"
 
 #include <span>
 

@@ -1,4 +1,4 @@
-#include <UECS/SystemMngr.h>
+#include <UECS/SystemMngr.hpp>
 
 #include <cassert>
 

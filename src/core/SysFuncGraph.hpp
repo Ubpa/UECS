@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <memory_resource>
 
 namespace Ubpa::UECS {
 	class SystemFunc;

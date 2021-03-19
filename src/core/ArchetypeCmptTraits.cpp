@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ArchetypeCmptTraits.h"
+#include "ArchetypeCmptTraits.hpp"
 
-#include <UECS/RTDCmptTraits.h>
+#include <UECS/RTDCmptTraits.hpp>
 
 #include <stdexcept>
 

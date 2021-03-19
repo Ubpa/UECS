@@ -1,12 +1,12 @@
 #pragma once
 
-#include "EntityQuery.h"
-#include "SingletonLocator.h"
-#include "RandomAccessor.h"
-#include "Entity.h"
-#include "CmptsView.h"
-#include "SingletonsView.h"
-#include "ChunkView.h"
+#include "EntityQuery.hpp"
+#include "SingletonLocator.hpp"
+#include "RandomAccessor.hpp"
+#include "Entity.hpp"
+#include "CmptsView.hpp"
+#include "SingletonsView.hpp"
+#include "ChunkView.hpp"
 
 #include <functional>
 

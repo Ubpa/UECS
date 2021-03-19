@@ -1,9 +1,9 @@
-#include <UECS/EntityMngr.h>
+#include <UECS/EntityMngr.hpp>
 
-#include "Archetype.h"
+#include "Archetype.hpp"
 
-#include <UECS/SystemFunc.h>
-#include <UECS/IListener.h>
+#include <UECS/SystemFunc.hpp>
+#include <UECS/IListener.hpp>
 
 using namespace Ubpa::UECS;
 using namespace std;
