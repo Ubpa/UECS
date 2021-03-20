@@ -174,8 +174,9 @@ SysFuncGraph* Schedule::GenSysFuncGraph() const {
 
 	// [gen graph] - vertex
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
-		if(disabledSysFuncs.contains(hashcode))
-			graph->AddVertex(sysFunc);
+		if (disabledSysFuncs.contains(hashcode))
+			continue;
+		graph->AddVertex(sysFunc);
 	}
 	
 	// [gen graph] - edge - order
@@ -185,6 +186,8 @@ SysFuncGraph* Schedule::GenSysFuncGraph() const {
 			continue;
 		auto target_y = sysFuncs.find(y);
 		if (target_y == sysFuncs.end())
+			continue;
+		if (disabledSysFuncs.contains(x) || disabledSysFuncs.contains(y))
 			continue;
 
 		auto* sysFunc_x = target_x->second;
@@ -197,14 +200,26 @@ SysFuncGraph* Schedule::GenSysFuncGraph() const {
 		if (cmptSysFuncs.writeSysFuncs.empty())
 			continue;
 
+		for (auto* sys : cmptSysFuncs.lastFrameSysFuncs) {
+			for (auto* w : cmptSysFuncs.writeSysFuncs)
+				graph->AddEdge(sys, w);
+		}
+
+		for (auto* sys : cmptSysFuncs.latestSysFuncs) {
+			for (auto* w : cmptSysFuncs.writeSysFuncs)
+				graph->AddEdge(w, sys);
+		}
+	}
+
+	// [gen graph] - edge - toposort write
+	for (const auto& [type, cmptSysFuncs] : *cmptSysFuncsMap) {
+		if (cmptSysFuncs.writeSysFuncs.empty())
+			continue;
+
 		SysFuncGraph* subgraph = CreateFrameObject<SysFuncGraph>(&frame_rsrc);
 		graph->SubGraph(*subgraph, std::span{ cmptSysFuncs.writeSysFuncs.data(), cmptSysFuncs.writeSysFuncs.size() });
 		auto [success, sorted_wirtes] = subgraph->Toposort();
 		assert(success);
-		for (auto* sys : cmptSysFuncs.lastFrameSysFuncs)
-			graph->AddEdge(sys, sorted_wirtes.front());
-		for (auto* sys : cmptSysFuncs.latestSysFuncs)
-			graph->AddEdge(sorted_wirtes.back(), sys);
 		for (std::size_t i = 0; i < sorted_wirtes.size() - 1; i++)
 			graph->AddEdge(sorted_wirtes[i], sorted_wirtes[i + 1]);
 	}

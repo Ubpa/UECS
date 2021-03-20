@@ -12,5 +12,5 @@ void* ChunkView::GetCmptArray(TypeID t) const {
 }
 
 bool ChunkView::Contains(TypeID t) const {
-	return archetype->GetTypeIDSet().Contains(t);
+	return archetype->GetCmptTraits().GetTypes().contains(t);
 }

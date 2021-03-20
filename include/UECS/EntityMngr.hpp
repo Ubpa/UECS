@@ -6,7 +6,6 @@
 #include "CmptPtr.hpp"
 
 #include "details/Job.hpp"
-#include "details/TypeIDSet.hpp"
 
 #include <memory_resource>
 #include <USmallFlat/small_vector.hpp>
@@ -39,7 +38,6 @@ namespace Ubpa::UECS {
 		RTDCmptTraits cmptTraits;
 
 		Entity Create(std::span<const TypeID> types = {});
-		Entity Create(TypeID type) { return Create({ &type, 1 }); }
 
 		Entity Instantiate(Entity);
 
@@ -72,9 +70,6 @@ namespace Ubpa::UECS {
 		CmptPtr GetSingleton(TypeID) const;
 		template<typename Cmpt>
 		Cmpt* GetSingleton() const { return GetSingleton(TypeID_of<Cmpt>).template As<Cmpt>(); }
-
-		std::vector<CmptPtr> GetCmptArray(const ArchetypeFilter&, TypeID) const;
-		std::vector<Entity> GetEntityArray(const ArchetypeFilter&) const;
 
 		void Accept(IListener* listener) const;
 
@@ -116,6 +111,9 @@ namespace Ubpa::UECS {
 		void RecycleEntityEntry(Entity);
 
 		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
-		std::unordered_map<TypeIDSet, std::unique_ptr<Archetype>> ts2a; // archetype's TypeIDSet to archetype
+		struct TypeIDSetHash {
+			std::size_t operator()(const small_flat_set<TypeID>& types) const noexcept;
+		};
+		std::unordered_map<small_flat_set<TypeID>, std::unique_ptr<Archetype>, TypeIDSetHash> ts2a; // archetype's TypeIDSet to archetype
 	};
 }
