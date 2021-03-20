@@ -59,18 +59,18 @@ void EntityMngr::Clear() {
 bool EntityMngr::Have(Entity e, TypeID type) const {
 	assert(!type.Is<Entity>());
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Have: Entity is invalid");
-	return entityTable[e.Idx()].archetype->GetCmptTraits().GetTypes().contains(type);
+	return entityTable[e.index].archetype->GetCmptTraits().GetTypes().contains(type);
 }
 
 CmptPtr EntityMngr::Get(Entity e, TypeID type) const {
 	assert(!type.Is<Entity>());
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Get: Entity is invalid");
-	const auto& info = entityTable[e.Idx()];
+	const auto& info = entityTable[e.index];
 	return { type, info.archetype->At(type, info.idxInArchetype) };
 }
 
 bool EntityMngr::Exist(Entity e) const noexcept {
-	return e.Idx() < entityTable.size() && e.Version() == entityTable[e.Idx()].version;
+	return e.index < entityTable.size() && e.version == entityTable[e.index].version;
 }
 
 std::size_t EntityMngr::RequestEntityFreeEntry() {
@@ -88,12 +88,12 @@ std::size_t EntityMngr::RequestEntityFreeEntry() {
 void EntityMngr::RecycleEntityEntry(Entity e) {
 	assert(Exist(e));
 
-	auto& info = entityTable[e.Idx()];
+	auto& info = entityTable[e.index];
 	info.archetype = nullptr;
 	info.idxInArchetype = static_cast<std::size_t>(-1);
 	info.version++;
 
-	entityTableFreeEntry.push_back(e.Idx());
+	entityTableFreeEntry.push_back(e.index);
 }
 
 Archetype* EntityMngr::GetOrCreateArchetypeOf(std::span<const TypeID> types) {
@@ -127,7 +127,7 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 	assert(IsSet(types));
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
-	auto& info = entityTable[e.Idx()];
+	auto& info = entityTable[e.index];
 	Archetype* srcArchetype = info.archetype;
 	std::size_t srcIdxInArchetype = info.idxInArchetype;
 
@@ -187,7 +187,7 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 	assert(IsSet(types));
 	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Detach: Entity is invalid");
 
-	auto& info = entityTable[e.Idx()];
+	auto& info = entityTable[e.index];
 	Archetype* srcArchetype = info.archetype;
 
 	const auto& srcTypeIDSet = srcArchetype->GetCmptTraits().GetTypes();
@@ -241,7 +241,7 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 vector<CmptPtr> EntityMngr::Components(Entity e) const {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
-	const auto& info = entityTable[e.Idx()];
+	const auto& info = entityTable[e.index];
 	return info.archetype->Components(info.idxInArchetype);
 }
 
@@ -249,7 +249,7 @@ Entity EntityMngr::Instantiate(Entity srcEntity) {
 	if (!Exist(srcEntity)) throw std::invalid_argument("Entity is invalid");
 
 	std::size_t dstEntityIndex = RequestEntityFreeEntry();
-	const auto& srcInfo = entityTable[srcEntity.Idx()];
+	const auto& srcInfo = entityTable[srcEntity.index];
 	auto& dstInfo = entityTable[dstEntityIndex];
 	Entity dstEntity{ dstEntityIndex, dstInfo.version };
 	std::size_t dstIndexInArchetype = srcInfo.archetype->Instantiate(dstEntity, srcInfo.idxInArchetype);
@@ -293,7 +293,7 @@ std::size_t EntityMngr::EntityNum(const EntityQuery& query) const {
 void EntityMngr::Destroy(Entity e) {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
-	auto info = entityTable[e.Idx()];
+	auto info = entityTable[e.index];
 	auto* archetype = info.archetype;
 	auto idxInArchetype = info.idxInArchetype;
 

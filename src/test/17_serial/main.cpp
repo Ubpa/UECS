@@ -42,7 +42,7 @@ int main() {
 		w.entityMngr.Create();
 
 	w.RunEntityJob([](Entity e) {
-		std::cout << e.Idx() << std::endl;
+		std::cout << e.index << std::endl;
 	}, false);
 
 	std::cout << w.DumpUpdateJobGraph() << std::endl;

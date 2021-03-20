@@ -10,7 +10,7 @@ struct A { float val; };
 struct MySystem {
 	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob([](Entity e, const A* a) {
-			cout << e.Idx() << ": " << a->val << endl;
+			cout << e.index << ": " << a->val << endl;
 		}, "MySystem", false);
 	}
 };

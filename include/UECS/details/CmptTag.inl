@@ -3,7 +3,7 @@
 #include <UTemplate/Util.hpp>
 
 namespace Ubpa::UECS {
-	class Entity;
+	struct Entity;
 	class CmptLocator;
 	class World;
 }

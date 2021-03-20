@@ -32,9 +32,9 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 	cmptTraits = src.cmptTraits;
 	entityNum = src.entityNum;
 	chunkCapacity = src.chunkCapacity;
+	offsets = src.offsets;
 
 	chunks.resize(src.chunks.size(), nullptr);
-
 
 	if (cmptTraits.IsTrivial()) {
 		// [0, src.chunks.size() - 1)
@@ -133,7 +133,7 @@ Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, std::pmr::memory_resourc
 
 Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, std::span<const TypeID> types) {
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
-	assert(std::find_if_not(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) == types.end());
+	assert(std::find_if_not(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) != types.end());
 
 	auto* rst = new Archetype{ from->chunkAllocator.resource() };
 
@@ -306,7 +306,7 @@ std::size_t Archetype::Erase(std::size_t idx) {
 			byte* src = srcBuffer + offset + srcIdxInChunk * size;
 
 			if (cmptTraits.GetTypes().data()[i].Is<Entity>())
-				movedIdx = reinterpret_cast<Entity*>(src)->Idx();
+				movedIdx = reinterpret_cast<Entity*>(src)->index;
 
 			trait.MoveAssign(dst, src);
 			trait.Destruct(src);
