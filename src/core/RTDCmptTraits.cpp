@@ -3,11 +3,13 @@
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 
-RTDCmptTraits::RTDCmptTraits() {
+RTDCmptTraits::RTDCmptTraits() : rsrc {std::make_unique<std::pmr::unsynchronized_pool_resource>()}
+{
 	Register<Entity>();
 }
 
 RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	sizeofs{other.sizeofs},
 	trivials{other.trivials},
 	alignments{other.alignments},
@@ -18,7 +20,7 @@ RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
 	destructors{ other.destructors }
 {
 	for (const auto& [id, name] : other.names) {
-		char* buffer = (char*)rsrc.allocate((name.size() + 1) * sizeof(char), alignof(char));
+		char* buffer = (char*)rsrc->allocate((name.size() + 1) * sizeof(char), alignof(char));
 		std::memcpy(buffer, name.data(), name.size() * sizeof(char));
 		buffer[name.size()] = 0;
 		names.emplace(id, std::string_view{ buffer, name.size() });
@@ -37,7 +39,7 @@ RTDCmptTraits& RTDCmptTraits::operator=(const RTDCmptTraits& rhs) {
 	destructors = rhs.destructors;
 
 	for (const auto& [id, name] : rhs.names) {
-		char* buffer = (char*)rsrc.allocate((name.size() + 1) * sizeof(char), alignof(char));
+		char* buffer = (char*)rsrc->allocate((name.size() + 1) * sizeof(char), alignof(char));
 		std::memcpy(buffer, name.data(), name.size() * sizeof(char));
 		buffer[name.size()] = 0;
 		names.emplace(id, std::string_view{ buffer, name.size() });
@@ -153,7 +155,7 @@ RTDCmptTraits& RTDCmptTraits::RegisterName(Type type) {
 		return *this;
 	}
 
-	auto* buffer = (char*)rsrc.allocate((type.GetName().size() + 1) * sizeof(char), alignof(char));
+	auto* buffer = (char*)rsrc->allocate((type.GetName().size() + 1) * sizeof(char), alignof(char));
 	std::memcpy(buffer, type.GetName().data(), type.GetName().size() * sizeof(char));
 	buffer[type.GetName().size()] = 0;
 	names.emplace(type.GetID(), std::string_view{ buffer, type.GetName().size() });

@@ -15,7 +15,8 @@ EntityMngr::EntityMngr(EntityMngr&&) noexcept = default;
 
 EntityMngr::EntityMngr(const EntityMngr& em) :
 	cmptTraits{ em.cmptTraits },
-	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() }
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	version{em.version}
 {
 	ts2a.reserve(em.ts2a.size());
 	for (const auto& [ts, a] : em.ts2a)
@@ -58,15 +59,15 @@ void EntityMngr::Clear() {
 
 bool EntityMngr::Have(Entity e, TypeID type) const {
 	assert(!type.Is<Entity>());
-	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Have: Entity is invalid");
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 	return entityTable[e.index].archetype->GetCmptTraits().GetTypes().contains(type);
 }
 
-CmptPtr EntityMngr::Get(Entity e, TypeID type) const {
+CmptAccessPtr EntityMngr::GetComponent(Entity e, AccessTypeID type) const {
 	assert(!type.Is<Entity>());
-	if (!Exist(e)) throw std::invalid_argument("EntityMngr::Get: Entity is invalid");
+	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 	const auto& info = entityTable[e.index];
-	return { type, info.archetype->At(type, info.idxInArchetype) };
+	return info.archetype->At(type, info.idxInArchetype);
 }
 
 bool EntityMngr::Exist(Entity e) const noexcept {
@@ -102,7 +103,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(std::span<const TypeID> types) {
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), types);
+	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), types, version);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
@@ -158,8 +159,8 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 
 	const auto& srcCmptTraits = srcArchetype->GetCmptTraits();
 	for (const auto& type : srcTypeIDSet) {
-		auto* srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
-		auto* dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
+		auto* srcCmpt = srcArchetype->ReadAt(type, srcIdxInArchetype).Ptr();
+		auto* dstCmpt = dstArchetype->WriteAt(type, dstIdxInArchetype).Ptr();
 		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt);
 	}
 
@@ -172,14 +173,10 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 	info.idxInArchetype = dstIdxInArchetype;
 
 	for (const auto& type : types) {
-		if (srcArchetype->GetCmptTraits().GetTypes().contains(type))
-			continue;
-
-		auto target = cmptTraits.GetDefaultConstructors().find(type);
-		if (target == cmptTraits.GetDefaultConstructors().end())
-			continue;
-
-		target->second(info.archetype->At(type, info.idxInArchetype));
+		auto target = dstArchetype->GetCmptTraits().GetTypes().find(type);
+		assert(target != dstArchetype->GetCmptTraits().GetTypes().end());
+		auto idx = static_cast<std::size_t>(std::distance(dstArchetype->GetCmptTraits().GetTypes().begin(), target));
+		srcArchetype->GetCmptTraits().GetTraits()[idx].DefaultConstruct(info.archetype->WriteAt(type, info.idxInArchetype).Ptr());
 	}
 }
 
@@ -221,8 +218,8 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 
 	const auto& srcCmptTraits = srcArchetype->GetCmptTraits();
 	for (const auto& type : dstTypeIDSet) {
-		auto* srcCmpt = srcArchetype->At(type, srcIdxInArchetype);
-		auto* dstCmpt = dstArchetype->At(type, dstIdxInArchetype);
+		auto* srcCmpt = srcArchetype->ReadAt(type, srcIdxInArchetype).Ptr();
+		auto* dstCmpt = dstArchetype->WriteAt(type, dstIdxInArchetype).Ptr();
 		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt);
 	}
 
@@ -238,11 +235,11 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 		ts2a.emplace(std::move(dstTypeIDSet), std::unique_ptr<Archetype>{dstArchetype});
 }
 
-vector<CmptPtr> EntityMngr::Components(Entity e) const {
+vector<CmptAccessPtr> EntityMngr::Components(Entity e, AccessMode mode) const {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 	const auto& info = entityTable[e.index];
-	return info.archetype->Components(info.idxInArchetype);
+	return info.archetype->Components(info.idxInArchetype, mode);
 }
 
 Entity EntityMngr::Instantiate(Entity srcEntity) {
@@ -313,7 +310,7 @@ Ubpa::small_vector<CmptAccessPtr, 16> EntityMngr::LocateSingletons(const Singlet
 		auto ptr = GetSingleton(t);
 		if (ptr.Ptr() == nullptr)
 			return {};
-		rst.emplace_back(ptr, t.GetAccessMode());
+		rst.push_back(ptr);
 	}
 	return rst;
 }
@@ -339,6 +336,9 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 			std::size_t chunkCapacity = archetype->ChunkCapacity();
 
 			for (std::size_t i = 0; i < chunkNum; i++) {
+				if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, version))
+					continue;
+
 				job->emplace([=, sizes = sizes, entities = chunkEntity[i], cmpts = move(chunkCmpts[i]), singletons = singletons]() mutable {
 					std::size_t idxOffsetInChunk = i * chunkCapacity;
 					std::size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
@@ -374,6 +374,8 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 				std::size_t chunkCapacity = archetype->ChunkCapacity();
 
 				for (std::size_t i = 0; i < chunkNum; i++) {
+					if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, version))
+						continue;
 					std::size_t idxOffsetInChunk = i * chunkCapacity;
 					std::size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 					CmptsView chunkView{ std::span{chunkCmpts[i].data(), chunkCmpts[i].size()} };
@@ -425,6 +427,9 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 			std::size_t chunkCapacity = archetype->ChunkCapacity();
 
 			for (std::size_t i = 0; i < chunkNum; i++) {
+				if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, version))
+					continue;
+
 				std::size_t idxOffsetInChunk = i * chunkCapacity;
 				std::size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 				job->emplace([=, singletons = singletons]() {
@@ -432,7 +437,7 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 						w,
 						SingletonsView{ std::span{singletons.data(), singletons.size()} },
 						indexOffsetInQueryChunk,
-						ChunkView{ archetype, i }
+						archetype->chunks[i]
 					);
 				});
 			}
@@ -451,13 +456,16 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 				std::size_t chunkCapacity = archetype->ChunkCapacity();
 
 				for (std::size_t i = 0; i < chunkNum; i++) {
+					if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, version))
+						continue;
+
 					std::size_t idxOffsetInChunk = i * chunkCapacity;
 					std::size_t indexOffsetInQueryChunk = indexOffsetInQuery + idxOffsetInChunk;
 					(*sys)(
 						w,
 						singletonsView,
 						indexOffsetInQueryChunk,
-						ChunkView{ archetype, i }
+						archetype->chunks[i]
 					);
 				}
 			}
@@ -514,11 +522,11 @@ void EntityMngr::Accept(IListener* listener) const {
 	listener->EnterEntityMngr(this);
 	for (const auto& [ts, a] : ts2a) {
 		for (std::size_t i = 0; i < a->EntityNum(); i++) {
-			auto e = *a->At<Entity>(i);
+			auto e = *a->ReadAt<Entity>(i);
 			listener->EnterEntity(e);
-			for (const auto& cmpt : a->Components(i)) {
-				listener->EnterCmpt(cmpt);
-				listener->ExistCmpt(cmpt);
+			for (const auto& cmpt : a->Components(i, AccessMode::WRITE)) {
+				listener->EnterCmpt({ cmpt.AccessType(), cmpt.Ptr() });
+				listener->ExistCmpt({ cmpt.AccessType(), cmpt.Ptr() });
 			}
 			listener->ExistEntity(e);
 		}
@@ -545,11 +553,11 @@ Entity EntityMngr::GetSingletonEntity(TypeID t) const {
 	EntityQuery query{ move(filter) };
 	const auto& archetypes = QueryArchetypes(query);
 	auto* archetype = *archetypes.begin();
-	return *archetype->At<Entity>(0);
+	return *archetype->ReadAt<Entity>(0);
 }
 
-CmptPtr EntityMngr::GetSingleton(TypeID t) const {
-	ArchetypeFilter filter{ {AccessTypeID{t}}, {}, {} };
+CmptAccessPtr EntityMngr::GetSingleton(AccessTypeID access_type) const {
+	ArchetypeFilter filter{ {access_type}, {}, {} };
 	EntityQuery query{ move(filter) };
 	const auto& archetypes = QueryArchetypes(query);
 
@@ -558,12 +566,18 @@ CmptPtr EntityMngr::GetSingleton(TypeID t) const {
 		num += archetype->EntityNum();
 
 	if (num != 1)
-		return { TypeID{}, nullptr };
+		return { TypeID{}, nullptr, AccessMode::WRITE };
 
 	for (auto* archetype : archetypes) {
 		if (archetype->EntityNum() != 0)
-			return { t, archetype->At(t, 0) };
+			return archetype->At(access_type, 0);
 	}
 
-	return { TypeID{}, nullptr };
+	return { TypeID{}, nullptr, AccessMode::WRITE };
+}
+
+void EntityMngr::UpdateVersion(std::uint64_t world_version) noexcept {
+	this->version = world_version;
+	for (auto& [ts, a] : ts2a)
+		a->version = world_version;
 }

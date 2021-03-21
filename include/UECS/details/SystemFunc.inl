@@ -17,11 +17,13 @@ namespace Ubpa::UECS {
 		CmptLocator cmptLocator,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor,
+		ChangeFilter changeFilter,
 		bool isParallel
 	) :
 		entityQuery{ std::move(archetypeFilter), std::move(cmptLocator.Combine<decltype(func)>()) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		randomAccessor{std::move(randomAccessor)},
+		changeFilter{ std::move(changeFilter) },
 		mode{ Mode::Entity },
 		name{ name },
 		hashCode{ GetValue(this->name) },
@@ -47,11 +49,13 @@ namespace Ubpa::UECS {
 		ArchetypeFilter archetypeFilter,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor,
+		ChangeFilter changeFilter,
 		bool isParallel
 	) :
 		entityQuery{ std::move(archetypeFilter) },
 		singletonLocator{ std::move(singletonLocator.Combine<decltype(func)>()) },
 		randomAccessor{ std::move(randomAccessor) },
+		changeFilter{ std::move(changeFilter) },
 		mode{ Mode::Chunk },
 		name{ name },
 		hashCode{ GetValue(this->name) },
@@ -66,7 +70,7 @@ namespace Ubpa::UECS {
 		static_assert(Contain_v<ArgList, ChunkView>);
 
 		static_assert(!Contain_v<ArgList, Entity>,
-			"(Mode::Chunk) SystemFunc can't use Entity directly, use ChunkView::GetEntityArray()");
+			"(Mode::Chunk) SystemFunc can't use Entity directly, use Chunk::GetEntityArray()");
 
 		static_assert(!Contain_v<ArgList, CmptsView>,
 			"(Mode::Chunk) SystemFunc's argument list cann't have CmptsView");

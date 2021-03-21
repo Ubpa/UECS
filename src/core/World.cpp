@@ -28,7 +28,7 @@ World::~World() {
 }
 
 void World::Update() {
-	inRunningJobGraph = true;
+	// 1. clear
 
 	frame_sync_rsrc.release();
 	schedule.Clear();
@@ -39,6 +39,8 @@ void World::Update() {
 	jobs.clear();
 	jobGraph.clear();
 
+	// 2. run systems schedule
+	
 	for (const auto& ID : systemMngr.GetActiveSystemIDs())
 		systemMngr.Update(ID, schedule);
 
@@ -52,7 +54,8 @@ void World::Update() {
 	}
 	schedule.commandBuffer.clear();
 
-	// SystemFunc* -> JobHandle
+	// 3. generate job graph
+
 	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
 		(std::pmr::unordered_map<SystemFunc*, JobHandle>::allocator_type{ schedule.GetFrameMonotonicResource() });
 
@@ -73,10 +76,17 @@ void World::Update() {
 			vJob.precede(table->at(adjV));
 	}
 
+	// 4. run jobs and commands
+
+	inRunningJobGraph = true;
 	executor.run(jobGraph).wait();
 	inRunningJobGraph = false;
 
 	RunCommands();
+
+	// 5. update version
+	version++;
+	entityMngr.UpdateVersion(version);
 }
 
 string World::DumpUpdateJobGraph() const {

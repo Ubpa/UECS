@@ -52,11 +52,11 @@ namespace Ubpa::UECS {
 		constexpr auto As() const noexcept {
 			assert(accessType.GetAccessMode() == mode);
 			if constexpr (mode == AccessMode::LAST_FRAME)
-				return LastFrame<Cmpt>{p};
+				return LastFrame<Cmpt>{reinterpret_cast<Cmpt*>(p)};
 			else if constexpr (mode == AccessMode::WRITE)
-				return Write<Cmpt>{p};
+				return Write<Cmpt>{reinterpret_cast<Cmpt*>(p)};
 			else if constexpr (mode == AccessMode::LATEST)
-				return Latest<Cmpt>{p};
+				return Latest<Cmpt>{reinterpret_cast<Cmpt*>(p)};
 			else
 				static_assert(always_false<Cmpt>);
 		}

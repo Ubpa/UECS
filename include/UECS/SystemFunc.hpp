@@ -1,12 +1,13 @@
 #pragma once
 
+#include "ChangeFilter.hpp"
 #include "EntityQuery.hpp"
 #include "SingletonLocator.hpp"
 #include "RandomAccessor.hpp"
 #include "Entity.hpp"
 #include "CmptsView.hpp"
 #include "SingletonsView.hpp"
-#include "ChunkView.hpp"
+#include "Chunk.hpp"
 
 #include <functional>
 
@@ -39,14 +40,15 @@ namespace Ubpa::UECS {
 		EntityQuery entityQuery;
 		SingletonLocator singletonLocator;
 		RandomAccessor randomAccessor;
+		ChangeFilter changeFilter;
 
 		// Mode::Entity
 		template<typename Func>
-		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, CmptLocator, SingletonLocator, RandomAccessor, bool isParallel);
+		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, CmptLocator, SingletonLocator, RandomAccessor, ChangeFilter, bool isParallel);
 
 		// Mode::Chunk
 		template<typename Func>
-		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, SingletonLocator, RandomAccessor, bool isParallel);
+		SystemFunc(Func&&, std::string_view name, ArchetypeFilter, SingletonLocator, RandomAccessor, ChangeFilter, bool isParallel);
 
 		// Mode::Job
 		template<typename Func>

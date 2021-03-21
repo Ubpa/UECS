@@ -5,6 +5,7 @@
 #include <UECS/Entity.hpp>
 #include <UECS/CmptPtr.hpp>
 #include <UECS/CmptLocator.hpp>
+#include <UECS/Chunk.hpp>
 
 #include <memory_resource>
 
@@ -15,7 +16,7 @@ namespace Ubpa::UECS {
 	// type of Entity + Components is Archetype's type
 	class Archetype {
 	public:
-		Archetype(std::pmr::memory_resource* rsrc) noexcept : chunkAllocator{ rsrc } {}
+		Archetype(std::pmr::memory_resource* rsrc, std::uint64_t version) noexcept : chunkAllocator{ rsrc }, version{ version } {}
 
 		// copy
 		Archetype(std::pmr::memory_resource* rsrc, const Archetype&);
@@ -24,7 +25,7 @@ namespace Ubpa::UECS {
 		~Archetype();
 
 		// auto add Entity
-		static Archetype* New(RTDCmptTraits&, std::pmr::memory_resource* rsrc, std::span<const TypeID> types);
+		static Archetype* New(RTDCmptTraits&, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version);
 
 		static Archetype* Add(RTDCmptTraits&, const Archetype* from, std::span<const TypeID> types);
 
@@ -38,19 +39,22 @@ namespace Ubpa::UECS {
 			small_vector<std::size_t, 16>
 		>
 		Locate(std::span<const AccessTypeID> cmpts) const;
-
-		// nullptr if not contains
-		void* Locate(std::size_t chunkIdx, TypeID) const;
 		
 		// nullptr if not contains
-		void* At(TypeID, std::size_t idx) const;
+		CmptAccessPtr At(AccessTypeID type, std::size_t idx) const;
+		CmptAccessPtr WriteAt(TypeID type, std::size_t idx) const { return At({ type, AccessMode::WRITE }, idx); }
+		CmptAccessPtr ReadAt(TypeID type, std::size_t idx) const { return At({ type, AccessMode::LATEST }, idx); }
 
 		// nullptr if not contains
 		template<typename Cmpt>
-		Cmpt* At(std::size_t idx) const{ return reinterpret_cast<Cmpt*>(At(TypeID_of<Cmpt>, idx)); }
+		Cmpt* WriteAt(std::size_t idx) const{ return WriteAt(TypeID_of<Cmpt>, idx).template As<Cmpt, AccessMode::WRITE>(); }
+		template<typename Cmpt>
+		const Cmpt* ReadAt(std::size_t idx) const { return ReadAt(TypeID_of<Cmpt>, idx).template As<Cmpt, AccessMode::LATEST>(); }
 
 		// no Entity
-		std::vector<CmptPtr> Components(std::size_t idx) const;
+		std::vector<CmptAccessPtr> Components(std::size_t idx, AccessMode mode) const;
+		std::vector<CmptAccessPtr> WriteComponents(std::size_t idx) const { return Components(idx, AccessMode::WRITE); }
+		std::vector<CmptAccessPtr> ReadComponents(std::size_t idx) const { return Components(idx, AccessMode::LATEST); }
 
 		// no init
 		std::size_t RequestBuffer();
@@ -86,13 +90,13 @@ namespace Ubpa::UECS {
 
 		ArchetypeCmptTraits cmptTraits; // Entity + Components
 
-		std::size_t chunkCapacity{ static_cast<std::size_t>(-1) };
+		std::uint64_t version;
 
-		// std::aligned_storage_t<ChunkSize, ChunkAlignment>
-		struct alignas(ChunkAlignment) Chunk { std::byte data[ChunkSize]; };
+		// chunk infomations
 		std::pmr::polymorphic_allocator<Chunk> chunkAllocator;
 		small_vector<Chunk*> chunks;
-		small_vector<std::size_t> offsets;
+		std::size_t chunkCapacity{ static_cast<std::size_t>(-1) };
+		small_vector<std::size_t> offsets; // component
 
 		std::size_t entityNum{ 0 }; // number of entities
 	};

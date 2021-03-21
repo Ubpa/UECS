@@ -30,11 +30,10 @@
 - [x] singleton
 - [x] random access
 - [x] system traits
-- [ ] change filter
+- [x] change filter
 - [ ] resource
   - [ ] world
-  - [ ] frame
-- [ ] view + iterator
+  - [x] frame
 
 ### maybe support in future
 

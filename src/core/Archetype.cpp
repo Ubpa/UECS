@@ -13,10 +13,10 @@ Archetype::~Archetype() {
 			continue;
 		for (std::size_t k = 0; k < chunks.size(); k++) {
 			std::size_t num = EntityNumOfChunk(k);
-			byte* buffer = chunks[k]->data;
-			byte* beg = buffer + offsets[i];
+			std::uint8_t* buffer = chunks[k]->data;
+			std::uint8_t* beg = buffer + offsets[i];
 			for (std::size_t i = 0; i < num; i++) {
-				byte* address = beg + i * trait.size;
+				std::uint8_t* address = beg + i * trait.size;
 				trait.dtor(address);
 			}
 		}
@@ -33,6 +33,7 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 	entityNum = src.entityNum;
 	chunkCapacity = src.chunkCapacity;
 	offsets = src.offsets;
+	version = src.version;
 
 	chunks.resize(src.chunks.size(), nullptr);
 
@@ -43,10 +44,15 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 			auto* srcChunk = src.chunks[i];
 			auto* dstChunk = chunks[i];
 			std::memcpy(dstChunk->data, srcChunk->data, sizeof(Chunk));
+			dstChunk->GetHead()->UpdateVersion(version);
+			dstChunk->GetHead()->archetype = this;
 		}
 		{ // src.chunks.size() - 1
 			auto* srcChunk = src.chunks.back();
 			auto* dstChunk = chunks.back() = chunkAllocator.allocate(1);
+			std::memcpy(dstChunk, srcChunk, sizeof(Chunk::Head) + sizeof(Chunk::Head::CmptInfo) * cmptTraits.GetTypes().size());
+			dstChunk->GetHead()->UpdateVersion(version);
+			dstChunk->GetHead()->archetype = this;
 			std::size_t num = src.EntityNumOfChunk(src.chunks.size() - 1);
 			for (std::size_t i = 0; i < cmptTraits.GetTraits().size(); i++) {
 				const auto& trait = cmptTraits.GetTraits()[i];
@@ -67,6 +73,9 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 		for (std::size_t i = 0; i < src.chunks.size(); i++) {
 			auto* srcChunk = src.chunks[i];
 			auto* dstChunk = chunks[i] = chunkAllocator.allocate(1);
+			std::memcpy(dstChunk, srcChunk, sizeof(Chunk::Head) + sizeof(Chunk::Head::CmptInfo) * cmptTraits.GetTypes().size());
+			dstChunk->GetHead()->UpdateVersion(version);
+			dstChunk->GetHead()->archetype = this;
 			std::size_t num = src.EntityNumOfChunk(i);
 			for (std::size_t j = 0; j < cmptTraits.GetTraits().size(); j++) {
 				const auto& trait = cmptTraits.GetTraits()[j];
@@ -106,10 +115,13 @@ void Archetype::SetLayout() {
 	std::sort(items.begin(), items.end(), [](const Item& lhs, const Item& rhs) {
 		return lhs.alignment > rhs.alignment;
 	});
+	sum_size = (sum_size + items.front().alignment - 1) & ~(items.front().alignment - 1);
 
-	chunkCapacity = ChunkSize / sum_size;
+	std::size_t cmptInfosSize = sizeof(Chunk::Head::CmptInfo) * cmptTraits.GetTypes().size();
+	chunkCapacity = (ChunkSize - sizeof(Chunk::Head) - cmptInfosSize) / sum_size;
 	offsets.resize(traits.size());
-	std::size_t offset = 0;
+	std::size_t offset = sizeof(Chunk::Head) + cmptInfosSize;
+	offset = (offset + items.front().alignment - 1) & ~(items.front().alignment - 1);
 	for (std::size_t i = 0; i < items.size(); i++) {
 		const auto& idx = items[i].idx;
 		offsets[idx] = offset;
@@ -117,10 +129,10 @@ void Archetype::SetLayout() {
 	}
 }
 
-Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, std::pmr::memory_resource* rsrc, std::span<const TypeID> types) {
+Archetype* Archetype::New(RTDCmptTraits& rtdCmptTraits, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version) {
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 
-	auto* rst = new Archetype{ rsrc };
+	auto* rst = new Archetype{ rsrc, version };
 
 	rst->cmptTraits.Register(rtdCmptTraits, TypeID_of<Entity>);
 	for (const auto& type : types)
@@ -135,7 +147,7 @@ Archetype* Archetype::Add(RTDCmptTraits& rtdCmptTraits, const Archetype* from, s
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 	assert(std::find_if_not(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) != types.end());
 
-	auto* rst = new Archetype{ from->chunkAllocator.resource() };
+	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->version };
 
 	rst->cmptTraits = from->cmptTraits;
 	for (const auto& type : types)
@@ -150,7 +162,7 @@ Archetype* Archetype::Remove(const Archetype* from, std::span<const TypeID> type
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 	assert(std::find_if(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) != types.end());
 	
-	auto* rst = new Archetype{ from->chunkAllocator.resource() };
+	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->version };
 
 	rst->cmptTraits = from->cmptTraits;
 
@@ -165,7 +177,8 @@ Archetype* Archetype::Remove(const Archetype* from, std::span<const TypeID> type
 std::size_t Archetype::Create(Entity e) {
 	std::size_t idx = RequestBuffer();
 	std::size_t idxInChunk = idx % chunkCapacity;
-	byte* buffer = chunks[idx / chunkCapacity]->data;
+	Chunk* chunk = chunks[idx / chunkCapacity];
+	std::uint8_t* buffer = chunk->data;
 
 	for (std::size_t i = 0; i < cmptTraits.GetTraits().size(); i++) {
 		const auto& trait = cmptTraits.GetTraits()[i];
@@ -176,10 +189,11 @@ std::size_t Archetype::Create(Entity e) {
 			memcpy(buffer + offset + idxInChunk * size, &e, size);
 		}
 		else {
-			byte* dst = buffer + offset + idxInChunk * trait.size;
+			std::uint8_t* dst = buffer + offset + idxInChunk * trait.size;
 			trait.DefaultConstruct(dst);
 		}
 	}
+	chunk->GetHead()->UpdateVersion(version);
 
 	return idx;
 }
@@ -187,12 +201,24 @@ std::size_t Archetype::Create(Entity e) {
 std::size_t Archetype::RequestBuffer() {
 	if (entityNum == chunks.size() * chunkCapacity) {
 		auto* chunk = chunkAllocator.allocate(1);
+
+		// init chunk
+		chunk->GetHead()->archetype = this;
+		chunk->GetHead()->capacity = chunkCapacity;
+		chunk->GetHead()->num_entity = 0;
+		chunk->GetHead()->num_component = cmptTraits.GetTypes().size();
+		for (std::size_t i = 0; i < cmptTraits.GetTypes().size(); i++) {
+			auto& info = chunk->GetHead()->GetCmptInfos()[i];
+			info.ID = cmptTraits.GetTypes().data()[i];
+			info.offset = offsets[i];
+		}
+		chunk->GetHead()->UpdateVersion(version);
 		chunks.push_back(chunk);
 	}
 	return entityNum++;
 }
 
-void* Archetype::At(TypeID type, std::size_t idx) const {
+CmptAccessPtr Archetype::At(AccessTypeID type, std::size_t idx) const {
 	assert(idx < entityNum);
 	auto target = cmptTraits.GetTypes().find(type);
 	if (target == cmptTraits.GetTypes().end())
@@ -203,9 +229,12 @@ void* Archetype::At(TypeID type, std::size_t idx) const {
 	std::size_t size = trait.size;
 	std::size_t offset = offsets[typeIdx];
 	std::size_t idxInChunk = idx % chunkCapacity;
-	byte* buffer = chunks[idx / chunkCapacity]->data;
+	Chunk* chunk = chunks[idx / chunkCapacity];
+	std::uint8_t* buffer = chunk->data;
+	if(type.GetAccessMode() == AccessMode::WRITE)
+		chunk->GetHead()->GetCmptInfos()[typeIdx].version = version;
 
-	return buffer + offset + idxInChunk * size;
+	return { type, buffer + offset + idxInChunk * size };
 }
 
 std::size_t Archetype::Instantiate(Entity e, std::size_t srcIdx) {
@@ -215,8 +244,9 @@ std::size_t Archetype::Instantiate(Entity e, std::size_t srcIdx) {
 
 	std::size_t srcIdxInChunk = srcIdx % chunkCapacity;
 	std::size_t dstIdxInChunk = dstIdx % chunkCapacity;
-	byte* srcBuffer = chunks[srcIdx / chunkCapacity]->data;
-	byte* dstBuffer = chunks[dstIdx / chunkCapacity]->data;
+	std::uint8_t* srcBuffer = chunks[srcIdx / chunkCapacity]->data;
+	Chunk* dstChunk = chunks[dstIdx / chunkCapacity];
+	std::uint8_t* dstBuffer = dstChunk->data;
 
 	for (std::size_t i = 0; i < cmptTraits.GetTypes().size(); i++) {
 		const auto& trait = cmptTraits.GetTraits()[i];
@@ -228,12 +258,14 @@ std::size_t Archetype::Instantiate(Entity e, std::size_t srcIdx) {
 		}
 		else {
 			std::size_t size = trait.size;
-			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
-			byte* src = srcBuffer + offset + srcIdxInChunk * size;
+			std::uint8_t* dst = dstBuffer + offset + dstIdxInChunk * size;
+			std::uint8_t* src = srcBuffer + offset + srcIdxInChunk * size;
 
 			trait.CopyConstruct(dst, src);
 		}
 	}
+
+	dstChunk->GetHead()->UpdateVersion(version);
 
 	return dstIdx;
 }
@@ -255,12 +287,15 @@ Archetype::Locate(std::span<const AccessTypeID> cmpts) const {
 	Ubpa::small_vector<Entity*, 16> chunkEntity(numChunk);
 
 	for (std::size_t i = 0; i < numChunk; i++) {
-		byte* data = chunks[i]->data;
+		Chunk* chunk = chunks[i];
+		std::uint8_t* data = chunk->data;
 		chunkCmpts[i].reserve(numType);
 		for (const auto& type : cmpts) {
 			const std::size_t idx = static_cast<std::size_t>(std::distance(cmptTraits.GetTypes().begin(), cmptTraits.GetTypes().find(type)));
 			const std::size_t offset = offsets[idx];
 			chunkCmpts[i].emplace_back(type, data + offset);
+			if (type.GetAccessMode() == AccessMode::WRITE)
+				chunk->GetHead()->GetCmptInfos()[idx].version = version;
 		}
 		chunkEntity[i] = reinterpret_cast<Entity*>(data + offsetEntity);
 	}
@@ -273,22 +308,12 @@ Archetype::Locate(std::span<const AccessTypeID> cmpts) const {
 	return { chunkEntity, chunkCmpts, sizes };
 }
 
-void* Archetype::Locate(std::size_t chunkIdx, TypeID t) const {
-	assert(chunkIdx < chunks.size());
-	auto target = cmptTraits.GetTypes().find(t);
-	if (target == cmptTraits.GetTypes().end())
-		return nullptr;
-	auto idx = static_cast<std::size_t>(std::distance(cmptTraits.GetTypes().begin(), target));
-
-	auto* buffer = chunks[chunkIdx]->data;
-	return buffer + offsets[idx];
-}
-
 std::size_t Archetype::Erase(std::size_t idx) {
 	assert(idx < entityNum);
 
 	std::size_t dstIdxInChunk = idx % chunkCapacity;
-	byte* dstBuffer = chunks[idx / chunkCapacity]->data;
+	Chunk* dstChunk = chunks[idx / chunkCapacity];
+	std::uint8_t* dstBuffer = dstChunk->data;
 
 	std::size_t movedIdx = static_cast<std::size_t>(-1);
 	
@@ -296,14 +321,15 @@ std::size_t Archetype::Erase(std::size_t idx) {
 		std::size_t movedIdxInArchetype = entityNum - 1;
 
 		std::size_t srcIdxInChunk = movedIdxInArchetype % chunkCapacity;
-		byte* srcBuffer = chunks[movedIdxInArchetype / chunkCapacity]->data;
+		Chunk* srcChunk = chunks[movedIdxInArchetype / chunkCapacity];
+		std::uint8_t* srcBuffer = srcChunk->data;
 
 		for (std::size_t i = 0; i < cmptTraits.GetTypes().size(); i++) {
 			const auto& trait = cmptTraits.GetTraits()[i];
 			std::size_t size = trait.size;
 			std::size_t offset = offsets[i];
-			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
-			byte* src = srcBuffer + offset + srcIdxInChunk * size;
+			std::uint8_t* dst = dstBuffer + offset + dstIdxInChunk * size;
+			std::uint8_t* src = srcBuffer + offset + srcIdxInChunk * size;
 
 			if (cmptTraits.GetTypes().data()[i].Is<Entity>())
 				movedIdx = reinterpret_cast<Entity*>(src)->index;
@@ -311,16 +337,20 @@ std::size_t Archetype::Erase(std::size_t idx) {
 			trait.MoveAssign(dst, src);
 			trait.Destruct(src);
 		}
+
+		srcChunk->GetHead()->UpdateVersion(version);
 	}
 	else if(!cmptTraits.IsTrivial()) {
 		for (std::size_t i = 0; i < cmptTraits.GetTypes().size(); i++) {
 			const auto& trait = cmptTraits.GetTraits()[i];
 			std::size_t size = trait.size;
 			std::size_t offset = offsets[i];
-			byte* dst = dstBuffer + offset + dstIdxInChunk * size;
+			std::uint8_t* dst = dstBuffer + offset + dstIdxInChunk * size;
 			trait.Destruct(dst);
 		}
 	}
+
+	dstChunk->GetHead()->UpdateVersion(version);
 
 	entityNum--;
 
@@ -333,13 +363,13 @@ std::size_t Archetype::Erase(std::size_t idx) {
 	return movedIdx;
 }
 
-vector<CmptPtr> Archetype::Components(std::size_t idx) const {
-	vector<CmptPtr> rst;
+vector<CmptAccessPtr> Archetype::Components(std::size_t idx, AccessMode mode) const {
+	vector<CmptAccessPtr> rst;
 
 	for (const auto& type : cmptTraits.GetTypes()) {
 		if (type.Is<Entity>())
 			continue;
-		rst.emplace_back(type, At(type, idx));
+		rst.push_back(At({ type,mode }, idx));
 	}
 
 	return rst;

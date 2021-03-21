@@ -43,7 +43,8 @@ namespace Ubpa::UECS {
 			ArchetypeFilter = {},
 			CmptLocator = {},
 			SingletonLocator = {},
-			RandomAccessor = {}
+			RandomAccessor = {},
+			ChangeFilter = {}
 		);
 
 		// Func's argument list:
@@ -58,7 +59,8 @@ namespace Ubpa::UECS {
 			ArchetypeFilter = {},
 			bool isParallel = true,
 			SingletonLocator = {},
-			RandomAccessor = {}
+			RandomAccessor = {},
+			ChangeFilter = {}
 		);
 
 		// Func's argument list:
@@ -71,6 +73,37 @@ namespace Ubpa::UECS {
 			std::string_view name,
 			SingletonLocator = {},
 			RandomAccessor = {}
+		);
+
+		struct EntityJobConfig {
+			bool isParallel{ true };
+			ArchetypeFilter archetypeFilter;
+			CmptLocator cmptLocator;
+			SingletonLocator singletonLocator;
+			RandomAccessor randomAccessor;
+			ChangeFilter changeFilter;
+		};
+
+		struct ChunkJobConfig {
+			bool isParallel{ true };
+			ArchetypeFilter archetypeFilter;
+			SingletonLocator singletonLocator;
+			RandomAccessor randomAccessor;
+			ChangeFilter changeFilter;
+		};
+
+		template<typename Func>
+		const SystemFunc* RegisterEntityJob(
+			Func&&,
+			std::string_view name,
+			EntityJobConfig config
+		);
+
+		template<typename Func>
+		const SystemFunc* RegisterChunkJob(
+			Func&&,
+			std::string_view name,
+			ChunkJobConfig config
 		);
 
 		Schedule& RegisterCommand(std::function<void(World*)> command, int layer = 0) {

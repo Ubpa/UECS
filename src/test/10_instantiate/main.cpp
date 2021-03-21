@@ -21,7 +21,7 @@ int main() {
 	w.systemMngr.RegisterAndActivate<MySystem>();
 
 	auto e = w.entityMngr.Create(Ubpa::TypeIDs_of<A>);
-	w.entityMngr.Get<A>(e)->val = 1.f;
+	w.entityMngr.WriteComponent<A>(e)->val = 1.f;
 	w.entityMngr.Instantiate(e);
 	w.Update();
 

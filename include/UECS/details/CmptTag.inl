@@ -6,6 +6,7 @@ namespace Ubpa::UECS {
 	struct Entity;
 	class CmptLocator;
 	class World;
+	class Chunk;
 }
 
 namespace Ubpa::UECS {
@@ -171,6 +172,8 @@ namespace Ubpa::UECS {
 	struct DecayArg : DecayTag<Arg> {};
 	template<>
 	struct DecayArg<const World*> : std::type_identity<World*> {};
+	template<>
+	struct DecayArg<const Chunk*> : std::type_identity<const Chunk*> {};
 
 	// ====
 
@@ -184,12 +187,14 @@ namespace Ubpa::UECS {
 	template<typename Cmpt> struct IsWrite<Cmpt*> : std::true_type {};
 	template<typename Cmpt> struct IsWrite<const Cmpt*> : std::false_type {};
 	template<> struct IsWrite<World*> : std::false_type {};
+	template<> struct IsWrite<Chunk*> : std::false_type { static_assert("you should use const Chunk*"); };
 
 	template<typename T> struct IsLatest : std::false_type {};
 	template<typename Cmpt> struct IsLatest<Latest<Cmpt>> : std::true_type {};
 	template<typename Cmpt> struct IsLatest<Latest<Singleton<Cmpt>>> : std::false_type {};
 	template<typename Cmpt> struct IsLatest<const Cmpt*> : std::true_type {};
 	template<> struct IsLatest<const World*> : std::false_type {};
+	template<> struct IsLatest<const Chunk*> : std::false_type {};
 
 	template<typename T> struct IsLastFrameSingleton : std::false_type {};
 	template<typename Cmpt> struct IsLastFrameSingleton<LastFrame<Singleton<Cmpt>>> : std::true_type {};

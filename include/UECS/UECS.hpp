@@ -2,7 +2,8 @@
 
 #include "AccessTypeID.hpp"
 #include "ArchetypeFilter.hpp"
-#include "ChunkView.hpp"
+#include "ChangeFilter.hpp"
+#include "Chunk.hpp"
 #include "CmptLocator.hpp"
 #include "CmptPtr.hpp"
 #include "CmptsView.hpp"

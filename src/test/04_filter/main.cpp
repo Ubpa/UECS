@@ -40,10 +40,10 @@ int main() {
 	auto e2 = w.entityMngr.Create(Ubpa::TypeIDs_of<A,    C, D, E>); // x
 	auto e3 = w.entityMngr.Create(Ubpa::TypeIDs_of<A, B      , E>); // bingo
 
-	w.entityMngr.Get<E>(e0)->val = 0.f;
-	w.entityMngr.Get<E>(e1)->val = 1.f;
-	w.entityMngr.Get<E>(e2)->val = 2.f;
-	w.entityMngr.Get<E>(e3)->val = 3.f;
+	w.entityMngr.WriteComponent<E>(e0)->val = 0.f;
+	w.entityMngr.WriteComponent<E>(e1)->val = 1.f;
+	w.entityMngr.WriteComponent<E>(e2)->val = 2.f;
+	w.entityMngr.WriteComponent<E>(e3)->val = 3.f;
 
 	w.Update();
 

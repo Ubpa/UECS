@@ -79,7 +79,7 @@ namespace Ubpa::UECS {
 		template<typename Cmpt>
 		void RegisterOne();
 		
-		std::pmr::synchronized_pool_resource rsrc;
+		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
 		std::unordered_set<TypeID> trivials;
 		std::unordered_map<TypeID, std::string_view> names;
 		std::unordered_map<TypeID, std::size_t> sizeofs;

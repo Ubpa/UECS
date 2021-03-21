@@ -116,11 +116,14 @@ namespace Ubpa::UECS {
 		std::pmr::synchronized_pool_resource* GetFrameSyncResource() { return &frame_sync_rsrc; }
 		template<typename T, typename... Args>
 		T* SyncCreateFrameObject(Args&&... args);
+
+		std::uint64_t Version() const noexcept { return version; }
 	private:
 		bool inRunningJobGraph{ false };
 
 		mutable JobExecutor executor;
 		Schedule schedule;
+		std::uint64_t version{ 0 };
 
 		Job jobGraph;
 		std::vector<Job*> jobs;

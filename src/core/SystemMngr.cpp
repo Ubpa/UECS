@@ -74,9 +74,9 @@ void SystemMngr::Destroy(NameID ID) {
 }
 
 bool SystemMngr::IsAlive(NameID ID) const {
-	return aliveSystemIDs.find(ID) != aliveSystemIDs.end();
+	return aliveSystemIDs.contains(ID);
 }
 
 bool SystemMngr::IsActive(NameID ID) const {
-	return activeSystemIDs.find(ID) != activeSystemIDs.end();
+	return activeSystemIDs.contains(ID);
 }
