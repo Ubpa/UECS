@@ -18,6 +18,8 @@ namespace Ubpa::UECS {
 	class SystemMngr;
 	class SysFuncGraph;
 
+	static constexpr int SpecialLayer = -std::numeric_limits<int>::max();
+
 	// [description]
 	// system infomation record
 	// - SystemFunc
@@ -117,12 +119,17 @@ namespace Ubpa::UECS {
 		Schedule& Disable(std::string_view sys, int layer = 0);
 
 		// clear every frame
-		std::pmr::monotonic_buffer_resource* GetFrameMonotonicResource() { return &frame_rsrc; }
+		std::pmr::monotonic_buffer_resource* GetFrameMonotonicResource() { return frame_rsrc.get(); }
 		template<typename T, typename... Args>
 		T* CreateFrameObject(Args&&... args) const;
+		std::string_view RegisterFrameString(std::string_view str);
 
-		~Schedule();
 	private:
+		Schedule();
+		Schedule(const Schedule&);
+		Schedule(Schedule&&) noexcept = default;
+		~Schedule();
+
 		template<typename... Args>
 		const SystemFunc* Request(int layer, Args&&...);
 
@@ -163,8 +170,7 @@ namespace Ubpa::UECS {
 
 		std::map<int, LayerInfo> layerInfos;
 
-		mutable std::pmr::monotonic_buffer_resource frame_rsrc; // release in every frame
-		std::string_view RegisterFrameString(std::string_view str);
+		std::unique_ptr<std::pmr::monotonic_buffer_resource> frame_rsrc; // release in every frame
 
 		friend class World;
 	};

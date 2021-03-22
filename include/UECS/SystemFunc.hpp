@@ -13,6 +13,8 @@
 #include <functional>
 
 namespace Ubpa::UECS {
+	class Schedule;
+
 	// [- description]
 	// system function registered by Schedule in <System>::OnUpdate(Schedule&)
 	// name + query(archetype filter + component locator) + singleton locator + function<...>
@@ -72,6 +74,8 @@ namespace Ubpa::UECS {
 
 		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
+		friend class Schedule;
+		SystemFunc(const SystemFunc&) = default;
 		Mode mode;
 		std::string_view name;
 		std::size_t hashCode; // after name

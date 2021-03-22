@@ -16,10 +16,7 @@ namespace Ubpa::UECS {
 	// SystemMngr + EntityMngr
 	class World {
 	public:
-		World() :
-			jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-			systemMngr { this } {}
-		// not copy/move schedule, so you can't use DumpUpdateJobGraph() and GenUpdateFrameGraph() before Update()
+		World();
 		World(const World&);
 		World(World&&) noexcept;
 		~World();
@@ -57,7 +54,7 @@ namespace Ubpa::UECS {
 		// <tagged-components>: [const] <Cmpt>*...
 		// CmptsView
 		template<typename Func>
-		void RunEntityJob(
+		CommandBuffer RunEntityJob(
 			Func&&,
 			bool isParallel = true,
 			ArchetypeFilter = {},
@@ -91,7 +88,7 @@ namespace Ubpa::UECS {
 		// std::size_t entityBeginIndexInQuery
 		// ChunkView (necessary)
 		template<typename Func>
-		void RunChunkJob(
+		CommandBuffer RunChunkJob(
 			Func&&,
 			ArchetypeFilter = {},
 			bool isParallel = true,
@@ -136,7 +133,7 @@ namespace Ubpa::UECS {
 		std::mutex commandBufferMutex;
 		void RunCommands(int layer);
 
-		void Run(SystemFunc*);
+		CommandBuffer Run(SystemFunc*);
 
 		std::pmr::synchronized_pool_resource frame_sync_rsrc;
 	};

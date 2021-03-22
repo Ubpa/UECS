@@ -8,43 +8,43 @@ using namespace Ubpa::UECS;
 using namespace Ubpa;
 using namespace std;
 
-World::World(const World& w)
-	:
+World::World() :
+	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	systemMngr{ this } {}
+
+World::World(const World& w) :
 	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	systemMngr{ w.systemMngr, this },
-	entityMngr{ w.entityMngr }
-{}
+	entityMngr{ w.entityMngr },
+	schedule{ w.schedule } {}
 
-World::World(World&& w) noexcept
-	:
+World::World(World&& w) noexcept :
 	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	systemMngr{ std::move(w.systemMngr), this },
-	entityMngr{ std::move(w.entityMngr) }
-{}
+	entityMngr{ std::move(w.entityMngr) },
+	schedule{ std::move(w.schedule) }{}
 
 World::~World() {
+	schedule.Clear();
 	systemMngr.Clear();
 	entityMngr.Clear();
 }
 
 void World::Update() {
-	// 1. clear
+	// 1. update schedule
 
-	frame_sync_rsrc.release();
 	schedule.Clear();
-
-	// 2. run systems schedule
-	
 	for (const auto& ID : systemMngr.GetActiveSystemIDs())
 		systemMngr.Update(ID, schedule);
 
-	// 3. generate job graph
+	// 2. run job graph for several layers
 	inRunningJobGraph = true;
 
 	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
 		(std::pmr::unordered_map<SystemFunc*, JobHandle>::allocator_type{ schedule.GetFrameMonotonicResource() });
 
 	for (const auto& [layer, layerinfo] : schedule.layerInfos) {
+		assert(layer != SpecialLayer);
 		for (const auto& [hashcode, func] : layerinfo.sysFuncs) {
 			auto* job_buffer = jobRsrc->allocate(sizeof(Job), alignof(Job));
 			auto* job = new(job_buffer)Job{ std::string{func->Name()} };
@@ -74,28 +74,39 @@ void World::Update() {
 	}
 	inRunningJobGraph = false;
 
-	// 4. update version
+	// 3. update version
 	version++;
 	entityMngr.UpdateVersion(version);
+
+	// 4. clear frame resource
+	frame_sync_rsrc.release();
 }
 
 string World::DumpUpdateJobGraph() const {
 	return jobGraph.dump();
 }
 
-void World::Run(SystemFunc* sys) {
+CommandBuffer World::Run(SystemFunc* sys) {
 	if (sys->IsParallel()) {
 		assert(!inRunningJobGraph);
 		Job job;
-		entityMngr.AutoGen(this, &job, sys, 0);
+		entityMngr.AutoGen(this, &job, sys, SpecialLayer);
 		executor.run(job).wait();
 	}
 	else
-		entityMngr.AutoGen(this, nullptr, sys, 0);
+		entityMngr.AutoGen(this, nullptr, sys, SpecialLayer);
+
+	auto target = lcommandBuffer.find(SpecialLayer);
+	if (target == lcommandBuffer.end())
+		return {};
+	CommandBuffer rst = std::move(target->second);
+	lcommandBuffer.erase(target);
+	return rst;
 }
 
 // after running Update
 UGraphviz::Graph World::GenUpdateFrameGraph(int layer) const {
+	assert(layer != SpecialLayer);
 	std::string title = "Update Frame Graph [layer: " + std::to_string(layer) + "]";
 	UGraphviz::Graph graph(std::move(title), true);
 
@@ -347,6 +358,7 @@ void World::AddCommandBuffer(CommandBuffer cb, int layer) {
 }
 
 void World::RunCommands(int layer) {
+	assert(layer != SpecialLayer);
 	auto target = lcommandBuffer.find(layer);
 	if (target == lcommandBuffer.end())
 		return;

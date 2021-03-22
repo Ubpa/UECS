@@ -2,7 +2,7 @@
 
 namespace Ubpa::UECS {
 	template<typename Func>
-	void World::RunEntityJob(
+	CommandBuffer World::RunEntityJob(
 		Func&& func,
 		bool isParallel,
 		ArchetypeFilter filter,
@@ -19,7 +19,7 @@ namespace Ubpa::UECS {
 			{},
 			isParallel
 		};
-		Run(&sys);
+		return Run(&sys);
 	}
 
 	template<typename Func>
@@ -35,6 +35,8 @@ namespace Ubpa::UECS {
 			"const RunEntityJob should use const World*");
 		static_assert(Length_v<Filter_t<ArgList, IsWrite>> == 0,
 			"const RunEntityJob can't write cmpt");
+		static_assert(!Contain_v<ArgList, CommandBufferView>,
+			"const RunEntityJob shouldn't use CommandBufferView");
 		assert("const RunEntityJob can't write cmpt"
 			&& !cmptLocator.HasWriteTypeID());
 
@@ -48,7 +50,7 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename Func>
-	void World::RunChunkJob(
+	CommandBuffer World::RunChunkJob(
 		Func&& func,
 		ArchetypeFilter filter,
 		bool isParallel,
@@ -63,7 +65,7 @@ namespace Ubpa::UECS {
 			{},
 			isParallel
 		};
-		Run(&sys);
+		return Run(&sys);
 	}
 
 	template<typename Func>
@@ -74,8 +76,10 @@ namespace Ubpa::UECS {
 		SingletonLocator singletonLocator
 	) const {
 		using ArgList = FuncTraits_ArgList<Func>;
-		static_assert(Contain_v<ArgList, World*> == 0,
+		static_assert(!Contain_v<ArgList, World*>,
 			"const RunChunkJob should use const World*");
+		static_assert(!Contain_v<ArgList, CommandBufferView>,
+			"const RunChunkJob shouldn't use CommandBufferView");
 		assert("const RunChunkJob can't write cmpt"
 			&& !filter.HaveWriteTypeID());
 
