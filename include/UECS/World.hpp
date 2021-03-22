@@ -33,8 +33,8 @@ namespace Ubpa::UECS {
 		// 4. run commands in main thread
 		void Update();
 
-		void AddCommand(std::function<void()> command, int layer = 0);
-		void AddCommandBuffer(CommandBuffer cb);
+		void AddCommand(std::function<void()> command, int layer);
+		void AddCommandBuffer(CommandBuffer cb, int layer);
 
 		// after running Update()
 		// you can use graphviz to vistualize the graph
@@ -42,7 +42,7 @@ namespace Ubpa::UECS {
 
 		// after running Update()
 		// use CmptTraits' registered component name
-		UGraphviz::Graph GenUpdateFrameGraph() const;
+		UGraphviz::Graph GenUpdateFrameGraph(int layer = 0) const;
 
 		void Accept(IListener*) const;
 
@@ -132,9 +132,9 @@ namespace Ubpa::UECS {
 		std::unique_ptr<std::pmr::unsynchronized_pool_resource> jobRsrc;
 
 		// command
-		CommandBuffer commandBuffer;
+		std::map<int, CommandBuffer> lcommandBuffer;
 		std::mutex commandBufferMutex;
-		void RunCommands();
+		void RunCommands(int layer);
 
 		void Run(SystemFunc*);
 

@@ -101,13 +101,13 @@ namespace Ubpa::UECS {
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;
 
 		// if job is nullptr, direct run
-		bool GenEntityJob(World*, Job*, SystemFunc*) const;
+		bool GenEntityJob(World*, Job*, SystemFunc*, int layer) const;
 		// if job is nullptr, direct run
-		bool GenChunkJob(World*, Job*, SystemFunc*) const;
+		bool GenChunkJob(World*, Job*, SystemFunc*, int layer) const;
 		// if job is nullptr, direct run
 		bool GenJob(World*, Job*, SystemFunc*) const;
 		// if job is nullptr, direct run
-		bool AutoGen(World*, Job*, SystemFunc*) const;
+		bool AutoGen(World*, Job*, SystemFunc*, int layer) const;
 
 		std::uint64_t version{ 0 };
 

@@ -16,9 +16,11 @@ namespace Ubpa::UECS {
 		CmptLocator cmptLocator,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor,
-		ChangeFilter changeFilter
+		ChangeFilter changeFilter,
+		int layer
 	) {
 		return Request(
+			layer,
 			std::forward<Func>(func),
 			RegisterFrameString(name),
 			std::move(filter),
@@ -38,9 +40,11 @@ namespace Ubpa::UECS {
 		bool isParallel,
 		SingletonLocator singletonLocator,
 		RandomAccessor randomAccessor,
-		ChangeFilter changeFilter
+		ChangeFilter changeFilter,
+		int layer
 	) {
 		return Request(
+			layer,
 			std::forward<Func>(func),
 			RegisterFrameString(name),
 			std::move(filter),
@@ -56,9 +60,11 @@ namespace Ubpa::UECS {
 		Func&& func,
 		std::string_view name,
 		SingletonLocator singletonLocator,
-		RandomAccessor randomAccessor
+		RandomAccessor randomAccessor,
+		int layer
 	) {
 		return Request(
+			layer,
 			std::forward<Func>(func),
 			RegisterFrameString(name),
 			std::move(singletonLocator),
@@ -72,15 +78,16 @@ namespace Ubpa::UECS {
 		std::string_view name,
 		EntityJobConfig config
 	) {
-		return Request(
+		return RegisterEntityJob(
 			std::forward<Func>(func),
 			RegisterFrameString(name),
+			config.isParallel,
 			std::move(config.archetypeFilter),
 			std::move(config.cmptLocator),
 			std::move(config.singletonLocator),
 			std::move(config.randomAccessor),
 			std::move(config.changeFilter),
-			config.isParallel
+			config.layer
 		);
 	}
 
@@ -90,22 +97,23 @@ namespace Ubpa::UECS {
 		std::string_view name,
 		ChunkJobConfig config
 	) {
-		return Request(
+		return RegisterChunkJob(
 			std::forward<Func>(func),
 			RegisterFrameString(name),
+			config.isParallel,
 			std::move(config.archetypeFilter),
 			std::move(config.singletonLocator),
 			std::move(config.randomAccessor),
 			std::move(config.changeFilter),
-			config.isParallel
+			config.layer
 		);
 	}
 
 	template<typename... Args>
-	const SystemFunc* Schedule::Request(Args&&... args) {
+	const SystemFunc* Schedule::Request(int layer, Args&&... args) {
 		SystemFunc* sysFunc = (SystemFunc*)frame_rsrc.allocate(sizeof(SystemFunc), alignof(SystemFunc));
 		new(sysFunc)SystemFunc(std::forward<Args>(args)...);
-		sysFuncs.emplace(sysFunc->GetValue(), sysFunc);
+		layerInfos[layer].sysFuncs.emplace(sysFunc->GetValue(), sysFunc);
 		return sysFunc;
 	}
 }

@@ -17,39 +17,45 @@ std::string_view Schedule::RegisterFrameString(std::string_view str) {
 	return str;
 }
 
-Schedule& Schedule::Order(string_view x, string_view y) {
-	sysFuncOrder.emplace(SystemFunc::GetValue(x), SystemFunc::GetValue(y));
+Schedule& Schedule::Order(string_view x, string_view y, int layer) {
+	layerInfos[layer].sysFuncOrder.emplace(SystemFunc::GetValue(x), SystemFunc::GetValue(y));
 	return *this;
 }
 
-Schedule& Schedule::AddNone(string_view sys, TypeID type) {
+Schedule& Schedule::AddNone(string_view sys, TypeID type, int layer) {
 	std::size_t hashcode = SystemFunc::GetValue(sys);
-	sysNones[hashcode].push_back(type);
+	layerInfos[layer].sysNones[hashcode].push_back(type);
 	return *this;
 }
 
-Schedule& Schedule::Disable(std::string_view sys) {
-	disabledSysFuncs.insert(SystemFunc::GetValue(sys));
+Schedule& Schedule::Disable(std::string_view sys, int layer) {
+	layerInfos[layer].disabledSysFuncs.insert(SystemFunc::GetValue(sys));
 	return *this;
 }
 
 void Schedule::Clear() {
-	//auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ &frame_rsrc };
-	for (const auto& [hash, sysFunc] : sysFuncs) {
-		sysFunc->~SystemFunc();
-		// no need to deallocate
-		//alloc.deallocate(sysFunc, 1);
+	for (auto& [layer, layerinfo] : layerInfos) {
+		//auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ &frame_rsrc };
+		for (const auto& [hash, sysFunc] : layerinfo.sysFuncs) {
+			sysFunc->~SystemFunc();
+			// no need to deallocate
+			//alloc.deallocate(sysFunc, 1);
+		}
+		layerinfo.disabledSysFuncs.clear();
+		layerinfo.sysFuncs.clear();
+		layerinfo.sysFuncOrder.clear();
+		layerinfo.sysNones.clear();
 	}
-	disabledSysFuncs.clear();
-	sysFuncs.clear();
-	sysFuncOrder.clear();
-	sysNones.clear();
+	layerInfos.clear();
 	frame_rsrc.release();
 }
 
-Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap() const {
-	CmptSysFuncsMap* rst = CreateFrameObject<CmptSysFuncsMap>(CmptSysFuncsMap::allocator_type{ &frame_rsrc });
+Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap(int layer) const {
+	const auto& layerinfo = layerInfos.at(layer);
+	const auto& sysFuncs = layerinfo.sysFuncs;
+	const auto& disabledSysFuncs = layerinfo.disabledSysFuncs;
 
+	CmptSysFuncsMap* rst = CreateFrameObject<CmptSysFuncsMap>(CmptSysFuncsMap::allocator_type{ &frame_rsrc });
 	for (const auto& [hashcode, sysFunc] : sysFuncs) {
 		if (disabledSysFuncs.contains(hashcode))
 			continue;
@@ -153,7 +159,13 @@ Schedule::CmptSysFuncsMap* Schedule::GenCmptSysFuncsMap() const {
 	return rst;
 }
 
-SysFuncGraph* Schedule::GenSysFuncGraph() const {
+SysFuncGraph* Schedule::GenSysFuncGraph(int layer) const {
+	const auto& layerinfo = layerInfos.at(layer);
+	const auto& sysNones = layerinfo.sysNones;
+	const auto& sysFuncs = layerinfo.sysFuncs;
+	const auto& sysFuncOrder = layerinfo.sysFuncOrder;
+	const auto& disabledSysFuncs = layerinfo.disabledSysFuncs;
+
 	// [change func Filter]
 	for (const auto& [hashcode, nones] : sysNones) {
 		auto target = sysFuncs.find(hashcode);
@@ -167,7 +179,7 @@ SysFuncGraph* Schedule::GenSysFuncGraph() const {
 	}
 
 	// not contains disabled system functions
-	CmptSysFuncsMap* cmptSysFuncsMap = GenCmptSysFuncsMap(); // use frame rsrc, no need to release
+	CmptSysFuncsMap* cmptSysFuncsMap = GenCmptSysFuncsMap(layer); // use frame rsrc, no need to release
 
 	// [gen graph]
 	SysFuncGraph* graph = CreateFrameObject<SysFuncGraph>(&frame_rsrc);

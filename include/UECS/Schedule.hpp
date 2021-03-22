@@ -44,7 +44,8 @@ namespace Ubpa::UECS {
 			CmptLocator = {},
 			SingletonLocator = {},
 			RandomAccessor = {},
-			ChangeFilter = {}
+			ChangeFilter = {},
+			int layer = 0
 		);
 
 		// Func's argument list:
@@ -60,7 +61,8 @@ namespace Ubpa::UECS {
 			bool isParallel = true,
 			SingletonLocator = {},
 			RandomAccessor = {},
-			ChangeFilter = {}
+			ChangeFilter = {},
+			int layer = 0
 		);
 
 		// Func's argument list:
@@ -72,7 +74,8 @@ namespace Ubpa::UECS {
 			Func&&,
 			std::string_view name,
 			SingletonLocator = {},
-			RandomAccessor = {}
+			RandomAccessor = {},
+			int layer = 0
 		);
 
 		struct EntityJobConfig {
@@ -82,6 +85,7 @@ namespace Ubpa::UECS {
 			SingletonLocator singletonLocator;
 			RandomAccessor randomAccessor;
 			ChangeFilter changeFilter;
+			int layer{ 0 };
 		};
 
 		struct ChunkJobConfig {
@@ -90,6 +94,7 @@ namespace Ubpa::UECS {
 			SingletonLocator singletonLocator;
 			RandomAccessor randomAccessor;
 			ChangeFilter changeFilter;
+			int layer{ 0 };
 		};
 
 		template<typename Func>
@@ -106,10 +111,10 @@ namespace Ubpa::UECS {
 			ChunkJobConfig config
 		);
 
-		Schedule& Order(std::string_view x, std::string_view y);
+		Schedule& Order(std::string_view x, std::string_view y, int layer = 0);
 
-		Schedule& AddNone(std::string_view sys, TypeID);
-		Schedule& Disable(std::string_view sys);
+		Schedule& AddNone(std::string_view sys, TypeID, int layer = 0);
+		Schedule& Disable(std::string_view sys, int layer = 0);
 
 		// clear every frame
 		std::pmr::monotonic_buffer_resource* GetFrameMonotonicResource() { return &frame_rsrc; }
@@ -119,7 +124,7 @@ namespace Ubpa::UECS {
 		~Schedule();
 	private:
 		template<typename... Args>
-		const SystemFunc* Request(Args&&...);
+		const SystemFunc* Request(int layer, Args&&...);
 
 		void Clear();
 
@@ -138,21 +143,25 @@ namespace Ubpa::UECS {
 		using CmptSysFuncsMap = std::pmr::unordered_map<TypeID, CmptSysFuncs>;
 
 		// use frame_rsrc, so no need to delete
-		CmptSysFuncsMap* GenCmptSysFuncsMap() const;
+		CmptSysFuncsMap* GenCmptSysFuncsMap(int layer) const;
 
 		// use frame_rsrc, so no need to delete
-		SysFuncGraph* GenSysFuncGraph() const;
+		SysFuncGraph* GenSysFuncGraph(int layer) const;
 
-		// SystemFunc's hashcode to pointer of SystemFunc
-		std::unordered_map<std::size_t, SystemFunc*> sysFuncs;
+		struct LayerInfo {
+			// SystemFunc's hashcode to pointer of SystemFunc
+			std::unordered_map<std::size_t, SystemFunc*> sysFuncs;
 
-		std::unordered_set<std::size_t> disabledSysFuncs;
+			std::unordered_set<std::size_t> disabledSysFuncs;
 
-		// SystemFunc's hashcode to SystemFunc's hashcode
-		// parent to children
-		std::unordered_map<std::size_t, std::size_t> sysFuncOrder;
+			// SystemFunc's hashcode to SystemFunc's hashcode
+			// parent to children
+			std::unordered_map<std::size_t, std::size_t> sysFuncOrder;
 
-		std::unordered_map<std::size_t, small_vector<TypeID>> sysNones;
+			std::unordered_map<std::size_t, small_vector<TypeID>> sysNones;
+		};
+
+		std::map<int, LayerInfo> layerInfos;
 
 		mutable std::pmr::monotonic_buffer_resource frame_rsrc; // release in every frame
 		std::string_view RegisterFrameString(std::string_view str);

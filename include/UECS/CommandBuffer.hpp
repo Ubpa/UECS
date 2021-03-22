@@ -2,33 +2,23 @@
 
 #include <functional>
 #include <vector>
-#include <map>
 
 namespace Ubpa::UECS {
 	class CommandBuffer {
 	public:
-		void AddCommand(std::function<void()> command, int layer) { lcommands[layer].push_back(std::move(command)); }
+		void AddCommand(std::function<void()> command) { commands.push_back(std::move(command)); }
 		void AddCommandBuffer(CommandBuffer cb) {
-			for (auto& [layer, cmds] : cb.lcommands) {
-				auto& dst = lcommands[layer];
-				dst.reserve(dst.size() + cmds.size());
-				for (auto& cmd : cmds)
-					dst.push_back(std::move(cmd));
-			}
+			commands.reserve(commands.size() + cb.commands.size());
+			for (auto& cmd : cb.commands)
+				commands.push_back(std::move(cmd));
 		}
-		bool Empty() const noexcept {
-			for (const auto& [layer, cmds] : lcommands) {
-				if (!cmds.empty())
-					return false;
-			}
-			return true;
-		}
-		void Clear() { lcommands.clear(); }
+		bool Empty() const noexcept { return commands.empty(); }
+		void Clear() { commands.clear(); }
 
-		auto& GetCommands() noexcept { return lcommands; }
-		const auto& GetCommands() const noexcept { return lcommands; }
+		auto& GetCommands() noexcept { return commands; }
+		const auto& GetCommands() const noexcept { return commands; }
 	private:
-		std::map<int, std::vector<std::function<void()>>> lcommands;
+		std::vector<std::function<void()>> commands;
 	};
 
 	class CommandBufferView {

@@ -316,7 +316,7 @@ Ubpa::small_vector<CmptAccessPtr> EntityMngr::LocateSingletons(const SingletonLo
 	return rst;
 }
 
-bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys, int layer) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Entity);
 
 	auto singletons = LocateSingletons(sys->singletonLocator);
@@ -360,7 +360,7 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 						for (std::size_t k = 0; k < cmpts.size(); k++)
 							reinterpret_cast<uint8_t*&>(cmpts[k].p) += sizes[k];
 					}
-					w->AddCommandBuffer(std::move(cb));
+					w->AddCommandBuffer(std::move(cb), layer);
 				});
 			}
 
@@ -368,7 +368,7 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 		}
 	}
 	else {
-		auto work = [this, singletons = std::move(singletons), sys, w, archetypes]() {
+		auto work = [this, singletons = std::move(singletons), sys, w, archetypes, layer]() {
 			CommandBuffer cb;
 			std::size_t indexOffsetInQuery = 0;
 			for (Archetype* archetype : archetypes) {
@@ -403,7 +403,7 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 
 				indexOffsetInQuery += num;
 			}
-			w->AddCommandBuffer(std::move(cb));
+			w->AddCommandBuffer(std::move(cb), layer);
 		};
 
 		if (job)
@@ -415,7 +415,7 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys) const {
 	return true;
 }
 
-bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys, int layer) const {
 	assert(sys->GetMode() == SystemFunc::Mode::Chunk);
 
 	auto singletons = LocateSingletons(sys->singletonLocator);
@@ -448,7 +448,7 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 						archetype->chunks[i],
 						&cb
 					);
-					w->AddCommandBuffer(std::move(cb));
+					w->AddCommandBuffer(std::move(cb), layer);
 				});
 			}
 
@@ -456,7 +456,7 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 		}
 	}
 	else {
-		auto work = [this, w, sys, singletons = std::move(singletons)]() {
+		auto work = [this, w, sys, singletons = std::move(singletons), layer]() {
 			SingletonsView singletonsView{ std::span{singletons.data(), singletons.size()} };
 
 			CommandBuffer cb;
@@ -481,7 +481,7 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys) const {
 					);
 				}
 			}
-			w->AddCommandBuffer(std::move(cb));
+			w->AddCommandBuffer(std::move(cb), layer);
 		};
 
 		if (job)
@@ -515,13 +515,13 @@ bool EntityMngr::GenJob(World* w, Job* job, SystemFunc* sys) const {
 	return true;
 }
 
-bool EntityMngr::AutoGen(World* w, Job* job, SystemFunc* sys) const {
+bool EntityMngr::AutoGen(World* w, Job* job, SystemFunc* sys, int layer) const {
 	switch (sys->GetMode())
 	{
 	case SystemFunc::Mode::Entity:
-		return GenEntityJob(w, job, sys);
+		return GenEntityJob(w, job, sys, layer);
 	case SystemFunc::Mode::Chunk:
-		return GenChunkJob(w, job, sys);
+		return GenChunkJob(w, job, sys, layer);
 	case SystemFunc::Mode::Job:
 		return GenJob(w, job, sys);
 	default:
