@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RTDCmptTraits.hpp"
+#include "CmptTraits.hpp"
 #include "EntityQuery.hpp"
 #include "SingletonLocator.hpp"
 #include "CmptPtr.hpp"
@@ -24,7 +24,7 @@ namespace Ubpa::UECS {
 	// - Singleton: IsSingleton, GetSingletonEntity, GetSingleton
 	// - other: EntityNum, AddCommand
 	// [important]
-	// - some API with TypeID need RTDCmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
+	// - some API with TypeID need CmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
 	// - API with Entity require Entity exist  (throw std::invalid_argument)
 	// [details]
 	// - when free entries is empty, use new entity entry (version is 0)
@@ -35,7 +35,7 @@ namespace Ubpa::UECS {
 		EntityMngr(EntityMngr&&) noexcept;
 		~EntityMngr();
 
-		RTDCmptTraits cmptTraits;
+		CmptTraits cmptTraits;
 
 		Entity Create(std::span<const TypeID> types = {});
 
@@ -95,7 +95,7 @@ namespace Ubpa::UECS {
 		// types not contain Entity
 		Archetype* GetOrCreateArchetypeOf(std::span<const TypeID> types);
 
-		small_vector<CmptAccessPtr, 16> LocateSingletons(const SingletonLocator&) const;
+		small_vector<CmptAccessPtr> LocateSingletons(const SingletonLocator&) const;
 
 		const std::set<Archetype*>& QueryArchetypes(const EntityQuery&) const;
 		mutable std::unordered_map<EntityQuery, std::set<Archetype*>> queryCache;

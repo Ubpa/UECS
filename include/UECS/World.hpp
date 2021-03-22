@@ -39,7 +39,7 @@ namespace Ubpa::UECS {
 		std::string DumpUpdateJobGraph() const;
 
 		// after running Update()
-		// use RTDCmptTraits' registered component name
+		// use CmptTraits' registered component name
 		UGraphviz::Graph GenUpdateFrameGraph() const;
 
 		void Accept(IListener*) const;

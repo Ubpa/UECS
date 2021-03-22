@@ -42,7 +42,7 @@
 ## Example
 
 ```c++
-#include <UECS/UECS.h>
+#include <UECS/UECS.hpp>
 
 using namespace Ubpa::UECS;
 
@@ -62,8 +62,9 @@ struct MoverSystem {
 
 int main() {
   World w;
+  w.entityMngr.cmptTraits.Register<Position, Velocity>();
   w.systemMngr.RegisterAndActivate<MoverSystem>();
-  w.entityMngr.Create<Position, Velocity>();
+  w.entityMngr.Create(Ubpa::TypeIDs_of<Position, Velocity>);
   w.Update();
 }
 ```
@@ -87,6 +88,7 @@ int main() {
 - [directly run execution](src/test/19_direct_run/main.cpp) 
 - [system lifecycle](src/test/20_system_lifecycle/main.cpp) 
 - [random access components](src/test/21_random/main.cpp) 
+- [change filter](src/test/22_change_filter/main.cpp) 
 
 ## Licensing
 

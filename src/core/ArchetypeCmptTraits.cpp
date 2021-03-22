@@ -2,7 +2,7 @@
 
 #include "ArchetypeCmptTraits.hpp"
 
-#include <UECS/RTDCmptTraits.hpp>
+#include <UECS/CmptTraits.hpp>
 
 #include <UECS/EntityQuery.hpp>
 
@@ -51,7 +51,7 @@ ArchetypeCmptTraits::CmptTrait& ArchetypeCmptTraits::GetTrait(TypeID ID) noexcep
 	return cmpt_traits[GetTypeIndex(ID)];
 }
 
-void ArchetypeCmptTraits::Register(const RTDCmptTraits& rtdct, TypeID type) {
+void ArchetypeCmptTraits::Register(const CmptTraits& rtdct, TypeID type) {
 	auto size_target = rtdct.GetSizeofs().find(type);
 	if (size_target == rtdct.GetSizeofs().end())
 		throw std::logic_error("ArchetypeCmptTraits::Register: RTDCmptTrait hasn't registered <TypeID>");

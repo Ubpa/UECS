@@ -8,7 +8,7 @@
 #include <span>
 
 namespace Ubpa::UECS {
-	class RTDCmptTraits;
+	class CmptTraits;
 	struct EntityQuery;
 
 	// run-time static component traits
@@ -44,7 +44,7 @@ namespace Ubpa::UECS {
 		const CmptTrait& GetTrait(TypeID ID) const noexcept
 		{ return const_cast<ArchetypeCmptTraits*>(this)->GetTrait(ID); }
 
-		void Register(const RTDCmptTraits&, TypeID);
+		void Register(const CmptTraits&, TypeID);
 
 		void Deregister(TypeID) noexcept;
 

@@ -1,14 +1,14 @@
-#include <UECS/RTDCmptTraits.hpp>
+#include <UECS/CmptTraits.hpp>
 
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 
-RTDCmptTraits::RTDCmptTraits() : rsrc {std::make_unique<std::pmr::unsynchronized_pool_resource>()}
+CmptTraits::CmptTraits() : rsrc {std::make_unique<std::pmr::unsynchronized_pool_resource>()}
 {
 	Register<Entity>();
 }
 
-RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
+CmptTraits::CmptTraits(const CmptTraits& other) :
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	sizeofs{other.sizeofs},
 	trivials{other.trivials},
@@ -28,7 +28,7 @@ RTDCmptTraits::RTDCmptTraits(const RTDCmptTraits& other) :
 	}
 }
 
-RTDCmptTraits& RTDCmptTraits::operator=(const RTDCmptTraits& rhs) {
+CmptTraits& CmptTraits::operator=(const CmptTraits& rhs) {
 	sizeofs = rhs.sizeofs;
 	trivials = rhs.trivials;
 	alignments = rhs.alignments;
@@ -49,30 +49,30 @@ RTDCmptTraits& RTDCmptTraits::operator=(const RTDCmptTraits& rhs) {
 }
 
 
-bool RTDCmptTraits::IsTrivial(TypeID type) const {
+bool CmptTraits::IsTrivial(TypeID type) const {
 	return trivials.contains(type);
 }
 
-std::size_t RTDCmptTraits::Sizeof(TypeID type) const {
+std::size_t CmptTraits::Sizeof(TypeID type) const {
 	auto target = sizeofs.find(type);
 	assert(target != sizeofs.end());
 	return target->second;
 }
 
-std::size_t RTDCmptTraits::Alignof(TypeID type) const {
+std::size_t CmptTraits::Alignof(TypeID type) const {
 	auto target = alignments.find(type);
 
 	return target != alignments.end() ? target->second : default_alignment;
 }
 
-void RTDCmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
+void CmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
 	auto target = default_constructors.find(type);
 
 	if (target != default_constructors.end())
 		target->second(cmpt);
 }
 
-void RTDCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
+void CmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
 	auto target = copy_constructors.find(type);
 
 	if (target != copy_constructors.end())
@@ -81,7 +81,7 @@ void RTDCmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
 		memcpy(dst, src, Sizeof(type));
 }
 
-void RTDCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
+void CmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
 	auto target = move_constructors.find(type);
 
 	if (target != move_constructors.end())
@@ -90,7 +90,7 @@ void RTDCmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
 		memcpy(dst, src, Sizeof(type));
 }
 
-void RTDCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
+void CmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
 	auto target = move_assignments.find(type);
 
 	if (target != move_assignments.end())
@@ -99,13 +99,13 @@ void RTDCmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
 		memcpy(dst, src, Sizeof(type));
 }
 
-void RTDCmptTraits::Destruct(TypeID type, void* cmpt) const {
+void CmptTraits::Destruct(TypeID type, void* cmpt) const {
 	auto target = destructors.find(type);
 	if (target != destructors.end())
 		target->second(cmpt);
 }
 
-std::string_view RTDCmptTraits::Nameof(TypeID type) const {
+std::string_view CmptTraits::Nameof(TypeID type) const {
 	auto target = names.find(type);
 	if (target != names.end())
 		return target->second;
@@ -113,42 +113,42 @@ std::string_view RTDCmptTraits::Nameof(TypeID type) const {
 		return {};
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterSize(TypeID type, std::size_t size) {
+CmptTraits& CmptTraits::RegisterSize(TypeID type, std::size_t size) {
 	sizeofs.emplace(type, size);
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterAlignment(TypeID type, std::size_t alignment) {
+CmptTraits& CmptTraits::RegisterAlignment(TypeID type, std::size_t alignment) {
 	alignments.emplace(type, alignment);
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*)> f) {
+CmptTraits& CmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*)> f) {
 	default_constructors.emplace(type, std::move(f));
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*, void*)> f) {
+CmptTraits& CmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*, void*)> f) {
 	copy_constructors.emplace(type, std::move(f));
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*, void*)> f) {
+CmptTraits& CmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*, void*)> f) {
 	move_constructors.emplace(type, std::move(f));
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterMoveAssignment(TypeID type, std::function<void(void*, void*)> f) {
+CmptTraits& CmptTraits::RegisterMoveAssignment(TypeID type, std::function<void(void*, void*)> f) {
 	move_assignments.emplace(type, std::move(f));
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterDestructor(TypeID type, std::function<void(void*)> f) {
+CmptTraits& CmptTraits::RegisterDestructor(TypeID type, std::function<void(void*)> f) {
 	destructors.emplace(type, std::move(f));
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterName(Type type) {
+CmptTraits& CmptTraits::RegisterName(Type type) {
 	auto target = names.find(type);
 	if (target != names.end()) {
 		assert(type.Is(target->second));
@@ -163,12 +163,12 @@ RTDCmptTraits& RTDCmptTraits::RegisterName(Type type) {
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::RegisterTrivial(TypeID type) {
+CmptTraits& CmptTraits::RegisterTrivial(TypeID type) {
 	trivials.insert(type);
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
+CmptTraits& CmptTraits::Deregister(TypeID type) noexcept {
 	names.erase(type);
 	trivials.erase(type);
 	sizeofs.erase(type);
@@ -181,7 +181,7 @@ RTDCmptTraits& RTDCmptTraits::Deregister(TypeID type) noexcept {
 	return *this;
 }
 
-RTDCmptTraits& RTDCmptTraits::Clear() {
+CmptTraits& CmptTraits::Clear() {
 	names.clear();
 	trivials.clear();
 	sizeofs.clear();

@@ -19,27 +19,27 @@ namespace Ubpa::UECS {
 	// - move assignment: memcpy as default
 	// - destructor: do nothing as default
 	// - name
-	class RTDCmptTraits {
+	class CmptTraits {
 	public:
 		static constexpr std::size_t default_alignment = alignof(std::max_align_t);
 
-		RTDCmptTraits();
-		RTDCmptTraits(const RTDCmptTraits& other);
-		RTDCmptTraits(RTDCmptTraits&& other) noexcept = default;
-		RTDCmptTraits& operator=(const RTDCmptTraits & other);
-		RTDCmptTraits& operator=(RTDCmptTraits&& other) noexcept = default;
+		CmptTraits();
+		CmptTraits(const CmptTraits& other);
+		CmptTraits(CmptTraits&& other) noexcept = default;
+		CmptTraits& operator=(const CmptTraits & other);
+		CmptTraits& operator=(CmptTraits&& other) noexcept = default;
 
-		RTDCmptTraits& Clear();
+		CmptTraits& Clear();
 
-		RTDCmptTraits& RegisterName(Type);
-		RTDCmptTraits& RegisterTrivial(TypeID);
-		RTDCmptTraits& RegisterSize(TypeID, std::size_t size);
-		RTDCmptTraits& RegisterAlignment(TypeID, std::size_t alignment);
-		RTDCmptTraits& RegisterDefaultConstructor(TypeID, std::function<void(void*)>);
-		RTDCmptTraits& RegisterCopyConstructor(TypeID, std::function<void(void*,void*)>);
-		RTDCmptTraits& RegisterMoveConstructor(TypeID, std::function<void(void*,void*)>);
-		RTDCmptTraits& RegisterMoveAssignment(TypeID, std::function<void(void*,void*)>);
-		RTDCmptTraits& RegisterDestructor(TypeID, std::function<void(void*)>);
+		CmptTraits& RegisterName(Type);
+		CmptTraits& RegisterTrivial(TypeID);
+		CmptTraits& RegisterSize(TypeID, std::size_t size);
+		CmptTraits& RegisterAlignment(TypeID, std::size_t alignment);
+		CmptTraits& RegisterDefaultConstructor(TypeID, std::function<void(void*)>);
+		CmptTraits& RegisterCopyConstructor(TypeID, std::function<void(void*,void*)>);
+		CmptTraits& RegisterMoveConstructor(TypeID, std::function<void(void*,void*)>);
+		CmptTraits& RegisterMoveAssignment(TypeID, std::function<void(void*,void*)>);
+		CmptTraits& RegisterDestructor(TypeID, std::function<void(void*)>);
 
 		const auto& GetSizeofs() const noexcept { return sizeofs; }
 		const auto& GetAlignments() const noexcept { return alignments; };
@@ -60,10 +60,13 @@ namespace Ubpa::UECS {
 		void Destruct(TypeID, void* cmpt) const;
 		std::string_view Nameof(TypeID) const;
 
-		RTDCmptTraits& Deregister(TypeID) noexcept;
+		CmptTraits& Deregister(TypeID) noexcept;
 
 		template<typename... Cmpts>
 		void Register();
+
+		template<typename... Cmpts>
+		void UnsafeRegister();
 
 		template<typename Cmpt>
 		void Deregister();
@@ -78,7 +81,10 @@ namespace Ubpa::UECS {
 		// - is_destructible_v
 		template<typename Cmpt>
 		void RegisterOne();
-		
+
+		template<typename Cmpt>
+		void UnsafeRegisterOne();
+
 		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
 		std::unordered_set<TypeID> trivials;
 		std::unordered_map<TypeID, std::string_view> names;
@@ -92,4 +98,4 @@ namespace Ubpa::UECS {
 	};
 }
 
-#include "details/RTDCmptTraits.inl"
+#include "details/CmptTraits.inl"

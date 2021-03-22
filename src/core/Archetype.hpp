@@ -25,18 +25,18 @@ namespace Ubpa::UECS {
 		~Archetype();
 
 		// auto add Entity
-		static Archetype* New(RTDCmptTraits&, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version);
+		static Archetype* New(CmptTraits&, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version);
 
-		static Archetype* Add(RTDCmptTraits&, const Archetype* from, std::span<const TypeID> types);
+		static Archetype* Add(CmptTraits&, const Archetype* from, std::span<const TypeID> types);
 
 		// auto add Entity
 		static Archetype* Remove(const Archetype* from, std::span<const TypeID> types);
 
 		// Entity + Components
 		std::tuple<
-			small_vector<Entity*, 16>,
-			small_vector<small_vector<CmptAccessPtr, 16>, 16>,
-			small_vector<std::size_t, 16>
+			small_vector<Entity*>,
+			small_vector<small_vector<CmptAccessPtr>>,
+			small_vector<std::size_t>
 		>
 		Locate(std::span<const AccessTypeID> cmpts) const;
 		
