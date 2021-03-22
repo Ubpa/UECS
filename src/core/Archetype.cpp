@@ -3,6 +3,11 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
+Archetype::Archetype(std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, std::uint64_t version) noexcept :
+	chunkAllocator{ rsrc },
+	version{ version },
+	world_rsrc{ world_rsrc }{}
+
 Archetype::~Archetype() {
 	if (cmptTraits.IsTrivial())
 		return;
@@ -26,8 +31,9 @@ Archetype::~Archetype() {
 	//	entityMngr->sharedChunkPool.Recycle(chunk);
 }
 
-Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
-	: chunkAllocator{ rsrc }
+Archetype::Archetype(std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, const Archetype& src) :
+	chunkAllocator{ rsrc },
+	world_rsrc{ world_rsrc }
 {
 	cmptTraits = src.cmptTraits;
 	entityNum = src.entityNum;
@@ -61,7 +67,7 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 				if (trait.copy_ctor) {
 					for (std::size_t j = 0; j < num; j++) {
 						auto offset_j = j * trait.size;
-						trait.copy_ctor(dstBegin + offset_j, srcBegin + offset_j);
+						trait.copy_ctor(dstBegin + offset_j, srcBegin + offset_j, world_rsrc);
 					}
 				}
 				else
@@ -83,7 +89,7 @@ Archetype::Archetype(std::pmr::memory_resource* rsrc, const Archetype& src)
 				auto* cursor_dst = dstChunk->data + offsets[j];
 				if (trait.copy_ctor) {
 					for (std::size_t k = 0; k < num; k++) {
-						trait.copy_ctor(cursor_dst, cursor_src);
+						trait.copy_ctor(cursor_dst, cursor_src, world_rsrc);
 						cursor_src += trait.size;
 						cursor_dst += trait.size;
 					}
@@ -129,10 +135,16 @@ void Archetype::SetLayout() {
 	}
 }
 
-Archetype* Archetype::New(CmptTraits& rtdCmptTraits, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version) {
+Archetype* Archetype::New(
+	CmptTraits& rtdCmptTraits,
+	std::pmr::memory_resource* rsrc,
+	std::pmr::memory_resource* world_rsrc,
+	std::span<const TypeID> types,
+	std::uint64_t version)
+{
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 
-	auto* rst = new Archetype{ rsrc, version };
+	auto* rst = new Archetype{ rsrc, world_rsrc, version };
 
 	rst->cmptTraits.Register(rtdCmptTraits, TypeID_of<Entity>);
 	for (const auto& type : types)
@@ -147,7 +159,7 @@ Archetype* Archetype::Add(CmptTraits& rtdCmptTraits, const Archetype* from, std:
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 	assert(std::find_if_not(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) != types.end());
 
-	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->version };
+	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->world_rsrc, from->version };
 
 	rst->cmptTraits = from->cmptTraits;
 	for (const auto& type : types)
@@ -162,7 +174,7 @@ Archetype* Archetype::Remove(const Archetype* from, std::span<const TypeID> type
 	assert(std::find(types.begin(), types.end(), TypeID_of<Entity>) == types.end());
 	assert(std::find_if(types.begin(), types.end(), [&](const auto& type) { return from->cmptTraits.GetTypes().contains(type); }) != types.end());
 	
-	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->version };
+	auto* rst = new Archetype{ from->chunkAllocator.resource(), from->world_rsrc, from->version };
 
 	rst->cmptTraits = from->cmptTraits;
 
@@ -190,7 +202,7 @@ std::size_t Archetype::Create(Entity e) {
 		}
 		else {
 			std::uint8_t* dst = buffer + offset + idxInChunk * trait.size;
-			trait.DefaultConstruct(dst);
+			trait.DefaultConstruct(dst, world_rsrc);
 		}
 	}
 	chunk->GetHead()->UpdateVersion(version);
@@ -261,7 +273,7 @@ std::size_t Archetype::Instantiate(Entity e, std::size_t srcIdx) {
 			std::uint8_t* dst = dstBuffer + offset + dstIdxInChunk * size;
 			std::uint8_t* src = srcBuffer + offset + srcIdxInChunk * size;
 
-			trait.CopyConstruct(dst, src);
+			trait.CopyConstruct(dst, src, world_rsrc);
 		}
 	}
 

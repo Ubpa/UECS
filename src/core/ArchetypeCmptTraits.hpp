@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <span>
+#include <memory_resource>
 
 namespace Ubpa::UECS {
 	class CmptTraits;
@@ -19,14 +20,14 @@ namespace Ubpa::UECS {
 			std::size_t size;
 			std::size_t alignment;
 
-			std::function<void(void*)> default_ctor;
-			std::function<void(void*, void*)> copy_ctor; // dst <- src
+			std::function<void(void*, std::pmr::memory_resource*)> default_ctor;
+			std::function<void(void*, const void*, std::pmr::memory_resource*)> copy_ctor; // dst <- src
 			std::function<void(void*, void*)> move_ctor; // dst <- src
 			std::function<void(void*, void*)> move_assign; // dst <- src
 			std::function<void(void*)> dtor;
 
-			void DefaultConstruct(void* cmpt) const;
-			void CopyConstruct(void* dst, void* src) const;
+			void DefaultConstruct(void* cmpt, std::pmr::memory_resource* world_rsrc) const;
+			void CopyConstruct(void* dst, const void* src, std::pmr::memory_resource* world_rsrc) const;
 			void MoveConstruct(void* dst, void* src) const;
 			void MoveAssign(void* dst, void* src) const;
 			void Destruct(void* cmpt) const;

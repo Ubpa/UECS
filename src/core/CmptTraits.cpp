@@ -3,12 +3,12 @@
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 
-CmptTraits::CmptTraits() : rsrc {std::make_unique<std::pmr::unsynchronized_pool_resource>()}
-{
-	Register<Entity>();
-}
+CmptTraits::CmptTraits(std::pmr::memory_resource* world_rsrc) :
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	world_rsrc{ world_rsrc }
+{ Register<Entity>(); }
 
-CmptTraits::CmptTraits(const CmptTraits& other) :
+CmptTraits::CmptTraits(const CmptTraits& other, std::pmr::memory_resource* world_rsrc) :
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	sizeofs{other.sizeofs},
 	trivials{other.trivials},
@@ -17,7 +17,8 @@ CmptTraits::CmptTraits(const CmptTraits& other) :
 	copy_constructors{other.copy_constructors },
 	move_constructors{other.move_constructors },
 	move_assignments{ other.move_assignments },
-	destructors{ other.destructors }
+	destructors{ other.destructors },
+	world_rsrc{ world_rsrc }
 {
 	for (const auto& [id, name] : other.names) {
 		char* buffer = (char*)rsrc->allocate((name.size() + 1) * sizeof(char), alignof(char));
@@ -28,26 +29,17 @@ CmptTraits::CmptTraits(const CmptTraits& other) :
 	}
 }
 
-CmptTraits& CmptTraits::operator=(const CmptTraits& rhs) {
-	sizeofs = rhs.sizeofs;
-	trivials = rhs.trivials;
-	alignments = rhs.alignments;
-	default_constructors = rhs.default_constructors;
-	copy_constructors = rhs.copy_constructors;
-	move_constructors = rhs.move_constructors;
-	move_assignments = rhs.move_assignments;
-	destructors = rhs.destructors;
-
-	for (const auto& [id, name] : rhs.names) {
-		char* buffer = (char*)rsrc->allocate((name.size() + 1) * sizeof(char), alignof(char));
-		std::memcpy(buffer, name.data(), name.size() * sizeof(char));
-		buffer[name.size()] = 0;
-		names.emplace(id, std::string_view{ buffer, name.size() });
-		buffer += name.size() + 1;
-	}
-	return *this;
-}
-
+CmptTraits::CmptTraits(CmptTraits&& other) noexcept :
+	rsrc{ std::move(other.rsrc) },
+	sizeofs{ std::move(other.sizeofs) },
+	trivials{ std::move(other.trivials) },
+	alignments{ std::move(other.alignments) },
+	default_constructors{ std::move(other.default_constructors) },
+	copy_constructors{ std::move(other.copy_constructors) },
+	move_constructors{ std::move(other.move_constructors) },
+	move_assignments{ std::move(other.move_assignments) },
+	destructors{ std::move(other.destructors) },
+	world_rsrc{ other.world_rsrc } { other.world_rsrc = nullptr; }
 
 bool CmptTraits::IsTrivial(TypeID type) const {
 	return trivials.contains(type);
@@ -69,14 +61,14 @@ void CmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
 	auto target = default_constructors.find(type);
 
 	if (target != default_constructors.end())
-		target->second(cmpt);
+		target->second(cmpt, world_rsrc);
 }
 
-void CmptTraits::CopyConstruct(TypeID type, void* dst, void* src) const {
+void CmptTraits::CopyConstruct(TypeID type, void* dst, const void* src) const {
 	auto target = copy_constructors.find(type);
 
 	if (target != copy_constructors.end())
-		target->second(dst, src);
+		target->second(dst, src, world_rsrc);
 	else
 		memcpy(dst, src, Sizeof(type));
 }
@@ -123,12 +115,12 @@ CmptTraits& CmptTraits::RegisterAlignment(TypeID type, std::size_t alignment) {
 	return *this;
 }
 
-CmptTraits& CmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*)> f) {
+CmptTraits& CmptTraits::RegisterDefaultConstructor(TypeID type, std::function<void(void*, std::pmr::memory_resource*)> f) {
 	default_constructors.emplace(type, std::move(f));
 	return *this;
 }
 
-CmptTraits& CmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*, void*)> f) {
+CmptTraits& CmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(void*, const void*, std::pmr::memory_resource*)> f) {
 	copy_constructors.emplace(type, std::move(f));
 	return *this;
 }

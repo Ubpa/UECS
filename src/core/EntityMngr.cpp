@@ -9,19 +9,33 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-EntityMngr::EntityMngr() :
-	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() } {}
-
-EntityMngr::EntityMngr(EntityMngr&&) noexcept = default;
-
-EntityMngr::EntityMngr(const EntityMngr& em) :
-	cmptTraits{ em.cmptTraits },
+EntityMngr::EntityMngr(std::pmr::memory_resource* world_rsrc) :
+	cmptTraits{ world_rsrc },
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-	version{em.version}
+	world_rsrc{ world_rsrc }{}
+
+EntityMngr::EntityMngr(EntityMngr&& other) noexcept :
+	cmptTraits{ std::move(other.cmptTraits) },
+	queryCache{std::move(other.queryCache)},
+	version{other.version},
+	world_rsrc{other.world_rsrc},
+	entityTable{std::move(other.entityTable)},
+	entityTableFreeEntry{std::move(other.entityTableFreeEntry)},
+	rsrc{std::move(other.rsrc)},
+	ts2a{std::move(other.ts2a)}
+{
+	other.version = 0;
+	other.world_rsrc = nullptr;
+}
+
+EntityMngr::EntityMngr(const EntityMngr& em, std::pmr::memory_resource* world_rsrc) :
+	cmptTraits{ em.cmptTraits, world_rsrc },
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	version{ em.version }
 {
 	ts2a.reserve(em.ts2a.size());
 	for (const auto& [ts, a] : em.ts2a)
-		ts2a.try_emplace(ts, std::make_unique<Archetype>(rsrc.get(), *a));
+		ts2a.try_emplace(ts, std::make_unique<Archetype>(rsrc.get(), world_rsrc, *a));
 	entityTableFreeEntry = em.entityTableFreeEntry;
 	entityTable.resize(em.entityTable.size());
 	for (std::size_t i = 0; i < em.entityTable.size(); i++) {
@@ -104,7 +118,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(std::span<const TypeID> types) {
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), types, version);
+	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), world_rsrc, types, version);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
@@ -177,7 +191,7 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 		auto target = dstArchetype->GetCmptTraits().GetTypes().find(type);
 		assert(target != dstArchetype->GetCmptTraits().GetTypes().end());
 		auto idx = static_cast<std::size_t>(std::distance(dstArchetype->GetCmptTraits().GetTypes().begin(), target));
-		dstArchetype->GetCmptTraits().GetTraits()[idx].DefaultConstruct(info.archetype->WriteAt(type, info.idxInArchetype).Ptr());
+		dstArchetype->GetCmptTraits().GetTraits()[idx].DefaultConstruct(info.archetype->WriteAt(type, info.idxInArchetype).Ptr(), world_rsrc);
 	}
 }
 

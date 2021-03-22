@@ -15,6 +15,8 @@ namespace Ubpa::UECS {
 
 	// SystemMngr + EntityMngr
 	class World {
+		std::unique_ptr<std::pmr::synchronized_pool_resource> world_rsrc; // init before entityMngr
+
 	public:
 		World();
 		World(const World&);
@@ -24,10 +26,10 @@ namespace Ubpa::UECS {
 		SystemMngr systemMngr;
 		EntityMngr entityMngr;
 
-		// 1. schedule: run registered System's static OnUpdate(Schedule&)
-		// 2. gen job graph: schedule -> graph
-		// 3. run job graph in worker threads
-		// 4. run commands in main thread
+		// 1. update schedule
+		// 2. run job graph for several layers
+		// 3. update version
+		// 4. clear frame resource
 		void Update();
 
 		void AddCommand(std::function<void()> command, int layer);
@@ -116,6 +118,8 @@ namespace Ubpa::UECS {
 		template<typename T, typename... Args>
 		T* SyncCreateFrameObject(Args&&... args);
 
+		std::pmr::synchronized_pool_resource* GetSyncResource() { return world_rsrc.get(); }
+
 		std::uint64_t Version() const noexcept { return version; }
 	private:
 		bool inRunningJobGraph{ false };
@@ -126,7 +130,7 @@ namespace Ubpa::UECS {
 
 		Job jobGraph;
 		std::vector<Job*> jobs;
-		std::unique_ptr<std::pmr::unsynchronized_pool_resource> jobRsrc;
+		std::unique_ptr<std::pmr::monotonic_buffer_resource> jobRsrc;
 
 		// command
 		std::map<int, CommandBuffer> lcommandBuffer;

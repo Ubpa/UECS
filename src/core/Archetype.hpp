@@ -16,16 +16,16 @@ namespace Ubpa::UECS {
 	// type of Entity + Components is Archetype's type
 	class Archetype {
 	public:
-		Archetype(std::pmr::memory_resource* rsrc, std::uint64_t version) noexcept : chunkAllocator{ rsrc }, version{ version } {}
+		Archetype(std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, std::uint64_t version) noexcept;
 
 		// copy
-		Archetype(std::pmr::memory_resource* rsrc, const Archetype&);
+		Archetype(std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, const Archetype&);
 		Archetype(const Archetype&) = delete;
 
 		~Archetype();
 
 		// auto add Entity
-		static Archetype* New(CmptTraits&, std::pmr::memory_resource* rsrc, std::span<const TypeID> types, std::uint64_t version);
+		static Archetype* New(CmptTraits&, std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, std::span<const TypeID> types, std::uint64_t version);
 
 		static Archetype* Add(CmptTraits&, const Archetype* from, std::span<const TypeID> types);
 
@@ -91,6 +91,7 @@ namespace Ubpa::UECS {
 		ArchetypeCmptTraits cmptTraits; // Entity + Components
 
 		std::uint64_t version;
+		std::pmr::memory_resource* world_rsrc;
 
 		// chunk infomations
 		std::pmr::polymorphic_allocator<Chunk> chunkAllocator;

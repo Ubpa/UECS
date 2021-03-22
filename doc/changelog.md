@@ -4,6 +4,7 @@
   - remove none-parallel
   - support change filter
   - multiple sysc points (layer)
+  - world resource
 - 0.15.1
   - support MacOS GCC 10.2
 - 0.15.0

@@ -124,6 +124,9 @@ namespace Ubpa::UECS {
 		T* CreateFrameObject(Args&&... args) const;
 		std::string_view RegisterFrameString(std::string_view str);
 
+
+		Schedule& operator=(Schedule&&) noexcept = delete;
+		Schedule& operator=(const Schedule&) = delete;
 	private:
 		Schedule();
 		Schedule(const Schedule&);

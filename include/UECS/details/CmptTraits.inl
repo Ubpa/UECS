@@ -2,6 +2,24 @@
 
 #include "../CmptTraits.hpp"
 
+namespace Ubpa::UECS::details {
+	template<typename T>
+	concept ContainPmrAlloc = requires() {
+		typename T::allocator_type;
+		std::is_constructible_v<typename T::allocator_type, std::pmr::memory_resource*>;
+	};
+
+	template<typename T>
+	concept DefaultCtorWithAlloc = ContainPmrAlloc<T> && requires(const typename T::allocator_type & alloc) {
+		new T(alloc);
+	};
+
+	template<typename T>
+	concept CopyCtorWithAlloc = ContainPmrAlloc<T> &&
+		(requires(const T & other, const typename T::allocator_type & alloc) { new T(other, alloc); }
+	|| requires(const T & other, const typename T::allocator_type & alloc) { new T(std::allocator_arg_t{}, alloc, other); });
+}
+
 namespace Ubpa::UECS {
 	template<typename... Cmpts>
 	void CmptTraits::Register() {
@@ -23,9 +41,16 @@ namespace Ubpa::UECS {
 		alignments.emplace(type.GetID(), alignof(Cmpt));
 		names.emplace(type.GetID(), type.GetName());
 
-		if constexpr (std::is_default_constructible_v<Cmpt>) {
-			default_constructors.emplace(type.GetID(), [](void* cmpt) {
-				new(cmpt)Cmpt{};
+		if constexpr (details::DefaultCtorWithAlloc<Cmpt>) {
+			default_constructors.emplace(type.GetID(), [](void* cmpt, std::pmr::memory_resource* world_rsrc) {
+				using Alloc = typename Cmpt::allocator_type;
+				Alloc alloc(world_rsrc);
+				std::allocator_traits<Alloc>::template construct(alloc, reinterpret_cast<Cmpt*>(cmpt));
+			});
+		}
+		else if constexpr (std::is_default_constructible_v<Cmpt>) {
+			default_constructors.emplace(type.GetID(), [](void* cmpt, std::pmr::memory_resource*) {
+				new(cmpt)Cmpt();
 			});
 		}
 
@@ -46,9 +71,17 @@ namespace Ubpa::UECS {
 				*static_cast<Cmpt*>(dst) = std::move(*static_cast<Cmpt*>(src));
 			});
 		}
-		if constexpr (std::is_copy_constructible_v<Cmpt> && !std::is_trivially_copy_constructible_v<Cmpt>) {
-			copy_constructors.emplace(type.GetID(), [](void* dst, void* src) {
-				new(dst)Cmpt(*static_cast<Cmpt*>(src));
+
+		if constexpr (details::CopyCtorWithAlloc<Cmpt>) {
+			copy_constructors.emplace(type.GetID(), [](void* dst, const void* src, std::pmr::memory_resource* world_rsrc) {
+				using Alloc = typename Cmpt::allocator_type;
+				Alloc alloc(world_rsrc);
+				std::allocator_traits<Alloc>::template construct(alloc, reinterpret_cast<Cmpt*>(dst), *static_cast<const Cmpt*>(src));
+			});
+		}
+		else if constexpr (std::is_copy_constructible_v<Cmpt> && !std::is_trivially_copy_constructible_v<Cmpt>) {
+			copy_constructors.emplace(type.GetID(), [](void* dst, const void* src, std::pmr::memory_resource*) {
+				new(dst)Cmpt(*static_cast<const Cmpt*>(src));
 			});
 		}
 	}
@@ -56,8 +89,8 @@ namespace Ubpa::UECS {
 	template<typename Cmpt>
 	void CmptTraits::RegisterOne() {
 		static_assert(!IsTaggedCmpt_v<Cmpt>, "<Cmpt> should not be tagged");
-		static_assert(std::is_default_constructible_v<Cmpt>, "<Cmpt> must be default-constructible");
-		static_assert(std::is_copy_constructible_v<Cmpt>, "<Cmpt> must be copy-constructible");
+		static_assert(std::is_default_constructible_v<Cmpt> || details::DefaultCtorWithAlloc<Cmpt>, "<Cmpt> must be default-constructible or with alloc");
+		static_assert(std::is_copy_constructible_v<Cmpt> || details::CopyCtorWithAlloc<Cmpt>, "<Cmpt> must be copy-constructible or with alloc");
 		static_assert(std::is_move_constructible_v<Cmpt>, "<Cmpt> must be move-constructible");
 		static_assert(std::is_move_assignable_v<Cmpt>, "<Cmpt> must be move-assignable");
 		static_assert(std::is_destructible_v<Cmpt>, "<Cmpt> must be destructible");

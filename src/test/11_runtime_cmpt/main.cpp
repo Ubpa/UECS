@@ -53,7 +53,7 @@ int main() {
 	w.systemMngr.RegisterAndActivate<RTDSystem>();
 	w.entityMngr.cmptTraits
 		.RegisterSize(type, 8)
-		.RegisterDefaultConstructor(type, [](void*) { cout << "construct" << endl; })
+		.RegisterDefaultConstructor(type, [](void*, std::pmr::memory_resource*) { cout << "construct" << endl; })
 		.RegisterDestructor(type, [](void*) { cout << "destruct" << endl; });
 
 	auto e = w.entityMngr.Create(Ubpa::TempTypeIDs{ type });

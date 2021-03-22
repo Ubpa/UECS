@@ -9,20 +9,24 @@ using namespace Ubpa;
 using namespace std;
 
 World::World() :
-	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-	systemMngr{ this } {}
+	world_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
+	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
+	systemMngr{ this },
+	entityMngr{ world_rsrc.get() }{}
 
 World::World(const World& w) :
-	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	world_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
+	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
 	systemMngr{ w.systemMngr, this },
-	entityMngr{ w.entityMngr },
-	schedule{ w.schedule } {}
+	entityMngr{ w.entityMngr, world_rsrc.get() },
+	schedule{ w.schedule } { assert(!w.inRunningJobGraph); }
 
 World::World(World&& w) noexcept :
-	jobRsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	world_rsrc{ std::move(w.world_rsrc) },
+	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
 	systemMngr{ std::move(w.systemMngr), this },
 	entityMngr{ std::move(w.entityMngr) },
-	schedule{ std::move(w.schedule) }{}
+	schedule{ std::move(w.schedule) } { assert(!w.inRunningJobGraph); }
 
 World::~World() {
 	schedule.Clear();
@@ -67,8 +71,9 @@ void World::Update() {
 
 		for (auto* job : jobs) {
 			job->~Taskflow();
-			jobRsrc->deallocate(job, sizeof(Job), alignof(Job));
+			//jobRsrc->deallocate(job, sizeof(Job), alignof(Job));
 		}
+		jobRsrc->release();
 		jobs.clear();
 		jobGraph.clear();
 	}
