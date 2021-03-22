@@ -44,16 +44,6 @@ void World::Update() {
 	for (const auto& ID : systemMngr.GetActiveSystemIDs())
 		systemMngr.Update(ID, schedule);
 
-	for (auto& [layer, scheduleCommands] : schedule.commandBuffer) {
-		auto& worldCommands = commandBuffer[layer];
-		for (auto& command : scheduleCommands) {
-			worldCommands.emplace_back([this, command = std::move(command)](){
-				command(this);
-			});
-		}
-	}
-	schedule.commandBuffer.clear();
-
 	// 3. generate job graph
 
 	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
@@ -344,13 +334,19 @@ void World::Accept(IListener* listener) const {
 void World::AddCommand(std::function<void()> command, int layer) {
 	assert(inRunningJobGraph);
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
-	commandBuffer[layer].push_back(std::move(command));
+	commandBuffer.AddCommand(command, layer);
+}
+
+void World::AddCommandBuffer(CommandBuffer cb) {
+	assert(inRunningJobGraph);
+	std::lock_guard<std::mutex> guard(commandBufferMutex);
+	commandBuffer.AddCommandBuffer(std::move(cb));
 }
 
 void World::RunCommands() {
-	for (const auto& [layer, commands] : commandBuffer) {
+	for (const auto& [layer, commands] : commandBuffer.GetCommands()) {
 		for (const auto& command : commands)
 			command();
 	}
-	commandBuffer.clear();
+	commandBuffer.Clear();
 }

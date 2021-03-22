@@ -73,5 +73,12 @@ namespace Ubpa::UECS {
 		std::uint8_t data[ChunkSize];
 	};
 
-	using ChunkView = const Chunk*;
+	class ChunkView {
+	public:
+		ChunkView(const Chunk* c = nullptr) : chunk { c }{}
+		const Chunk* GetChunk() const noexcept { return chunk; }
+		const Chunk* operator->() const noexcept { return chunk; }
+	private:
+		const Chunk* chunk;
+	};
 }

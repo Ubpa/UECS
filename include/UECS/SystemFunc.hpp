@@ -8,6 +8,7 @@
 #include "CmptsView.hpp"
 #include "SingletonsView.hpp"
 #include "Chunk.hpp"
+#include "CommandBuffer.hpp"
 
 #include <functional>
 
@@ -24,9 +25,11 @@ namespace Ubpa::UECS {
 	// * std::size_t indexInQuery
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
+	// * CommandBufferView
 	// 2. Mode::Chunk
 	// * std::size_t entityBeginIndexInQuery
 	// * ChunkView (necessary)
+	// * CommandBufferView
 	// 3. Mode::Job
 	// * Write<Singleton<Cmpt>> (only job can write singletons)
 	class SystemFunc {
@@ -60,8 +63,8 @@ namespace Ubpa::UECS {
 
 		std::size_t GetValue() const noexcept { return hashCode; }
 
-		void operator()(World*, SingletonsView, Entity, std::size_t entityIndexInQuery, CmptsView) const;
-		void operator()(World*, SingletonsView, std::size_t entityBeginIndexInQuery, ChunkView) const;
+		void operator()(World*, SingletonsView, Entity, std::size_t entityIndexInQuery, CmptsView, CommandBufferView) const;
+		void operator()(World*, SingletonsView, std::size_t entityBeginIndexInQuery, ChunkView, CommandBufferView) const;
 		void operator()(World*, SingletonsView) const;
 
 		Mode GetMode() const noexcept { return mode; }
@@ -73,7 +76,7 @@ namespace Ubpa::UECS {
 		std::string_view name;
 		std::size_t hashCode; // after name
 		bool isParallel;
-		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView)> func;
+		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView, CommandBufferView)> func;
 	};
 }
 

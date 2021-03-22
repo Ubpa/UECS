@@ -2,7 +2,7 @@
 
 using namespace Ubpa::UECS;
 
-void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, std::size_t entityIndexInQuery, CmptsView cmptsView) const {
+void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, std::size_t entityIndexInQuery, CmptsView cmptsView, CommandBufferView cbv) const {
 	assert(mode == Mode::Entity);
 	return func(
 		w,
@@ -10,11 +10,12 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, s
 		e,
 		entityIndexInQuery,
 		cmptsView,
-		{}
+		{},
+		cbv
 	);
 }
 
-void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t entityBeginIndexInQuery, ChunkView chunkView) const {
+void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t entityBeginIndexInQuery, ChunkView chunkView, CommandBufferView cbv) const {
 	assert(mode == Mode::Chunk);
 	return func(
 		w,
@@ -22,7 +23,8 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t
 		Entity::Invalid(),
 		entityBeginIndexInQuery,
 		{},
-		chunkView
+		chunkView,
+		cbv
 	);
 }
 
@@ -33,6 +35,7 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView) const {
 		singletonsView,
 		Entity::Invalid(),
 		static_cast<std::size_t>(-1),
+		{},
 		{},
 		{}
 	);
