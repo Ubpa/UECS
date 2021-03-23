@@ -1,13 +1,10 @@
 #pragma once
 
 #include "Entity.hpp"
-
+#include "CmptPtr.hpp"
 #include "config.hpp"
 
-#include <UTemplate/Type.hpp>
-
 #include <span>
-#include <cstdint>
 
 namespace Ubpa::UECS {
 	class Archetype;
@@ -38,8 +35,13 @@ namespace Ubpa::UECS {
 
 		bool HasAnyChange(std::span<const TypeID> types, std::uint64_t version) const noexcept;
 
+		void ApplyChanges(std::span<const AccessTypeID> types);
+
+		// ApplyChanges
+		std::tuple<Entity*, small_vector<CmptAccessPtr>, small_vector<std::size_t>> Locate(std::span<const AccessTypeID> types);
+
 	private:
-		friend Archetype;
+		friend class Archetype;
 
 		struct Head {
 			Archetype* archetype;
@@ -68,6 +70,8 @@ namespace Ubpa::UECS {
 
 		Head* GetHead() noexcept { return reinterpret_cast<Head*>(data); }
 		const Head* GetHead() const noexcept { return reinterpret_cast<const Head*>(data); }
+
+		std::size_t Erase(std::size_t idx);
 
 		static_assert(ChunkSize > sizeof(Head));
 		std::uint8_t data[ChunkSize];

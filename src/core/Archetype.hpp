@@ -16,6 +16,11 @@ namespace Ubpa::UECS {
 	// type of Entity + Components is Archetype's type
 	class Archetype {
 	public:
+		struct EntityAddress {
+			std::size_t chunkIdx;
+			std::size_t idxInChunk;
+		};
+
 		Archetype(std::pmr::memory_resource* rsrc, std::pmr::memory_resource* world_rsrc, std::uint64_t version) noexcept;
 
 		// copy
@@ -41,45 +46,44 @@ namespace Ubpa::UECS {
 		Locate(std::span<const AccessTypeID> cmpts) const;
 		
 		// nullptr if not contains
-		CmptAccessPtr At(AccessTypeID type, std::size_t idx) const;
-		CmptAccessPtr WriteAt(TypeID type, std::size_t idx) const { return At({ type, AccessMode::WRITE }, idx); }
-		CmptAccessPtr ReadAt(TypeID type, std::size_t idx) const { return At({ type, AccessMode::LATEST }, idx); }
+		CmptAccessPtr At(AccessTypeID type, EntityAddress) const;
+		CmptAccessPtr WriteAt(TypeID type, EntityAddress addr) const { return At({ type, AccessMode::WRITE }, addr); }
+		CmptAccessPtr ReadAt(TypeID type, EntityAddress addr) const { return At({ type, AccessMode::LATEST }, addr); }
 
 		// nullptr if not contains
 		template<typename Cmpt>
-		Cmpt* WriteAt(std::size_t idx) const{ return WriteAt(TypeID_of<Cmpt>, idx).template As<Cmpt, AccessMode::WRITE>(); }
+		Cmpt* WriteAt(EntityAddress addr) const{ return WriteAt(TypeID_of<Cmpt>, addr).template As<Cmpt, AccessMode::WRITE>(); }
 		template<typename Cmpt>
-		const Cmpt* ReadAt(std::size_t idx) const { return ReadAt(TypeID_of<Cmpt>, idx).template As<Cmpt, AccessMode::LATEST>(); }
+		const Cmpt* ReadAt(EntityAddress addr) const { return ReadAt(TypeID_of<Cmpt>, addr).template As<Cmpt, AccessMode::LATEST>(); }
 
 		// no Entity
-		std::vector<CmptAccessPtr> Components(std::size_t idx, AccessMode mode) const;
-		std::vector<CmptAccessPtr> WriteComponents(std::size_t idx) const { return Components(idx, AccessMode::WRITE); }
-		std::vector<CmptAccessPtr> ReadComponents(std::size_t idx) const { return Components(idx, AccessMode::LATEST); }
+		std::vector<CmptAccessPtr> Components(EntityAddress addr, AccessMode mode) const;
+		std::vector<CmptAccessPtr> WriteComponents(EntityAddress addr) const { return Components(addr, AccessMode::WRITE); }
+		std::vector<CmptAccessPtr> ReadComponents(EntityAddress addr) const { return Components(addr, AccessMode::LATEST); }
 
 		// no init
-		std::size_t RequestBuffer();
+		EntityAddress RequestBuffer();
 
-		std::size_t Create(Entity);
-		
+		EntityAddress Create(Entity);
+
 		// return index in archetype
-		std::size_t Instantiate(Entity, std::size_t srcIdx);
-
-		// erase idx-th entity
-		// if idx != num-1, back entity will put at idx, return moved Entity's index
-		// else return static_cast<std::size_t>(-1)
-		// move-assignment + destructor
-		std::size_t Erase(std::size_t idx);
+		EntityAddress Instantiate(Entity, EntityAddress src);
+		
+		// return moved entity index (moved to addr)
+		std::size_t Erase(EntityAddress addr);
 
 		// Components + Entity
 		const ArchetypeCmptTraits& GetCmptTraits() const noexcept { return cmptTraits; }
 
-		std::size_t EntityNum() const noexcept { return entityNum; }
-		std::size_t EntityNumOfChunk(std::size_t chunkIdx) const noexcept;
-		std::size_t ChunkNum() const noexcept { return chunks.size(); }
-		std::size_t ChunkCapacity() const noexcept { return chunkCapacity; }
-
 		// add Entity
 		static small_flat_set<TypeID> GenTypeIDSet(std::span<const TypeID> types);
+
+		std::size_t Version() const noexcept { return version; }
+
+		std::size_t EntityNum() const noexcept { return entityNum; }
+
+		std::span<Chunk*> GetChunks() noexcept { return { chunks.data(), chunks.size() }; }
+		std::span<std::size_t> GetOffsets() noexcept { return { offsets.data(), offsets.size() }; }
 
 	private:
 		// set type2alignment
@@ -98,7 +102,8 @@ namespace Ubpa::UECS {
 		small_vector<Chunk*> chunks;
 		std::size_t chunkCapacity{ static_cast<std::size_t>(-1) };
 		small_vector<std::size_t> offsets; // component
+		small_flat_set<std::size_t, 16, std::greater<std::size_t>> nonFullChunks; // big -> small, use small first
 
-		std::size_t entityNum{ 0 }; // number of entities
+		std::size_t entityNum{ 0 };
 	};
 }

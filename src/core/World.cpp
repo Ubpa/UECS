@@ -351,13 +351,11 @@ void World::Accept(IListener* listener) const {
 }
 
 void World::AddCommand(std::function<void()> command, int layer) {
-	assert(inRunningJobGraph);
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
 	lcommandBuffer[layer].AddCommand(command);
 }
 
 void World::AddCommandBuffer(CommandBuffer cb, int layer) {
-	assert(inRunningJobGraph);
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
 	lcommandBuffer[layer].AddCommandBuffer(std::move(cb));
 }

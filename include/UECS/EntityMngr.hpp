@@ -114,7 +114,8 @@ namespace Ubpa::UECS {
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
-			std::size_t idxInArchetype{ static_cast<std::size_t>(-1) };
+			std::size_t chunkIdx{ static_cast<std::size_t>(-1) };
+			std::size_t idxInChunk{ static_cast<std::size_t>(-1) };
 			std::uint64_t version{ 0 }; // version
 		};
 		std::vector<EntityInfo> entityTable;
