@@ -1,48 +1,62 @@
 #include <UECS/SystemMngr.hpp>
 
+#include <UECS/World.hpp>
+
 #include <cassert>
 
 using namespace Ubpa::UECS;
 
-SystemMngr::SystemMngr(const SystemMngr& mngr, World* w)
-	:
-	systemTraits{ mngr.systemTraits },
-	aliveSystemIDs{ mngr.aliveSystemIDs },
-	activeSystemIDs{ mngr.activeSystemIDs },
-	w{ w }
-{}
+struct SystemMngr::Impl {
+	Impl(World* w) :
+		aliveSystemIDs{ w->GetUnsyncResource() },
+		activeSystemIDs{ w->GetUnsyncResource() } {}
+	Impl(const Impl& other, World* w) :
+		aliveSystemIDs{ other.activeSystemIDs, w->GetUnsyncResource() },
+		activeSystemIDs{ other.activeSystemIDs, w->GetUnsyncResource() } {}
 
-SystemMngr::SystemMngr(SystemMngr&& mngr, World* w) noexcept
-	:
-	systemTraits{ std::move(mngr.systemTraits) },
-	aliveSystemIDs{ mngr.aliveSystemIDs },
-	activeSystemIDs{ mngr.activeSystemIDs },
-	w{ w } 
-{}
+	std::pmr::unordered_set<NameID> aliveSystemIDs;
+	std::pmr::unordered_set<NameID> activeSystemIDs;
+};
+
+SystemMngr::SystemMngr(World* w) :
+	w{ w },
+	impl{ std::make_unique<Impl>(w)},
+	systemTraits{ w->GetUnsyncResource() } {}
+
+SystemMngr::SystemMngr(const SystemMngr& mngr, World* w) :
+	w{ w },
+	impl{ std::make_unique<Impl>(*mngr.impl, w) },
+	systemTraits{ mngr.systemTraits, w->GetUnsyncResource() } {}
+
+SystemMngr::SystemMngr(SystemMngr&& mngr, World* w) noexcept :
+	w{ w },
+	impl{ std::move(mngr.impl) },
+	systemTraits{ std::move(mngr.systemTraits) } {}
 
 SystemMngr::~SystemMngr() {
-	for (auto name : activeSystemIDs)
-		systemTraits.Deactivate(name, w);
-	for (auto name : aliveSystemIDs)
-		systemTraits.Destroy(name, w);
-	activeSystemIDs.clear();
-	aliveSystemIDs.clear();
+	Clear();
 }
 
+const std::pmr::unordered_set<Ubpa::NameID>& SystemMngr::GetAliveSystemIDs() const noexcept { return impl->aliveSystemIDs; }
+const std::pmr::unordered_set<Ubpa::NameID>& SystemMngr::GetActiveSystemIDs() const noexcept { return impl->activeSystemIDs; }
+
 void SystemMngr::Clear() {
-	for (auto name : activeSystemIDs)
+	if (!impl)
+		return;
+
+	for (auto name : impl->activeSystemIDs)
 		systemTraits.Deactivate(name, w);
-	for (auto name : aliveSystemIDs)
+	for (auto name : impl->aliveSystemIDs)
 		systemTraits.Destroy(name, w);
-	activeSystemIDs.clear();
-	aliveSystemIDs.clear();
+	impl->activeSystemIDs.clear();
+	impl->aliveSystemIDs.clear();
 }
 
 void SystemMngr::Create(NameID ID) {
 	if (IsAlive(ID))
 		return;
 	systemTraits.Create(ID, w);
-	aliveSystemIDs.insert(ID);
+	impl->aliveSystemIDs.insert(ID);
 }
 
 void SystemMngr::Activate(NameID ID) {
@@ -50,7 +64,7 @@ void SystemMngr::Activate(NameID ID) {
 	if (IsActive(ID))
 		return;
 	systemTraits.Activate(ID, w);
-	activeSystemIDs.insert(ID);
+	impl->activeSystemIDs.insert(ID);
 }
 
 void SystemMngr::Update(NameID ID, Schedule& schedule) const {
@@ -62,7 +76,7 @@ void SystemMngr::Deactivate(NameID ID) {
 	if (!IsAlive(ID) || !IsActive(ID))
 		return;
 	systemTraits.Deactivate(ID, w);
-	activeSystemIDs.erase(ID);
+	impl->activeSystemIDs.erase(ID);
 }
 
 void SystemMngr::Destroy(NameID ID) {
@@ -70,13 +84,13 @@ void SystemMngr::Destroy(NameID ID) {
 		return;
 	Deactivate(ID);
 	systemTraits.Destroy(ID, w);
-	aliveSystemIDs.erase(ID);
+	impl->aliveSystemIDs.erase(ID);
 }
 
 bool SystemMngr::IsAlive(NameID ID) const {
-	return aliveSystemIDs.contains(ID);
+	return impl->aliveSystemIDs.contains(ID);
 }
 
 bool SystemMngr::IsActive(NameID ID) const {
-	return activeSystemIDs.contains(ID);
+	return impl->activeSystemIDs.contains(ID);
 }

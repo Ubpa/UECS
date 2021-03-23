@@ -66,7 +66,7 @@ std::size_t Chunk::Erase(std::size_t idx) {
 		std::size_t srcIdxInChunk = entityNum - 1;
 
 		auto entityTypeIdx = static_cast<std::size_t>(std::distance(cmptTraits.GetTypes().begin(), cmptTraits.GetTypes().find(TypeID_of<Entity>)));
-		movedEntityIdx = reinterpret_cast<Entity*>(head->GetCmptInfos()[entityTypeIdx].offset + sizeof(Entity) * srcIdxInChunk)->index;
+		movedEntityIdx = reinterpret_cast<Entity*>(dstBuffer + head->GetCmptInfos()[entityTypeIdx].offset + sizeof(Entity) * srcIdxInChunk)->index;
 
 		for (std::size_t i = 0; i < head->num_component; i++) {
 			const auto& trait = cmptTraits.GetTraits()[i];

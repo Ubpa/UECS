@@ -83,16 +83,15 @@ namespace Ubpa::UECS {
 
 		void Clear();
 
-
-
 	private:
-		EntityMngr(std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc);
-		EntityMngr(const EntityMngr&, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc);
-		EntityMngr(EntityMngr&&, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc) noexcept;
+		friend class World;
+
+		EntityMngr(World* world);
+		EntityMngr(const EntityMngr&, World* world);
+		EntityMngr(EntityMngr&&, World* world) noexcept;
 		~EntityMngr();
 
-		friend class World;
-		friend class Archetype;
+		World* world;
 
 		static bool IsSet(std::span<const TypeID> types) noexcept;
 
@@ -113,10 +112,6 @@ namespace Ubpa::UECS {
 		// if job is nullptr, direct run
 		bool AutoGen(World*, Job*, SystemFunc*, int layer) const;
 
-		std::uint64_t version{ 0 };
-		std::pmr::synchronized_pool_resource* sync_rsrc;
-		synchronized_monotonic_buffer_resource* sync_frame_rsrc;
-
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
 			std::size_t chunkIdx{ static_cast<std::size_t>(-1) };
@@ -128,12 +123,10 @@ namespace Ubpa::UECS {
 		std::size_t RequestEntityFreeEntry();
 		void RecycleEntityEntry(Entity);
 
-		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
 		struct TypeIDSetHash {
 			std::size_t operator()(const small_flat_set<TypeID>& types) const noexcept;
 		};
 		std::unordered_map<small_flat_set<TypeID>, std::unique_ptr<Archetype>, TypeIDSetHash> ts2a; // archetype's TypeIDSet to archetype
 		void NewFrame() noexcept;
-		void UpdateVersion(std::uint64_t world_version) noexcept;
 	};
 }

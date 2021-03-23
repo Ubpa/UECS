@@ -51,7 +51,9 @@ namespace Ubpa::UECS {
 
 	public:
 		World();
+		World(std::pmr::memory_resource* upstream);
 		World(const World&);
+		World(const World&, std::pmr::memory_resource* upstream);
 		World(World&&) noexcept;
 		~World();
 

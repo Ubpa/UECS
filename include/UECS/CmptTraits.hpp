@@ -37,14 +37,15 @@ namespace Ubpa::UECS {
 		CmptTraits& RegisterMoveAssignment(TypeID, std::function<void(void*,void*)>);
 		CmptTraits& RegisterDestructor(TypeID, std::function<void(void*)>);
 
-		const auto& GetSizeofs() const noexcept { return sizeofs; }
-		const auto& GetAlignments() const noexcept { return alignments; };
-		const auto& GetDefaultConstructors() const noexcept { return default_constructors; }
-		const auto& GetCopyConstructors() const noexcept { return copy_constructors; }
-		const auto& GetMoveConstructors() const noexcept { return move_constructors; }
-		const auto& GetMoveAssignments() const noexcept { return move_assignments; }
-		const auto& GetDestructors() const noexcept { return destructors; }
-		const auto& GetNames() const noexcept { return names; }
+		const std::pmr::unordered_set<TypeID>& GetTrivials() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::string_view>& GetNames() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::size_t>& GetSizeofs() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::size_t>& GetAlignments() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::function<void(void*, std::pmr::memory_resource*)>>& GetDefaultConstructors() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::function<void(void*, const void*, std::pmr::memory_resource*)>>& GetCopyConstructors() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::function<void(void*, void*, std::pmr::memory_resource*)>>& GetMoveConstructors() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::function<void(void*, void*)>>& GetMoveAssignments() const noexcept;
+		const std::pmr::unordered_map<TypeID, std::function<void(void*)>>& GetDestructors() const noexcept;
 
 		bool IsTrivial(TypeID) const;
 		std::size_t Sizeof(TypeID) const;
@@ -64,9 +65,10 @@ namespace Ubpa::UECS {
 
 	private:
 		friend class EntityMngr;
-		CmptTraits();
-		CmptTraits(const CmptTraits& other);
-		CmptTraits(CmptTraits&& other) noexcept = default;
+		CmptTraits(std::pmr::unsynchronized_pool_resource* rsrc);
+		CmptTraits(const CmptTraits& other, std::pmr::unsynchronized_pool_resource* rsrc);
+		CmptTraits(CmptTraits&& other) noexcept;
+		~CmptTraits();
 
 		// register all for Cmpt
 		// static_assert
@@ -81,16 +83,8 @@ namespace Ubpa::UECS {
 		template<typename Cmpt>
 		void UnsafeRegisterOne();
 
-		std::unique_ptr<std::pmr::unsynchronized_pool_resource> rsrc;
-		std::unordered_set<TypeID> trivials;
-		std::unordered_map<TypeID, std::string_view> names;
-		std::unordered_map<TypeID, std::size_t> sizeofs;
-		std::unordered_map<TypeID, std::size_t> alignments;
-		std::unordered_map<TypeID, std::function<void(void*, std::pmr::memory_resource*)>> default_constructors; // dst <- src
-		std::unordered_map<TypeID, std::function<void(void*, const void*, std::pmr::memory_resource*)>> copy_constructors; // dst <- src
-		std::unordered_map<TypeID, std::function<void(void*, void*, std::pmr::memory_resource*)>> move_constructors; // dst <- src
-		std::unordered_map<TypeID, std::function<void(void*, void*)>> move_assignments; // dst <- src
-		std::unordered_map<TypeID, std::function<void(void*)>> destructors;
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 	};
 }
 

@@ -11,8 +11,8 @@ namespace Ubpa::UECS {
 	public:
 		SystemTraits systemTraits;
 
-		const auto& GetAliveSystemIDs() const noexcept { return aliveSystemIDs; }
-		const auto& GetActiveSystemIDs() const noexcept { return activeSystemIDs; }
+		const std::pmr::unordered_set<Ubpa::NameID>& GetAliveSystemIDs() const noexcept;
+		const std::pmr::unordered_set<Ubpa::NameID>& GetActiveSystemIDs() const noexcept;
 
 		// not alive -> create
 		void Create(NameID);
@@ -56,17 +56,17 @@ namespace Ubpa::UECS {
 	private:
 		friend class World;
 
-		SystemMngr(World* w) : w{ w } {}
+		SystemMngr(World* w);
 		SystemMngr(const SystemMngr& mngr, World* w);
 		SystemMngr(SystemMngr&& mngr, World* w) noexcept;
 		~SystemMngr();
 
-		World* w;
 		void Update(NameID, Schedule&) const;
 		void Clear();
-		
-		std::unordered_set<NameID> aliveSystemIDs;
-		std::unordered_set<NameID> activeSystemIDs;
+
+		World* w;
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 	};
 }
 

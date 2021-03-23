@@ -14,7 +14,16 @@ World::World() :
 	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
 	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
 	systemMngr{ this },
-	entityMngr{ sync_rsrc.get(), sync_frame_rsrc.get() },
+	entityMngr{ this },
+	schedule{ this }{}
+
+World::World(std::pmr::memory_resource* upstream) :
+	sync_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>(upstream) },
+	unsync_rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>(upstream) },
+	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
+	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
+	systemMngr{ this },
+	entityMngr{ this },
 	schedule{ this }{}
 
 World::World(const World& w) :
@@ -23,16 +32,25 @@ World::World(const World& w) :
 	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
 	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
 	systemMngr{ w.systemMngr, this },
-	entityMngr{ w.entityMngr, sync_rsrc.get(), sync_frame_rsrc.get() },
+	entityMngr{ w.entityMngr, this },
+	schedule{ w.schedule, this } { assert(!w.inRunningJobGraph); }
+
+World::World(const World& w, std::pmr::memory_resource* upstream) :
+	sync_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>(upstream) },
+	unsync_rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>(upstream) },
+	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
+	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
+	systemMngr{ w.systemMngr, this },
+	entityMngr{ w.entityMngr, this },
 	schedule{ w.schedule, this } { assert(!w.inRunningJobGraph); }
 
 World::World(World&& w) noexcept :
-	sync_rsrc{ std::move(sync_rsrc) },
-	unsync_rsrc{ std::move(unsync_rsrc) },
-	sync_frame_rsrc{ std::move(sync_frame_rsrc) },
-	unsync_frame_rsrc{ std::move(unsync_frame_rsrc) },
+	sync_rsrc{ std::move(w.sync_rsrc) },
+	unsync_rsrc{ std::move(w.unsync_rsrc) },
+	sync_frame_rsrc{ std::move(w.sync_frame_rsrc) },
+	unsync_frame_rsrc{ std::move(w.unsync_frame_rsrc) },
 	systemMngr{ std::move(w.systemMngr), this },
-	entityMngr{ std::move(w.entityMngr), sync_rsrc.get(), sync_frame_rsrc.get() },
+	entityMngr{ std::move(w.entityMngr), this },
 	schedule{ std::move(w.schedule), this } { assert(!w.inRunningJobGraph); }
 
 World::~World() {
@@ -42,13 +60,6 @@ World::~World() {
 }
 
 void World::Update() {
-	// 1. clear frame rsrc
-
-	schedule.Clear();
-
-	sync_frame_rsrc->release();
-	unsync_frame_rsrc->release();
-
 	entityMngr.NewFrame();
 
 	// 2. update schedule
@@ -91,7 +102,11 @@ void World::Update() {
 
 	// 4. update version
 	version++;
-	entityMngr.UpdateVersion(version);
+
+	schedule.Clear();
+
+	sync_frame_rsrc->release();
+	unsync_frame_rsrc->release();
 }
 
 string World::DumpUpdateJobGraph() const {
