@@ -28,7 +28,11 @@ namespace Ubpa::UECS {
 
 		// if not contains the component, return nullptr
 		template<typename Cmpt>
-		std::span<Cmpt> GetCmptArray() const noexcept { return { (Cmpt*)GetCmptArray(TypeID_of<Cmpt>), GetHead()->num_component }; }
+		std::span<Cmpt> GetCmptArray() const noexcept {
+			void* ptr = GetCmptArray(TypeID_of<Cmpt>);
+			if (ptr) return { (Cmpt*)ptr,EntityNum() };
+			else return {};
+		}
 
 		std::span<Entity> GetEntityArray() const noexcept { return GetCmptArray<Entity>(); }
 

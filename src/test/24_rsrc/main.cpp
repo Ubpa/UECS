@@ -83,7 +83,7 @@ int main() {
 		w.systemMngr.RegisterAndCreate<FillSystem>();
 		w.systemMngr.Activate<FillSystem>();
 		
-		for (std::size_t i = 0; i < 100000; i++)
+		for (std::size_t i = 0; i < 10000; i++)
 			w.entityMngr.Create(TypeIDs_of<Buffer>);
 
 		w.Update();
