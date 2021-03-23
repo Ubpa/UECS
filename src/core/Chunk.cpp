@@ -93,7 +93,7 @@ std::size_t Chunk::Erase(std::size_t idx) {
 		}
 	}
 
-	head->UpdateVersion(head->archetype->Version());
+	head->ForceUpdateVersion(head->archetype->Version());
 
 	entityNum--;
 
@@ -143,7 +143,7 @@ std::tuple<Entity*, Ubpa::small_vector<CmptAccessPtr>, Ubpa::small_vector<std::s
 	};
 }
 
-void Chunk::Head::UpdateVersion(std::uint64_t version) {
+void Chunk::Head::ForceUpdateVersion(std::uint64_t version) {
 	order_version = version;
 	for (auto& info : GetCmptInfos())
 		info.version = version;

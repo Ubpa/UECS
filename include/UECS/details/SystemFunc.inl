@@ -35,7 +35,7 @@ namespace Ubpa::UECS {
 		static_assert(Length_v<Filter_t<ArgList, IsWriteSingleton>> == 0,
 			"(Mode::Entity) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt> instead");
 
-		static_assert(!Contain_v<ArgList, ChunkView>);
+		//static_assert(!Contain_v<ArgList, ChunkView>);
 
 		assert("(Mode::Entity) SystemFunc can't write singletons, use {Latest|LastFrame}Singleton<Cmpt> instead"
 			&& !singletonLocator.HasWriteSingletonType());

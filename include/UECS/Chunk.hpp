@@ -5,6 +5,7 @@
 #include "config.hpp"
 
 #include <span>
+#include <memory_resource>
 
 namespace Ubpa::UECS {
 	class Archetype;
@@ -32,6 +33,7 @@ namespace Ubpa::UECS {
 		std::span<Entity> GetEntityArray() const noexcept { return GetCmptArray<Entity>(); }
 
 		bool Full() const noexcept { return GetHead()->capacity == GetHead()->num_entity; }
+		bool Empty() const noexcept { return GetHead()->num_entity == 0; }
 
 		bool HasAnyChange(std::span<const TypeID> types, std::uint64_t version) const noexcept;
 
@@ -40,10 +42,22 @@ namespace Ubpa::UECS {
 		// ApplyChanges
 		std::tuple<Entity*, small_vector<CmptAccessPtr>, small_vector<std::size_t>> Locate(std::span<const AccessTypeID> types);
 
+		std::pmr::unsynchronized_pool_resource* GetChunkUnsyncResource() noexcept { return &GetHead()->chunk_unsync_rsrc; }
+		std::pmr::monotonic_buffer_resource* GetChunkUnsyncFrameResource() noexcept { return (std::pmr::monotonic_buffer_resource*)&GetHead()->chunk_unsync_frame_rsrc; }
+
+		template<typename T, typename... Args> T* ChunkUnsyncNewFrameObject(Args&&... args) {
+			auto rsrc = GetChunkUnsyncFrameResource();
+			auto obj = (T*)rsrc->allocate(sizeof(T), alignof(T));
+			std::pmr::polymorphic_allocator{ rsrc }.construct(obj, std::forward<Args>(args)...);
+			return obj;
+		}
+		
 	private:
 		friend class Archetype;
 
 		struct Head {
+			std::pmr::unsynchronized_pool_resource chunk_unsync_rsrc;
+			std::aligned_storage_t<sizeof(std::pmr::monotonic_buffer_resource)> chunk_unsync_frame_rsrc;
 			Archetype* archetype;
 			std::uint64_t num_entity;
 			std::uint64_t num_component;
@@ -64,9 +78,11 @@ namespace Ubpa::UECS {
 			std::span<CmptInfo> GetCmptInfos() noexcept { return { (CmptInfo*)(this + 1), num_component }; }
 			std::span<const CmptInfo> GetCmptInfos() const noexcept { return const_cast<Head*>(this)->GetCmptInfos(); }
 
-			void UpdateVersion(std::uint64_t version);
-		}; // 40 bytes
-		static_assert(sizeof(Head) == 40);
+			void ForceUpdateVersion(std::uint64_t version);
+		};
+
+		Chunk() noexcept = default;
+		~Chunk() { GetHead()->~Head(); }
 
 		Head* GetHead() noexcept { return reinterpret_cast<Head*>(data); }
 		const Head* GetHead() const noexcept { return reinterpret_cast<const Head*>(data); }

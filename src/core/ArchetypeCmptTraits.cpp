@@ -10,23 +10,23 @@
 
 using namespace Ubpa::UECS;
 
-void ArchetypeCmptTraits::CmptTrait::DefaultConstruct(void* cmpt, std::pmr::memory_resource* world_rsrc) const {
+void ArchetypeCmptTraits::CmptTrait::DefaultConstruct(void* cmpt, std::pmr::memory_resource* rsrc) const {
 	if(default_ctor)
-		default_ctor(cmpt, world_rsrc);
+		default_ctor(cmpt, rsrc);
 }
 
-void ArchetypeCmptTraits::CmptTrait::CopyConstruct(void* dst, const void* src, std::pmr::memory_resource* world_rsrc) const {
+void ArchetypeCmptTraits::CmptTrait::CopyConstruct(void* dst, const void* src, std::pmr::memory_resource* rsrc) const {
 	if (copy_ctor)
-		copy_ctor(dst, src, world_rsrc);
+		copy_ctor(dst, src, rsrc);
 	else
 		std::memcpy(dst, src, size);
 }
 
-void ArchetypeCmptTraits::CmptTrait::MoveConstruct(void* dst, void* src) const {
+void ArchetypeCmptTraits::CmptTrait::MoveConstruct(void* dst, void* src, std::pmr::memory_resource* rsrc) const {
 	if (move_ctor)
-		move_ctor(dst, src);
+		move_ctor(dst, src, rsrc);
 	else
-		std::memcpy(dst, src, size);
+		CopyConstruct(dst, src, rsrc);
 }
 
 void ArchetypeCmptTraits::CmptTrait::MoveAssign(void* dst, void* src) const {

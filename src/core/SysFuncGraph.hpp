@@ -10,8 +10,10 @@ namespace Ubpa::UECS {
 	class SysFuncGraph {
 	public:
 		using AdjList = std::pmr::unordered_map<SystemFunc*, std::pmr::unordered_set<SystemFunc*>>;
+		using allocator_type = AdjList::allocator_type;
+		allocator_type get_allocator() const noexcept { return adjList.get_allocator(); }
 
-		SysFuncGraph(std::pmr::memory_resource* rsrc) : adjList{ AdjList::allocator_type{rsrc} } {}
+		SysFuncGraph(const allocator_type& alloc) : adjList{ alloc } {}
 
 		void AddVertex(SystemFunc* x);
 		void AddEdge(SystemFunc* x, SystemFunc* y);

@@ -9,24 +9,31 @@ using namespace Ubpa;
 using namespace std;
 
 World::World() :
-	world_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
-	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
+	sync_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
+	unsync_rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
+	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
 	systemMngr{ this },
-	entityMngr{ world_rsrc.get() }{}
+	entityMngr{ sync_rsrc.get(), sync_frame_rsrc.get() },
+	schedule{ this }{}
 
 World::World(const World& w) :
-	world_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
-	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
+	sync_rsrc{ std::make_unique<std::pmr::synchronized_pool_resource>() },
+	unsync_rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
+	sync_frame_rsrc{ std::make_unique<synchronized_monotonic_buffer_resource>(unsync_rsrc.get()) },
+	unsync_frame_rsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>(unsync_rsrc.get()) },
 	systemMngr{ w.systemMngr, this },
-	entityMngr{ w.entityMngr, world_rsrc.get() },
-	schedule{ w.schedule } { assert(!w.inRunningJobGraph); }
+	entityMngr{ w.entityMngr, sync_rsrc.get(), sync_frame_rsrc.get() },
+	schedule{ w.schedule, this } { assert(!w.inRunningJobGraph); }
 
 World::World(World&& w) noexcept :
-	world_rsrc{ std::move(w.world_rsrc) },
-	jobRsrc{ std::make_unique<std::pmr::monotonic_buffer_resource>() },
+	sync_rsrc{ std::move(sync_rsrc) },
+	unsync_rsrc{ std::move(unsync_rsrc) },
+	sync_frame_rsrc{ std::move(sync_frame_rsrc) },
+	unsync_frame_rsrc{ std::move(unsync_frame_rsrc) },
 	systemMngr{ std::move(w.systemMngr), this },
-	entityMngr{ std::move(w.entityMngr) },
-	schedule{ std::move(w.schedule) } { assert(!w.inRunningJobGraph); }
+	entityMngr{ std::move(w.entityMngr), sync_rsrc.get(), sync_frame_rsrc.get() },
+	schedule{ std::move(w.schedule), this } { assert(!w.inRunningJobGraph); }
 
 World::~World() {
 	schedule.Clear();
@@ -35,23 +42,29 @@ World::~World() {
 }
 
 void World::Update() {
-	// 1. update schedule
+	// 1. clear frame rsrc
 
 	schedule.Clear();
+
+	sync_frame_rsrc->release();
+	unsync_frame_rsrc->release();
+
+	entityMngr.NewFrame();
+
+	// 2. update schedule
+
 	for (const auto& ID : systemMngr.GetActiveSystemIDs())
 		systemMngr.Update(ID, schedule);
 
-	// 2. run job graph for several layers
+	// 3. run job graph for several layers
 	inRunningJobGraph = true;
 
-	auto* table = schedule.CreateFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>
-		(std::pmr::unordered_map<SystemFunc*, JobHandle>::allocator_type{ schedule.GetFrameMonotonicResource() });
+	auto* table = UnsyncNewFrameObject<std::pmr::unordered_map<SystemFunc*, JobHandle>>();
 
 	for (const auto& [layer, layerinfo] : schedule.layerInfos) {
 		assert(layer != SpecialLayer);
 		for (const auto& [hashcode, func] : layerinfo.sysFuncs) {
-			auto* job_buffer = jobRsrc->allocate(sizeof(Job), alignof(Job));
-			auto* job = new(job_buffer)Job{ std::string{func->Name()} };
+			auto* job = UnsyncNewFrameObject<Job>(std::string{ func->Name() });
 			jobs.push_back(job);
 			if (!entityMngr.AutoGen(this, job, func, layer))
 				schedule.Disable(func->Name());
@@ -69,22 +82,16 @@ void World::Update() {
 		executor.run(jobGraph).wait();
 		RunCommands(layer);
 
-		for (auto* job : jobs) {
+		for (auto* job : jobs)
 			job->~Taskflow();
-			//jobRsrc->deallocate(job, sizeof(Job), alignof(Job));
-		}
-		jobRsrc->release();
 		jobs.clear();
 		jobGraph.clear();
 	}
 	inRunningJobGraph = false;
 
-	// 3. update version
+	// 4. update version
 	version++;
 	entityMngr.UpdateVersion(version);
-
-	// 4. clear frame resource
-	frame_sync_rsrc.release();
 }
 
 string World::DumpUpdateJobGraph() const {

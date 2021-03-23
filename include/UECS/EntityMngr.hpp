@@ -15,6 +15,7 @@ namespace Ubpa::UECS {
 	class SystemFunc;
 	class IListener;
 	class Archetype;
+	class synchronized_monotonic_buffer_resource;
 
 	// Entity Manager of World
 	// auto maintain Component's lifecycle ({default|copy|move} constructor, destructor)
@@ -81,10 +82,13 @@ namespace Ubpa::UECS {
 		EntityMngr& operator=(const EntityMngr&) = delete;
 
 		void Clear();
+
+
+
 	private:
-		EntityMngr(std::pmr::memory_resource* world_rsrc);
-		EntityMngr(const EntityMngr& em, std::pmr::memory_resource* world_rsrc);
-		EntityMngr(EntityMngr&&) noexcept;
+		EntityMngr(std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc);
+		EntityMngr(const EntityMngr&, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc);
+		EntityMngr(EntityMngr&&, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc) noexcept;
 		~EntityMngr();
 
 		friend class World;
@@ -110,7 +114,8 @@ namespace Ubpa::UECS {
 		bool AutoGen(World*, Job*, SystemFunc*, int layer) const;
 
 		std::uint64_t version{ 0 };
-		std::pmr::memory_resource* world_rsrc;
+		std::pmr::synchronized_pool_resource* sync_rsrc;
+		synchronized_monotonic_buffer_resource* sync_frame_rsrc;
 
 		struct EntityInfo {
 			Archetype* archetype{ nullptr };
@@ -128,6 +133,7 @@ namespace Ubpa::UECS {
 			std::size_t operator()(const small_flat_set<TypeID>& types) const noexcept;
 		};
 		std::unordered_map<small_flat_set<TypeID>, std::unique_ptr<Archetype>, TypeIDSetHash> ts2a; // archetype's TypeIDSet to archetype
+		void NewFrame() noexcept;
 		void UpdateVersion(std::uint64_t world_version) noexcept;
 	};
 }

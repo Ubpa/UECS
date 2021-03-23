@@ -59,7 +59,7 @@ bool SysFuncGraph::HavePath(SystemFunc* x, SystemFunc* y) const {
 void SysFuncGraph::AddVertex(SystemFunc* x) {
 	if (HaveVertex(x))
 		return;
-	adjList.emplace(x, std::pmr::unordered_set<SystemFunc*>(std::pmr::polymorphic_allocator<SystemFunc*>{adjList.get_allocator().resource()}));
+	adjList.emplace(x, std::pmr::unordered_set<SystemFunc*>(adjList.get_allocator().resource()));
 }
 
 void SysFuncGraph::AddEdge(SystemFunc* x, SystemFunc* y) {

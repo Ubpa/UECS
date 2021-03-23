@@ -5,11 +5,11 @@ using namespace Ubpa::UECS;
 
 struct Buffer {
 	using allocator_type = std::pmr::vector<int>::allocator_type;
-	Buffer(const Buffer& other, const allocator_type& alloc)
-		: value(alloc) {}
-	Buffer(const allocator_type& alloc)
-		: value(alloc) {}
 	allocator_type get_allocator() const noexcept { return value.get_allocator(); }
+
+	Buffer(const allocator_type& alloc) : value(alloc) {}
+	Buffer(const Buffer& other, const allocator_type& alloc) : value(other.value, alloc) {}
+
 	std::pmr::vector<int> value;
 };
 

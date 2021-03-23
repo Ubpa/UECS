@@ -27,6 +27,7 @@ namespace Ubpa::UECS {
 	// * std::size_t indexInQuery
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
+	// * ChunkView
 	// * CommandBufferView
 	// 2. Mode::Chunk
 	// * std::size_t entityBeginIndexInQuery
@@ -36,6 +37,8 @@ namespace Ubpa::UECS {
 	// * Write<Singleton<Cmpt>> (only job can write singletons)
 	class SystemFunc {
 	public:
+		SystemFunc(const SystemFunc&) = default;
+
 		enum class Mode {
 			Entity,
 			Chunk,
@@ -75,7 +78,6 @@ namespace Ubpa::UECS {
 		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
 	private:
 		friend class Schedule;
-		SystemFunc(const SystemFunc&) = default;
 		Mode mode;
 		std::string_view name;
 		std::size_t hashCode; // after name

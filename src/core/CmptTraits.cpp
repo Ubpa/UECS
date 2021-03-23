@@ -3,12 +3,10 @@
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 
-CmptTraits::CmptTraits(std::pmr::memory_resource* world_rsrc) :
-	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-	world_rsrc{ world_rsrc }
-{ Register<Entity>(); }
+CmptTraits::CmptTraits() :
+	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() } { Register<Entity>(); }
 
-CmptTraits::CmptTraits(const CmptTraits& other, std::pmr::memory_resource* world_rsrc) :
+CmptTraits::CmptTraits(const CmptTraits& other) :
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
 	sizeofs{other.sizeofs},
 	trivials{other.trivials},
@@ -17,8 +15,7 @@ CmptTraits::CmptTraits(const CmptTraits& other, std::pmr::memory_resource* world
 	copy_constructors{other.copy_constructors },
 	move_constructors{other.move_constructors },
 	move_assignments{ other.move_assignments },
-	destructors{ other.destructors },
-	world_rsrc{ world_rsrc }
+	destructors{ other.destructors }
 {
 	for (const auto& [id, name] : other.names) {
 		char* buffer = (char*)rsrc->allocate((name.size() + 1) * sizeof(char), alignof(char));
@@ -28,18 +25,6 @@ CmptTraits::CmptTraits(const CmptTraits& other, std::pmr::memory_resource* world
 		buffer += name.size() + 1;
 	}
 }
-
-CmptTraits::CmptTraits(CmptTraits&& other) noexcept :
-	rsrc{ std::move(other.rsrc) },
-	sizeofs{ std::move(other.sizeofs) },
-	trivials{ std::move(other.trivials) },
-	alignments{ std::move(other.alignments) },
-	default_constructors{ std::move(other.default_constructors) },
-	copy_constructors{ std::move(other.copy_constructors) },
-	move_constructors{ std::move(other.move_constructors) },
-	move_assignments{ std::move(other.move_assignments) },
-	destructors{ std::move(other.destructors) },
-	world_rsrc{ other.world_rsrc } { other.world_rsrc = nullptr; }
 
 bool CmptTraits::IsTrivial(TypeID type) const {
 	return trivials.contains(type);
@@ -55,46 +40,6 @@ std::size_t CmptTraits::Alignof(TypeID type) const {
 	auto target = alignments.find(type);
 
 	return target != alignments.end() ? target->second : default_alignment;
-}
-
-void CmptTraits::DefaultConstruct(TypeID type, void* cmpt) const {
-	auto target = default_constructors.find(type);
-
-	if (target != default_constructors.end())
-		target->second(cmpt, world_rsrc);
-}
-
-void CmptTraits::CopyConstruct(TypeID type, void* dst, const void* src) const {
-	auto target = copy_constructors.find(type);
-
-	if (target != copy_constructors.end())
-		target->second(dst, src, world_rsrc);
-	else
-		memcpy(dst, src, Sizeof(type));
-}
-
-void CmptTraits::MoveConstruct(TypeID type, void* dst, void* src) const {
-	auto target = move_constructors.find(type);
-
-	if (target != move_constructors.end())
-		target->second(dst, src);
-	else
-		memcpy(dst, src, Sizeof(type));
-}
-
-void CmptTraits::MoveAssign(TypeID type, void* dst, void* src) const {
-	auto target = move_assignments.find(type);
-
-	if (target != move_assignments.end())
-		target->second(dst, src);
-	else
-		memcpy(dst, src, Sizeof(type));
-}
-
-void CmptTraits::Destruct(TypeID type, void* cmpt) const {
-	auto target = destructors.find(type);
-	if (target != destructors.end())
-		target->second(cmpt);
 }
 
 std::string_view CmptTraits::Nameof(TypeID type) const {
@@ -125,7 +70,7 @@ CmptTraits& CmptTraits::RegisterCopyConstructor(TypeID type, std::function<void(
 	return *this;
 }
 
-CmptTraits& CmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*, void*)> f) {
+CmptTraits& CmptTraits::RegisterMoveConstructor(TypeID type, std::function<void(void*, void*, std::pmr::memory_resource*)> f) {
 	move_constructors.emplace(type, std::move(f));
 	return *this;
 }

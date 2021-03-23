@@ -13,9 +13,41 @@
 namespace Ubpa::UECS {
 	class IListener;
 
+	class synchronized_monotonic_buffer_resource : public std::pmr::monotonic_buffer_resource {
+	public:
+		using std::pmr::monotonic_buffer_resource::monotonic_buffer_resource;
+
+		void release() noexcept /* strengthened */ {
+			std::lock_guard<std::mutex> guard{ mtx };
+			this->monotonic_buffer_resource::release();
+		}
+
+	protected:
+		virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+			std::lock_guard<std::mutex> guard{ mtx };
+			return this->monotonic_buffer_resource::do_allocate(_Bytes, _Align);
+		}
+
+	private:
+		mutable std::mutex mtx;
+	};
+	
 	// SystemMngr + EntityMngr
 	class World {
-		std::unique_ptr<std::pmr::synchronized_pool_resource> world_rsrc; // init before entityMngr
+		// [relationship]
+		// - sync_rsrc --> chunk_unsync_rsrc
+		// 
+		//                 x--> sync_frame_rsrc --> chunk_unsync_frame_rsrc
+		//                 |
+		// - unsync_rsrc --x
+		//                 |
+		//                 x--> unsync_frame_rsrc
+
+		std::unique_ptr<std::pmr::synchronized_pool_resource> sync_rsrc;
+		std::unique_ptr<std::pmr::unsynchronized_pool_resource> unsync_rsrc;
+
+		std::unique_ptr<synchronized_monotonic_buffer_resource> sync_frame_rsrc; // release every frame
+		std::unique_ptr<std::pmr::monotonic_buffer_resource> unsync_frame_rsrc; // release every frame
 
 	public:
 		World();
@@ -113,12 +145,13 @@ namespace Ubpa::UECS {
 			SingletonLocator = {}
 		) const;
 
-		// you just can use it in a job within a frame
-		std::pmr::synchronized_pool_resource* GetFrameSyncResource() { return &frame_sync_rsrc; }
-		template<typename T, typename... Args>
-		T* SyncCreateFrameObject(Args&&... args);
+		synchronized_monotonic_buffer_resource* GetSyncFrameResource() { return sync_frame_rsrc.get(); }
+		std::pmr::monotonic_buffer_resource* GetUnsyncFrameResource() { return unsync_frame_rsrc.get(); }
+		std::pmr::synchronized_pool_resource* GetSyncResource() { return sync_rsrc.get(); }
+		std::pmr::unsynchronized_pool_resource* GetUnsyncResource() { return unsync_rsrc.get(); }
 
-		std::pmr::synchronized_pool_resource* GetSyncResource() { return world_rsrc.get(); }
+		template<typename T, typename... Args> T* SyncNewFrameObject(Args&&... args);
+		template<typename T, typename... Args> T* UnsyncNewFrameObject(Args&&... args);
 
 		std::uint64_t Version() const noexcept { return version; }
 	private:
@@ -130,7 +163,6 @@ namespace Ubpa::UECS {
 
 		Job jobGraph;
 		std::vector<Job*> jobs;
-		std::unique_ptr<std::pmr::monotonic_buffer_resource> jobRsrc;
 
 		// command
 		std::map<int, CommandBuffer> lcommandBuffer;
@@ -138,8 +170,6 @@ namespace Ubpa::UECS {
 		void RunCommands(int layer);
 
 		CommandBuffer Run(SystemFunc*);
-
-		std::pmr::synchronized_pool_resource frame_sync_rsrc;
 	};
 }
 

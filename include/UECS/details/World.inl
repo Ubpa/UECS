@@ -92,8 +92,16 @@ namespace Ubpa::UECS {
 	}
 
 	template<typename T, typename... Args>
-	T* World::SyncCreateFrameObject(Args&&... args) {
-		void* buffer = frame_sync_rsrc.allocate(sizeof(T), alignof(T));
-		return new(buffer)T(std::forward<Args>(args)...);
+	T* World::SyncNewFrameObject(Args&&... args) {
+		auto obj = (T*)GetSyncFrameResource()->allocate(sizeof(T), alignof(T));
+		std::pmr::polymorphic_allocator{ GetSyncFrameResource() }.construct(obj, std::forward<Args>(args)...);
+		return obj;
+	}
+
+	template<typename T, typename... Args>
+	T* World::UnsyncNewFrameObject(Args&&... args) {
+		auto obj = (T*)GetUnsyncFrameResource()->allocate(sizeof(T), alignof(T));
+		std::pmr::polymorphic_allocator{ GetSyncFrameResource() }.construct(obj, std::forward<Args>(args)...);
+		return obj;
 	}
 }

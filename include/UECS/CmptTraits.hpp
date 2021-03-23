@@ -32,8 +32,8 @@ namespace Ubpa::UECS {
 		CmptTraits& RegisterSize(TypeID, std::size_t size);
 		CmptTraits& RegisterAlignment(TypeID, std::size_t alignment);
 		CmptTraits& RegisterDefaultConstructor(TypeID, std::function<void(void*, std::pmr::memory_resource*)>);
-		CmptTraits& RegisterCopyConstructor(TypeID, std::function<void(void*,const void*, std::pmr::memory_resource*)>);
-		CmptTraits& RegisterMoveConstructor(TypeID, std::function<void(void*,void*)>);
+		CmptTraits& RegisterCopyConstructor(TypeID, std::function<void(void*, const void*, std::pmr::memory_resource*)>);
+		CmptTraits& RegisterMoveConstructor(TypeID, std::function<void(void*,void*, std::pmr::memory_resource*)>);
 		CmptTraits& RegisterMoveAssignment(TypeID, std::function<void(void*,void*)>);
 		CmptTraits& RegisterDestructor(TypeID, std::function<void(void*)>);
 
@@ -49,11 +49,6 @@ namespace Ubpa::UECS {
 		bool IsTrivial(TypeID) const;
 		std::size_t Sizeof(TypeID) const;
 		std::size_t Alignof(TypeID) const;
-		void DefaultConstruct(TypeID, void* cmpt) const;
-		void CopyConstruct(TypeID, void* dst, const void* src) const;
-		void MoveConstruct(TypeID, void* dst, void* src) const;
-		void MoveAssign(TypeID, void* dst, void* src) const;
-		void Destruct(TypeID, void* cmpt) const;
 		std::string_view Nameof(TypeID) const;
 
 		CmptTraits& Deregister(TypeID) noexcept;
@@ -69,9 +64,9 @@ namespace Ubpa::UECS {
 
 	private:
 		friend class EntityMngr;
-		CmptTraits(std::pmr::memory_resource* world_rsrc);
-		CmptTraits(const CmptTraits& other, std::pmr::memory_resource* world_rsrc);
-		CmptTraits(CmptTraits&& other) noexcept;
+		CmptTraits();
+		CmptTraits(const CmptTraits& other);
+		CmptTraits(CmptTraits&& other) noexcept = default;
 
 		// register all for Cmpt
 		// static_assert
@@ -93,11 +88,9 @@ namespace Ubpa::UECS {
 		std::unordered_map<TypeID, std::size_t> alignments;
 		std::unordered_map<TypeID, std::function<void(void*, std::pmr::memory_resource*)>> default_constructors; // dst <- src
 		std::unordered_map<TypeID, std::function<void(void*, const void*, std::pmr::memory_resource*)>> copy_constructors; // dst <- src
-		std::unordered_map<TypeID, std::function<void(void*, void*)>> move_constructors; // dst <- src
+		std::unordered_map<TypeID, std::function<void(void*, void*, std::pmr::memory_resource*)>> move_constructors; // dst <- src
 		std::unordered_map<TypeID, std::function<void(void*, void*)>> move_assignments; // dst <- src
 		std::unordered_map<TypeID, std::function<void(void*)>> destructors;
-
-		std::pmr::memory_resource* world_rsrc;
 	};
 }
 

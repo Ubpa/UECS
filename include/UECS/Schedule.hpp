@@ -118,19 +118,16 @@ namespace Ubpa::UECS {
 		Schedule& AddNone(std::string_view sys, TypeID, int layer = 0);
 		Schedule& Disable(std::string_view sys, int layer = 0);
 
-		// clear every frame
-		std::pmr::monotonic_buffer_resource* GetFrameMonotonicResource() { return frame_rsrc.get(); }
-		template<typename T, typename... Args>
-		T* CreateFrameObject(Args&&... args) const;
+		World* GetWorld() const noexcept { return world; }
+
 		std::string_view RegisterFrameString(std::string_view str);
-
-
+		
 		Schedule& operator=(Schedule&&) noexcept = delete;
 		Schedule& operator=(const Schedule&) = delete;
 	private:
-		Schedule();
-		Schedule(const Schedule&);
-		Schedule(Schedule&&) noexcept = default;
+		Schedule(World*);
+		Schedule(const Schedule&, World*);
+		Schedule(Schedule&&, World*) noexcept;
 		~Schedule();
 
 		template<typename... Args>
@@ -173,7 +170,8 @@ namespace Ubpa::UECS {
 
 		std::map<int, LayerInfo> layerInfos;
 
-		std::unique_ptr<std::pmr::monotonic_buffer_resource> frame_rsrc; // release in every frame
+		World* world;
+		std::pmr::memory_resource* GetUnsyncFrameResource() const noexcept;
 
 		friend class World;
 	};

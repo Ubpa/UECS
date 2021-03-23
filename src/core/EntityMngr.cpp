@@ -9,33 +9,37 @@
 using namespace Ubpa::UECS;
 using namespace std;
 
-EntityMngr::EntityMngr(std::pmr::memory_resource* world_rsrc) :
-	cmptTraits{ world_rsrc },
+EntityMngr::EntityMngr(std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc) :
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-	world_rsrc{ world_rsrc }{}
+	sync_rsrc{ sync_rsrc },
+	sync_frame_rsrc{ sync_frame_rsrc }{}
 
-EntityMngr::EntityMngr(EntityMngr&& other) noexcept :
+EntityMngr::EntityMngr(EntityMngr&& other, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc) noexcept :
 	cmptTraits{ std::move(other.cmptTraits) },
 	queryCache{std::move(other.queryCache)},
 	version{other.version},
-	world_rsrc{other.world_rsrc},
+	sync_rsrc{ sync_rsrc },
+	sync_frame_rsrc{ sync_frame_rsrc },
 	entityTable{std::move(other.entityTable)},
 	entityTableFreeEntry{std::move(other.entityTableFreeEntry)},
 	rsrc{std::move(other.rsrc)},
 	ts2a{std::move(other.ts2a)}
 {
 	other.version = 0;
-	other.world_rsrc = nullptr;
+	other.sync_rsrc = nullptr;
+	other.sync_frame_rsrc = nullptr;
 }
 
-EntityMngr::EntityMngr(const EntityMngr& em, std::pmr::memory_resource* world_rsrc) :
-	cmptTraits{ em.cmptTraits, world_rsrc },
+EntityMngr::EntityMngr(const EntityMngr& em, std::pmr::synchronized_pool_resource* sync_rsrc, synchronized_monotonic_buffer_resource* sync_frame_rsrc) :
+	cmptTraits{ em.cmptTraits },
 	rsrc{ std::make_unique<std::pmr::unsynchronized_pool_resource>() },
-	version{ em.version }
+	version{ em.version },
+	sync_rsrc{ sync_rsrc },
+	sync_frame_rsrc{ sync_frame_rsrc }
 {
 	ts2a.reserve(em.ts2a.size());
 	for (const auto& [ts, a] : em.ts2a)
-		ts2a.try_emplace(ts, std::make_unique<Archetype>(rsrc.get(), world_rsrc, *a));
+		ts2a.try_emplace(ts, std::make_unique<Archetype>(rsrc.get(), sync_rsrc, sync_frame_rsrc, *a));
 	entityTableFreeEntry = em.entityTableFreeEntry;
 	entityTable.resize(em.entityTable.size());
 	for (std::size_t i = 0; i < em.entityTable.size(); i++) {
@@ -120,7 +124,7 @@ Archetype* EntityMngr::GetOrCreateArchetypeOf(std::span<const TypeID> types) {
 	if (target != ts2a.end())
 		return target->second.get();
 
-	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), world_rsrc, types, version);
+	auto* archetype = Archetype::New(cmptTraits, rsrc.get(), sync_rsrc, sync_frame_rsrc, types, version);
 
 	ts2a.emplace(std::move(typeset), std::unique_ptr<Archetype>{ archetype });
 	for (auto& [query, archetypes] : queryCache) {
@@ -183,7 +187,7 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 	for (const auto& type : srcTypeIDSet) {
 		auto* srcCmpt = srcArchetype->ReadAt(type, { srcChunkIdx, srcIdxInChunk }).Ptr();
 		auto* dstCmpt = dstArchetype->WriteAt(type, { dstChunkIdx, dstidxInChunk }).Ptr();
-		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt);
+		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt, dstArchetype->GetChunks()[dstChunkIdx]->GetChunkUnsyncResource());
 	}
 
 	// erase
@@ -193,16 +197,18 @@ void EntityMngr::Attach(Entity e, std::span<const TypeID> types) {
 		entityTable[srcMovedEntityIndex].idxInChunk = srcIdxInChunk;
 	}
 
-	info.archetype = dstArchetype;
-	info.chunkIdx = dstChunkIdx;
-	info.idxInChunk = dstidxInChunk;
-
 	for (const auto& type : types) {
 		auto target = dstArchetype->GetCmptTraits().GetTypes().find(type);
 		assert(target != dstArchetype->GetCmptTraits().GetTypes().end());
 		auto idx = static_cast<std::size_t>(std::distance(dstArchetype->GetCmptTraits().GetTypes().begin(), target));
-		dstArchetype->GetCmptTraits().GetTraits()[idx].DefaultConstruct(info.archetype->WriteAt(type, {info.chunkIdx, info.idxInChunk}).Ptr(), world_rsrc);
+		dstArchetype->GetCmptTraits().GetTraits()[idx].DefaultConstruct(
+			dstArchetype->WriteAt(type, { dstChunkIdx, dstidxInChunk }).Ptr(),
+			dstArchetype->chunks[dstChunkIdx]->GetChunkUnsyncResource());
 	}
+
+	info.archetype = dstArchetype;
+	info.chunkIdx = dstChunkIdx;
+	info.idxInChunk = dstidxInChunk;
 }
 
 void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
@@ -248,7 +254,7 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 	for (const auto& type : dstTypeIDSet) {
 		auto* srcCmpt = srcArchetype->ReadAt(type, { srcChunkIdx, srcIdxInChunk }).Ptr();
 		auto* dstCmpt = dstArchetype->WriteAt(type, { dstChunkIdx, dstidxInChunk }).Ptr();
-		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt);
+		srcCmptTraits.GetTrait(type).MoveConstruct(dstCmpt, srcCmpt, dstArchetype->GetChunks()[dstChunkIdx]->GetChunkUnsyncResource());
 	}
 
 	// erase
@@ -624,8 +630,13 @@ CmptAccessPtr EntityMngr::GetSingleton(AccessTypeID access_type) const {
 	return { TypeID{}, nullptr, AccessMode::WRITE };
 }
 
-void EntityMngr::UpdateVersion(std::uint64_t world_version) noexcept {
-	this->version = world_version;
+void EntityMngr::NewFrame() noexcept {
 	for (auto& [ts, a] : ts2a)
-		a->version = world_version;
+		a->NewFrame();
+}
+
+void EntityMngr::UpdateVersion(std::uint64_t version) noexcept {
+	this->version = version;
+	for (auto& [ts, a] : ts2a)
+		a->UpdateVersion(version);
 }
