@@ -55,6 +55,9 @@ namespace Ubpa::UECS {
 		std::vector<CmptAccessPtr> Components(Entity, AccessMode) const;
 		std::vector<CmptAccessPtr> WriteComponents(Entity e) const { return Components(e, AccessMode::WRITE); }
 		std::vector<CmptAccessPtr> ReadComponents(Entity e) const { return Components(e, AccessMode::LATEST); }
+		
+		// chunk + index in chunk
+		std::tuple<Chunk*, std::size_t> GetChunk(Entity e) const;
 
 		bool Exist(Entity) const noexcept;
 
