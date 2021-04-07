@@ -9,8 +9,8 @@ namespace Ubpa::UECS {
 	class CmptPtr {
 	public:
 		constexpr CmptPtr(TypeID type, void* p) noexcept : type{ type }, p{ p } {}
-		template<typename Cmpt>
-		constexpr CmptPtr(Cmpt* p) noexcept : type{ TypeID_of<Cmpt> }, p{ p } {}
+		template<typename Cmpt> requires std::negation_v<std::is_void<std::decay_t<Cmpt>>>
+		constexpr explicit CmptPtr(Cmpt* p) noexcept : type{ TypeID_of<Cmpt> }, p{ p } {}
 		constexpr CmptPtr() noexcept : CmptPtr{ Invalid() } {}
 
 		constexpr void* Ptr() const noexcept { return p; }

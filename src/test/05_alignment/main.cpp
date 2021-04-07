@@ -37,6 +37,7 @@ struct alignas(256) G {
 int main() {
 	World w;
 	w.entityMngr.cmptTraits.Register<A, B, C, D, E, F, G>();
-	w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E, F, G>);
+	auto e = w.entityMngr.Create(Ubpa::TypeIDs_of<A, B, C, D, E, F, G>);
+	w.entityMngr.Destroy(e);
 	return 0;
 }

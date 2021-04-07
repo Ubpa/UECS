@@ -94,8 +94,8 @@ namespace Ubpa::UECS {
 		return RegisterChunkJob(
 			std::forward<Func>(func),
 			RegisterFrameString(name),
-			config.isParallel,
 			std::move(config.archetypeFilter),
+			config.isParallel,
 			std::move(config.singletonLocator),
 			std::move(config.randomAccessor),
 			std::move(config.changeFilter),

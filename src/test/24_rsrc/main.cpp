@@ -36,7 +36,7 @@ struct FillSystem {
 	static void OnUpdate(Schedule& schedule) {
 		schedule.RegisterEntityJob(
 			[](Buffer* buffer) {
-				for (std::size_t j = 0; j < 100; j++)
+				for (std::size_t j = 0; j < 50; j++)
 					buffer->value.push_back(j);
 			},
 			"Fill"
@@ -83,7 +83,7 @@ int main() {
 		w.systemMngr.RegisterAndCreate<FillSystem>();
 		w.systemMngr.Activate<FillSystem>();
 		
-		for (std::size_t i = 0; i < 10000; i++)
+		for (std::size_t i = 0; i < 100000; i++)
 			w.entityMngr.Create(TypeIDs_of<Buffer>);
 
 		w.Update();

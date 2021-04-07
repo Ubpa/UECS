@@ -93,6 +93,7 @@ void ArchetypeCmptTraits::Deregister(TypeID type) noexcept {
 		return;
 
 	std::size_t idx = static_cast<std::size_t>(std::distance(types.begin(), ttarget));
+	types.erase(ttarget);
 	auto target = cmpt_traits.begin() + idx;
 	if (!target->trivial) {
 		cmpt_traits.erase(target);

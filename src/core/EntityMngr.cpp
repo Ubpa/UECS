@@ -363,7 +363,10 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys, int layer) co
 			auto chunks = archetype->GetChunks();
 			for (std::size_t i = 0; i < chunks.size(); i++) {
 				chunks[i]->ApplyChanges({ sys->entityQuery.locator.AccessTypeIDs().data(), sys->entityQuery.locator.AccessTypeIDs().size() });
+				chunks[i]->ApplyChanges({ sys->randomAccessor.types.data(), sys->randomAccessor.types.size() });
 				if (!sys->changeFilter.types.empty() && !chunks[i]->HasAnyChange(sys->changeFilter.types, world->Version()))
+					continue;
+				if (chunks[i]->EntityNum() == 0)
 					continue;
 				job->emplace([=, chunk = chunks[i], singletons = singletons]() {
 					auto [entities, cmpts, sizes] = chunk->Locate({ sys->entityQuery.locator.AccessTypeIDs().data(), sys->entityQuery.locator.AccessTypeIDs().size() });
@@ -400,7 +403,10 @@ bool EntityMngr::GenEntityJob(World* w, Job* job, SystemFunc* sys, int layer) co
 
 				for (std::size_t i = 0; i < chunks.size(); i++) {
 					chunks[i]->ApplyChanges({ sys->entityQuery.locator.AccessTypeIDs().data(), sys->entityQuery.locator.AccessTypeIDs().size() });
+					chunks[i]->ApplyChanges({ sys->randomAccessor.types.data(), sys->randomAccessor.types.size() });
 					if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, world->Version()))
+						continue;
+					if (chunks[i]->EntityNum() == 0)
 						continue;
 
 					auto [entities, cmpts, sizes] = chunks[i]->Locate({ sys->entityQuery.locator.AccessTypeIDs().data(), sys->entityQuery.locator.AccessTypeIDs().size() });
@@ -456,8 +462,11 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys, int layer) con
 			for (std::size_t i = 0; i < chunks.size(); i++) {
 				chunks[i]->ApplyChanges({ sys->entityQuery.filter.all.data(), sys->entityQuery.filter.all.size() });
 				chunks[i]->ApplyChanges({ sys->entityQuery.filter.any.data(), sys->entityQuery.filter.any.size() });
+				chunks[i]->ApplyChanges({ sys->randomAccessor.types.data(), sys->randomAccessor.types.size() });
 				assert(sys->entityQuery.locator.AccessTypeIDs().empty());
 				if (!sys->changeFilter.types.empty() && !chunks[i]->HasAnyChange(sys->changeFilter.types, world->Version()))
+					continue;
+				if (chunks[i]->EntityNum() == 0)
 					continue;
 
 				std::size_t indexOffsetInChunk = indexOffsetInQuery + indexOffsetInArchetype;
@@ -494,6 +503,8 @@ bool EntityMngr::GenChunkJob(World* w, Job* job, SystemFunc* sys, int layer) con
 					chunks[i]->ApplyChanges({ sys->entityQuery.filter.any.data(), sys->entityQuery.filter.any.size() });
 					assert(sys->entityQuery.locator.AccessTypeIDs().empty());
 					if (!sys->changeFilter.types.empty() && !archetype->chunks[i]->HasAnyChange(sys->changeFilter.types, world->Version()))
+						continue;
+					if (chunks[i]->EntityNum() == 0)
 						continue;
 
 					std::size_t indexOffsetInChunk = indexOffsetInQuery + indexOffsetInArchetype;
@@ -608,14 +619,14 @@ CmptAccessPtr EntityMngr::GetSingleton(AccessTypeID access_type) const {
 		num += archetype->EntityNum();
 
 	if (num != 1)
-		return { TypeID{}, nullptr, AccessMode::WRITE };
+		return { access_type, nullptr };
 
 	for (auto* archetype : archetypes) {
 		if (archetype->EntityNum() != 0)
 			return archetype->At(access_type, { 0,0 });
 	}
 
-	return { TypeID{}, nullptr, AccessMode::WRITE };
+	return { access_type, nullptr };
 }
 
 void EntityMngr::NewFrame() noexcept {

@@ -154,18 +154,13 @@ Archetype::EntityAddress Archetype::Create(Entity e) {
 		const auto& trait = cmptTraits.GetTraits()[i];
 		const std::size_t offset = offsets[i];
 		const auto& type = *(cmptTraits.GetTypes().begin() + i);
-		if (type.Is<Entity>()) {
-			constexpr std::size_t size = sizeof(Entity);
-			memcpy(buffer + offset + idxInChunk * size, &e, size);
-		}
-		else {
-			std::uint8_t* dst = buffer + offset + idxInChunk * trait.size;
+		std::uint8_t* dst = buffer + offset + idxInChunk * trait.size;
+		if (type == TypeID_of<Entity>)
+			new(dst)Entity(e);
+		else
 			trait.DefaultConstruct(dst, chunk->GetChunkUnsyncResource());
-		}
 	}
 	chunk->GetHead()->ForceUpdateVersion(world->Version());
-
-	entityNum++;
 
 	return addr;
 }
@@ -200,13 +195,16 @@ Archetype::EntityAddress Archetype::RequestBuffer() {
 	if (chunkhead->num_entity == chunkhead->capacity)
 		nonFullChunks.erase(chunkIdx);
 
+	entityNum++;
+
 	return EntityAddress{ .chunkIdx = chunkIdx, .idxInChunk = idxInChunk };
 }
 
 CmptAccessPtr Archetype::At(AccessTypeID type, EntityAddress addr) const {
 	auto target = cmptTraits.GetTypes().find(type);
 	if (target == cmptTraits.GetTypes().end())
-		return nullptr;
+		return { type, nullptr };
+
 	auto typeIdx = static_cast<std::size_t>(std::distance(cmptTraits.GetTypes().begin(), target));
 	
 	const auto& trait = cmptTraits.GetTraits()[typeIdx];
@@ -300,13 +298,14 @@ std::size_t Archetype::Erase(EntityAddress addr) {
 
 	std::size_t movedEntityIdx = chunk->Erase(addr.idxInChunk);
 
+	entityNum--;
+
 	if (chunk->Empty()) {
 		nonFullChunks.erase(addr.chunkIdx);
 		chunk->~Chunk();
 		world->GetUnsyncResource()->deallocate(chunk, sizeof(Chunk), alignof(Chunk));
+		chunks.erase(std::find(chunks.begin(), chunks.end(), chunk));
 	}
-
-	entityNum--;
 
 	return movedEntityIdx;
 }

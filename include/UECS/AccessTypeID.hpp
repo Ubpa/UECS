@@ -29,6 +29,14 @@ namespace Ubpa::UECS {
 	static constexpr AccessTypeID AccessTypeID_of = { TypeID_of<RemoveTag_t<Cmpt>>, AccessMode_of<Cmpt> };
 
 	using AccessTypeIDSet = small_flat_set<AccessTypeID, 16, std::less<>>;
+
+	template<std::size_t N>
+	class TempAccessTypeIDs : public TempArray<AccessTypeID, N> {
+		using TempArray<AccessTypeID, N>::TempArray;
+	};
+	template<typename... Ts> TempAccessTypeIDs(Ts...)->TempAccessTypeIDs<sizeof...(Ts)>;
+	template<typename... Ts>
+	constexpr auto AccessTypeIDs_of = TempAccessTypeIDs{ AccessTypeID_of<Ts>... };
 }
 
 template<>
