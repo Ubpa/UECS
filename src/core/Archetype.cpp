@@ -300,11 +300,11 @@ std::size_t Archetype::Erase(EntityAddress addr) {
 
 	entityNum--;
 
-	if (chunk->Empty()) {
-		nonFullChunks.erase(addr.chunkIdx);
-		chunk->~Chunk();
-		world->GetUnsyncResource()->deallocate(chunk, sizeof(Chunk), alignof(Chunk));
-		chunks.erase(std::find(chunks.begin(), chunks.end(), chunk));
+	while (!chunks.empty() && chunks.back()->Empty()) {
+		nonFullChunks.erase(chunks.size() - 1);
+		chunks.back()->~Chunk();
+		world->GetUnsyncResource()->deallocate(chunks.back(), sizeof(Chunk), alignof(Chunk));
+		chunks.pop_back();
 	}
 
 	return movedEntityIdx;
