@@ -79,7 +79,7 @@ CmptAccessPtr EntityMngr::GetComponent(Entity e, AccessTypeID type) const {
 }
 
 bool EntityMngr::Exist(Entity e) const noexcept {
-	return e.index < entityTable.size() && e.version == entityTable[e.index].version;
+	return e.index < entityTable.size() && e.version == entityTable[e.index].version && entityTable[e.index].archetype;
 }
 
 std::size_t EntityMngr::RequestEntityFreeEntry() {
