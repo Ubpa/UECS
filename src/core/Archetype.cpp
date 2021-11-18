@@ -15,12 +15,12 @@ Archetype::~Archetype() {
 		const auto& trait = cmptTraits.GetTraits()[i];
 		if (!trait.dtor)
 			continue;
-		for (std::size_t k = 0; k < chunks.size(); k++) {
-			std::size_t num = chunks[k]->EntityNum();
-			std::uint8_t* buffer = chunks[k]->data;
+		for (std::size_t j = 0; j < chunks.size(); j++) {
+			std::size_t num = chunks[j]->EntityNum();
+			std::uint8_t* buffer = chunks[j]->data;
 			std::uint8_t* beg = buffer + offsets[i];
-			for (std::size_t i = 0; i < num; i++) {
-				std::uint8_t* address = beg + i * trait.size;
+			for (std::size_t k = 0; k < num; k++) {
+				std::uint8_t* address = beg + k * trait.size;
 				trait.dtor(address);
 			}
 		}
@@ -241,11 +241,16 @@ Archetype::EntityAddress Archetype::Instantiate(Entity e, EntityAddress src) {
 		const auto& trait = cmptTraits.GetTraits()[i];
 		std::size_t offset = offsets[i];
 
-		std::size_t size = trait.size;
-		std::uint8_t* dst = dstBuffer + offset + dstIdxInChunk * size;
-		std::uint8_t* src = srcBuffer + offset + srcIdxInChunk * size;
+		const auto& type = *(cmptTraits.GetTypes().begin() + i);
 
-		trait.CopyConstruct(dst, src, dstChunk->GetChunkUnsyncResource());
+		std::size_t size = trait.size;
+		std::uint8_t* dstCmpt = dstBuffer + offset + dstIdxInChunk * size;
+		std::uint8_t* srcCmpt = srcBuffer + offset + srcIdxInChunk * size;
+
+		if (type == TypeID_of<Entity>)
+			new(dstCmpt)Entity(e);
+		else
+			trait.CopyConstruct(dstCmpt, srcCmpt, dstChunk->GetChunkUnsyncResource());
 	}
 
 	dstChunk->GetHead()->ForceUpdateVersion(world->Version());
