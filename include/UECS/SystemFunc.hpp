@@ -28,11 +28,11 @@ namespace Ubpa::UECS {
 	// * <tagged-components>: {LastFrame|Write|Latest}<Cmpt>...
 	// * CmptsView
 	// * ChunkView
-	// * CommandBufferView
+	// * CommandBufferPtr
 	// 2. Mode::Chunk
 	// * std::size_t entityBeginIndexInQuery
 	// * ChunkView (necessary)
-	// * CommandBufferView
+	// * CommandBufferPtr
 	// 3. Mode::Job
 	// * Write<Singleton<Cmpt>> (only job can write singletons)
 	class SystemFunc {
@@ -62,27 +62,27 @@ namespace Ubpa::UECS {
 		template<typename Func>
 		SystemFunc(Func&&, std::string_view name, SingletonLocator, RandomAccessor);
 		
-		std::string_view Name() const noexcept { return name; }
+		std::string_view Name() const noexcept;
 
 		static constexpr std::size_t GetValue(std::string_view name) noexcept { return string_hash(name); }
 
-		std::size_t GetValue() const noexcept { return hashCode; }
+		std::size_t GetValue() const noexcept;
 
-		void operator()(World*, SingletonsView, Entity, std::size_t entityIndexInQuery, CmptsView, CommandBufferView) const;
-		void operator()(World*, SingletonsView, std::size_t entityBeginIndexInQuery, ChunkView, CommandBufferView) const;
+		void operator()(World*, SingletonsView, Entity, std::size_t entityIndexInQuery, CmptsView, CommandBufferPtr) const;
+		void operator()(World*, SingletonsView, std::size_t entityBeginIndexInQuery, ChunkView, CommandBufferPtr) const;
 		void operator()(World*, SingletonsView) const;
 
-		Mode GetMode() const noexcept { return mode; }
-		bool IsParallel() const noexcept { return isParallel; }
+		Mode GetMode() const noexcept;
+		bool IsParallel() const noexcept;
 
-		bool operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }
+		bool operator==(const SystemFunc& sysFunc) const noexcept;
 	private:
 		friend class Schedule;
 		Mode mode;
 		std::string_view name;
 		std::size_t hashCode; // after name
 		bool isParallel;
-		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView, CommandBufferView)> func;
+		std::function<void(World*, SingletonsView, Entity, std::size_t, CmptsView, ChunkView, CommandBufferPtr)> func;
 	};
 }
 

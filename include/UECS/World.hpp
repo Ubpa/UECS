@@ -147,15 +147,15 @@ namespace Ubpa::UECS {
 			SingletonLocator = {}
 		) const;
 
-		synchronized_monotonic_buffer_resource* GetSyncFrameResource() { return sync_frame_rsrc.get(); }
-		std::pmr::monotonic_buffer_resource* GetUnsyncFrameResource() { return unsync_frame_rsrc.get(); }
-		std::pmr::synchronized_pool_resource* GetSyncResource() { return sync_rsrc.get(); }
-		std::pmr::unsynchronized_pool_resource* GetUnsyncResource() { return unsync_rsrc.get(); }
+		synchronized_monotonic_buffer_resource* GetSyncFrameResource();
+		std::pmr::monotonic_buffer_resource* GetUnsyncFrameResource();
+		std::pmr::synchronized_pool_resource* GetSyncResource();
+		std::pmr::unsynchronized_pool_resource* GetUnsyncResource();
 
 		template<typename T, typename... Args> T* SyncNewFrameObject(Args&&... args);
 		template<typename T, typename... Args> T* UnsyncNewFrameObject(Args&&... args);
 
-		std::uint64_t Version() const noexcept { return version; }
+		std::uint64_t Version() const noexcept;
 	private:
 		bool inRunningJobGraph{ false };
 

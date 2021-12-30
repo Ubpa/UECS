@@ -2,7 +2,11 @@
 
 using namespace Ubpa::UECS;
 
-void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, std::size_t entityIndexInQuery, CmptsView cmptsView, CommandBufferView cbv) const {
+std::string_view SystemFunc::Name() const noexcept { return name; }
+
+std::size_t SystemFunc::GetValue() const noexcept { return hashCode; }
+
+void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, std::size_t entityIndexInQuery, CmptsView cmptsView, CommandBufferPtr cb) const {
 	assert(mode == Mode::Entity);
 	return func(
 		w,
@@ -11,11 +15,11 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, Entity e, s
 		entityIndexInQuery,
 		cmptsView,
 		{},
-		cbv
+		cb
 	);
 }
 
-void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t entityBeginIndexInQuery, ChunkView chunkView, CommandBufferView cbv) const {
+void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t entityBeginIndexInQuery, ChunkView chunkView, CommandBufferPtr cb) const {
 	assert(mode == Mode::Chunk);
 	return func(
 		w,
@@ -24,7 +28,7 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView, std::size_t
 		entityBeginIndexInQuery,
 		{},
 		chunkView,
-		cbv
+		cb
 	);
 }
 
@@ -40,3 +44,9 @@ void SystemFunc::operator()(World* w, SingletonsView singletonsView) const {
 		{}
 	);
 }
+
+
+SystemFunc::Mode SystemFunc::GetMode() const noexcept { return mode; }
+bool SystemFunc::IsParallel() const noexcept { return isParallel; }
+
+bool SystemFunc::operator==(const SystemFunc& sysFunc) const noexcept { return name == sysFunc.name; }

@@ -21,8 +21,8 @@ namespace Ubpa::UECS {
 	// auto maintain Component's lifecycle ({default|copy|move} constructor, destructor)
 	// [API]
 	// - Entity: Create, Instantiate, Destroy, Exist
-	// - Component: Attach, Emplace, Detach, Have, Get, Components
-	// - Singleton: IsSingleton, GetSingletonEntity, GetSingleton
+	// - Component: Attach, Emplace, Detach, Have, Get, AccessComponents
+	// - Singleton: IsSingleton, GetSingletonEntity, AccessSingleton
 	// - other: EntityNum, AddCommand
 	// [important]
 	// - some API with TypeID need CmptTraits to get {size|alignment|lifecycle function} (throw std::logic_error)
@@ -44,17 +44,17 @@ namespace Ubpa::UECS {
 		bool Have(Entity, TypeID) const;
 
 		// nullptr if not containts TypeID
-		CmptAccessPtr GetComponent(Entity, AccessTypeID) const;
-		CmptAccessPtr WriteComponent(Entity e, TypeID t) const { return GetComponent(e, { t, AccessMode::WRITE }); }
-		CmptAccessPtr ReadComponent(Entity e, TypeID t) const { return GetComponent(e, { t, AccessMode::LATEST }); }
+		CmptAccessPtr AccessComponent(Entity, AccessTypeID) const;
+		CmptAccessPtr WriteComponent(Entity e, TypeID t) const;
+		CmptAccessPtr ReadComponent(Entity e, TypeID t) const;
 		template<typename Cmpt>
 		Cmpt* WriteComponent(Entity e) const { return WriteComponent(e, TypeID_of<Cmpt>).template As<Cmpt, AccessMode::WRITE>(); }
 		template<typename Cmpt>
 		const Cmpt* ReadComponent(Entity e) const { return ReadComponent(e, TypeID_of<Cmpt>).template As<Cmpt, AccessMode::LATEST>(); }
 
-		std::vector<CmptAccessPtr> Components(Entity, AccessMode) const;
-		std::vector<CmptAccessPtr> WriteComponents(Entity e) const { return Components(e, AccessMode::WRITE); }
-		std::vector<CmptAccessPtr> ReadComponents(Entity e) const { return Components(e, AccessMode::LATEST); }
+		std::vector<CmptAccessPtr> AccessComponents(Entity, AccessMode) const;
+		std::vector<CmptAccessPtr> WriteComponents(Entity e) const;
+		std::vector<CmptAccessPtr> ReadComponents(Entity e) const;
 		
 		// chunk + index in chunk
 		std::tuple<Chunk*, std::size_t> GetChunk(Entity e) const;
@@ -63,17 +63,17 @@ namespace Ubpa::UECS {
 
 		void Destroy(Entity);
 
-		std::size_t TotalEntityNum() const noexcept { return entityTable.size() - entityTableFreeEntry.size(); }
+		std::size_t TotalEntityNum() const noexcept;
 		std::size_t EntityNum(const EntityQuery&) const;
 		// use entry in reverse
-		std::span<const std::size_t> GetEntityFreeEntries() const noexcept { return { entityTableFreeEntry.data(), entityTableFreeEntry.size() }; }
-		std::size_t GetEntityVersion(std::size_t idx) const noexcept { return entityTable[idx].version; }
+		std::span<const std::size_t> GetEntityFreeEntries() const noexcept;
+		std::size_t GetEntityVersion(std::size_t idx) const noexcept;
 
 		bool IsSingleton(TypeID) const;
 		Entity GetSingletonEntity(TypeID) const;
-		CmptAccessPtr GetSingleton(AccessTypeID) const;
-		CmptAccessPtr WriteSingleton(TypeID type) const { return GetSingleton({ type, AccessMode::WRITE }); }
-		CmptAccessPtr ReadSingleton(TypeID type) const { return GetSingleton({ type, AccessMode::LATEST }); }
+		CmptAccessPtr AccessSingleton(AccessTypeID) const;
+		CmptAccessPtr WriteSingleton(TypeID type) const;
+		CmptAccessPtr ReadSingleton(TypeID type) const;
 		template<typename Cmpt>
 		Cmpt* WriteSingleton() const { return WriteSingleton(TypeID_of<Cmpt>).template As<Cmpt, AccessMode::WRITE>(); }
 		template<typename Cmpt>

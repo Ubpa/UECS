@@ -27,6 +27,11 @@ std::uint64_t Chunk::GetComponentVersion(TypeID cmptType) const noexcept {
 	return target->version;
 }
 
+std::uint64_t Chunk::GetOrderVersion() const noexcept { return GetHead()->order_version; }
+
+std::size_t Chunk::EntityNum() const noexcept { return GetHead()->num_entity; }
+std::size_t Chunk::ComponentNum() const noexcept { return GetHead()->num_component; }
+
 void* Chunk::GetCmptArray(TypeID cmptType) const noexcept {
 	const auto infos = GetHead()->GetCmptInfos();
 	auto target = std::lower_bound(infos.begin(), infos.end(), cmptType, std::less<>{});
@@ -35,6 +40,11 @@ void* Chunk::GetCmptArray(TypeID cmptType) const noexcept {
 
 	return (std::uint8_t*)data + target->offset;
 }
+
+std::span<Entity> Chunk::GetEntityArray() const noexcept { return GetCmptArray<Entity>(); }
+
+bool Chunk::Full() const noexcept { return GetHead()->capacity == GetHead()->num_entity; }
+bool Chunk::Empty() const noexcept { return GetHead()->num_entity == 0; }
 
 bool Chunk::HasAnyChange(std::span<const TypeID> types, std::uint64_t version) const noexcept {
 	const auto infos = GetHead()->GetCmptInfos();
@@ -93,7 +103,7 @@ std::size_t Chunk::Erase(std::size_t idx) {
 		}
 	}
 
-	head->ForceUpdateVersion(head->archetype->Version());
+	ForceUpdateVersion(head->archetype->Version());
 
 	entityNum--;
 
@@ -143,8 +153,21 @@ std::tuple<Entity*, Ubpa::small_vector<CmptAccessPtr>, Ubpa::small_vector<std::s
 	};
 }
 
-void Chunk::Head::ForceUpdateVersion(std::uint64_t version) {
-	order_version = version;
-	for (auto& info : GetCmptInfos())
+
+std::pmr::unsynchronized_pool_resource* Chunk::GetChunkUnsyncResource() noexcept { return &GetHead()->chunk_unsync_rsrc; }
+std::pmr::monotonic_buffer_resource* Chunk::GetChunkUnsyncFrameResource() noexcept { return (std::pmr::monotonic_buffer_resource*)&GetHead()->chunk_unsync_frame_rsrc; }
+
+std::span<Chunk::Head::CmptInfo> Chunk::Head::GetCmptInfos() noexcept { return { (CmptInfo*)(this + 1), num_component }; }
+std::span<const Chunk::Head::CmptInfo> Chunk::Head::GetCmptInfos() const noexcept { return const_cast<Head*>(this)->GetCmptInfos(); }
+
+void Chunk::ForceUpdateVersion(std::uint64_t version) {
+	Head* const head = GetHead();
+	head->order_version = version;
+	for (auto& info : head->GetCmptInfos())
 		info.version = version;
 }
+
+Chunk::~Chunk() { GetHead()->~Head(); }
+
+Chunk::Head* Chunk::GetHead() noexcept { return reinterpret_cast<Head*>(data); }
+const Chunk::Head* Chunk::GetHead() const noexcept { return reinterpret_cast<const Head*>(data); }

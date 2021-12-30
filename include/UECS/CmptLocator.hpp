@@ -21,9 +21,9 @@ namespace Ubpa::UECS {
 		template<typename Func>
 		CmptLocator& Combine();
 
-		std::size_t GetValue() const noexcept { return hashCode; }
+		std::size_t GetValue() const noexcept;
 
-		const AccessTypeIDSet& AccessTypeIDs() const noexcept { return cmptTypes; }
+		const AccessTypeIDSet& AccessTypeIDs() const noexcept;
 
 		bool operator==(const CmptLocator& rhs) const noexcept;
 

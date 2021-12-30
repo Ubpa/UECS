@@ -59,9 +59,9 @@ namespace Ubpa::UECS {
 		const Cmpt* ReadAt(EntityAddress addr) const { return ReadAt(TypeID_of<Cmpt>, addr).template As<Cmpt, AccessMode::LATEST>(); }
 
 		// no Entity
-		std::vector<CmptAccessPtr> Components(EntityAddress addr, AccessMode mode) const;
-		std::vector<CmptAccessPtr> WriteComponents(EntityAddress addr) const { return Components(addr, AccessMode::WRITE); }
-		std::vector<CmptAccessPtr> ReadComponents(EntityAddress addr) const { return Components(addr, AccessMode::LATEST); }
+		std::vector<CmptAccessPtr> AccessComponents(EntityAddress addr, AccessMode mode) const;
+		std::vector<CmptAccessPtr> WriteComponents(EntityAddress addr) const { return AccessComponents(addr, AccessMode::WRITE); }
+		std::vector<CmptAccessPtr> ReadComponents(EntityAddress addr) const { return AccessComponents(addr, AccessMode::LATEST); }
 
 		// no init
 		EntityAddress RequestBuffer();

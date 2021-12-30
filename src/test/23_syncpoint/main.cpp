@@ -19,9 +19,9 @@ struct MoverSystem {
 			}
 		);
 		schedule.RegisterEntityJob(
-			[](World* w, Entity e, CommandBufferView cbv) {
+			[](World* w, Entity e, CommandBufferPtr cb) {
 				std::cout << "Attach Velocity" << std::endl;
-				cbv->AddCommand([w, e]() {
+				cb->AddCommand([w, e]() {
 					w->entityMngr.Attach(e, TypeIDs_of<Velocity>);
 					w->entityMngr.WriteComponent<Velocity>(e)->val = 1.f;
 				});

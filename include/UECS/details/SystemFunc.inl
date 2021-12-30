@@ -104,8 +104,8 @@ namespace Ubpa::UECS {
 			&& !Contain_v<ArgList, std::size_t>
 			&& !Contain_v<ArgList, CmptsView>
 			&& !Contain_v<ArgList, ChunkView>
-			&& !Contain_v<ArgList, CommandBufferView>,
-			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery CmptsView, ChunkView or CommandBufferView"
+			&& !Contain_v<ArgList, CommandBufferPtr>,
+			"(Mode::Job) SystemFunc's argument list cann't have Entity, indexInQuery CmptsView, ChunkView or CommandBufferPtr"
 		);
 	}
 }
@@ -127,7 +127,7 @@ namespace Ubpa::UECS::details {
 				std::size_t entityIndexInQuery,
 				CmptsView cmpts,
 				ChunkView chunkView,
-				CommandBufferView cbv)
+				CommandBufferPtr cb)
 			{
 				auto args = std::tuple{
 					w,
@@ -136,9 +136,9 @@ namespace Ubpa::UECS::details {
 					e,
 					entityIndexInQuery,
 					cmpts,
-					reinterpret_cast<NonSingletons*>(cmpts.Components()[Find_v<NonSingletonList, NonSingletons>].Ptr())...,
+					reinterpret_cast<NonSingletons*>(cmpts.AccessComponents()[Find_v<NonSingletonList, NonSingletons>].Ptr())...,
 					chunkView,
-					cbv
+					cb
 				};
 				func(std::get<DecayedArgs>(args)...);
 			};

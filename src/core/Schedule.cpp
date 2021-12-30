@@ -57,6 +57,8 @@ Schedule& Schedule::Disable(std::string_view sys, int layer) {
 	return *this;
 }
 
+World* Schedule::GetWorld() const noexcept { return world; }
+
 void Schedule::Clear() {
 	for (auto& [layer, layerinfo] : layerInfos) {
 		//auto alloc = std::pmr::polymorphic_allocator<SystemFunc>{ frame_rsrc.get() };

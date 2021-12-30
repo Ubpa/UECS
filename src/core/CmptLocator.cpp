@@ -20,6 +20,10 @@ CmptLocator::CmptLocator(std::span<const AccessTypeID> types) {
 CmptLocator::CmptLocator()
 	: hashCode{ TypeID_of<CmptLocator>.GetValue() } {}
 
+std::size_t CmptLocator::GetValue() const noexcept { return hashCode; }
+
+const AccessTypeIDSet& CmptLocator::AccessTypeIDs() const noexcept { return cmptTypes; }
+
 void CmptLocator::UpdateGetValue() noexcept {
 	std::size_t rst = TypeID_of<CmptLocator>.GetValue();
 	for (const auto& type : cmptTypes)

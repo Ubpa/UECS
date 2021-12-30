@@ -10,7 +10,7 @@ namespace Ubpa::UECS {
 		SingletonsView(std::span<const CmptAccessPtr> singletons) noexcept
 			: singletons{ singletons } {}
 
-		CmptAccessPtr GetSingleton(AccessTypeID) const noexcept;
+		CmptAccessPtr AccessSingleton(AccessTypeID) const noexcept;
 		std::span<const CmptAccessPtr> Singletons() const noexcept { return singletons; }
 	private:
 		std::span<const CmptAccessPtr> singletons;

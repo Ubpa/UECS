@@ -35,8 +35,8 @@ namespace Ubpa::UECS {
 			"const RunEntityJob should use const World*");
 		static_assert(Length_v<Filter_t<ArgList, IsWrite>> == 0,
 			"const RunEntityJob can't write cmpt");
-		static_assert(!Contain_v<ArgList, CommandBufferView>,
-			"const RunEntityJob shouldn't use CommandBufferView");
+		static_assert(!Contain_v<ArgList, CommandBufferPtr>,
+			"const RunEntityJob shouldn't use CommandBufferPtr");
 		assert("const RunEntityJob can't write cmpt"
 			&& !cmptLocator.HasWriteTypeID());
 
@@ -78,8 +78,8 @@ namespace Ubpa::UECS {
 		using ArgList = FuncTraits_ArgList<Func>;
 		static_assert(!Contain_v<ArgList, World*>,
 			"const RunChunkJob should use const World*");
-		static_assert(!Contain_v<ArgList, CommandBufferView>,
-			"const RunChunkJob shouldn't use CommandBufferView");
+		static_assert(!Contain_v<ArgList, CommandBufferPtr>,
+			"const RunChunkJob shouldn't use CommandBufferPtr");
 		assert("const RunChunkJob can't write cmpt"
 			&& !filter.HaveWriteTypeID());
 

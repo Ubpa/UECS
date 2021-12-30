@@ -71,12 +71,15 @@ bool EntityMngr::Have(Entity e, TypeID type) const {
 	return entityTable[e.index].archetype->GetCmptTraits().GetTypes().contains(type);
 }
 
-CmptAccessPtr EntityMngr::GetComponent(Entity e, AccessTypeID type) const {
+CmptAccessPtr EntityMngr::AccessComponent(Entity e, AccessTypeID type) const {
 	assert(!type.Is<Entity>());
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 	const auto& info = entityTable[e.index];
 	return info.archetype->At(type, { info.chunkIdx, info.idxInChunk });
 }
+
+CmptAccessPtr EntityMngr::WriteComponent(Entity e, TypeID t) const { return AccessComponent(e, { t, AccessMode::WRITE }); }
+CmptAccessPtr EntityMngr::ReadComponent(Entity e, TypeID t) const { return AccessComponent(e, { t, AccessMode::LATEST }); }
 
 bool EntityMngr::Exist(Entity e) const noexcept {
 	return e.index < entityTable.size() && e.version == entityTable[e.index].version && entityTable[e.index].archetype;
@@ -260,12 +263,15 @@ void EntityMngr::Detach(Entity e, std::span<const TypeID> types) {
 		ts2a.emplace(std::move(dstTypeIDSet), std::unique_ptr<Archetype>{dstArchetype});
 }
 
-vector<CmptAccessPtr> EntityMngr::Components(Entity e, AccessMode mode) const {
+vector<CmptAccessPtr> EntityMngr::AccessComponents(Entity e, AccessMode mode) const {
 	if (!Exist(e)) throw std::invalid_argument("Entity is invalid");
 
 	const auto& info = entityTable[e.index];
-	return info.archetype->Components({info.chunkIdx, info.idxInChunk}, mode);
+	return info.archetype->AccessComponents({info.chunkIdx, info.idxInChunk}, mode);
 }
+
+std::vector<CmptAccessPtr> EntityMngr::WriteComponents(Entity e) const { return AccessComponents(e, AccessMode::WRITE); }
+std::vector<CmptAccessPtr> EntityMngr::ReadComponents(Entity e) const { return AccessComponents(e, AccessMode::LATEST); }
 
 Entity EntityMngr::Instantiate(Entity srcEntity) {
 	if (!Exist(srcEntity)) throw std::invalid_argument("Entity is invalid");
@@ -331,12 +337,20 @@ void EntityMngr::Destroy(Entity e) {
 	RecycleEntityEntry(e);
 }
 
+std::size_t EntityMngr::TotalEntityNum() const noexcept
+{ return entityTable.size() - entityTableFreeEntry.size(); }
+
+std::span<const std::size_t> EntityMngr::GetEntityFreeEntries() const noexcept
+{ return { entityTableFreeEntry.data(), entityTableFreeEntry.size() }; }
+
+std::size_t EntityMngr::GetEntityVersion(std::size_t idx) const noexcept { return entityTable[idx].version; }
+
 Ubpa::small_vector<CmptAccessPtr> EntityMngr::LocateSingletons(const SingletonLocator& locator) const {
 	std::size_t numSingletons = 0;
 	small_vector<CmptAccessPtr> rst;
 	rst.reserve(locator.SingletonTypes().size());
 	for (const auto& t : locator.SingletonTypes()) {
-		auto ptr = GetSingleton(t);
+		auto ptr = AccessSingleton(t);
 		if (ptr.Ptr() == nullptr)
 			return {};
 		rst.push_back(ptr);
@@ -576,7 +590,7 @@ void EntityMngr::Accept(IListener* listener) const {
 			for (std::size_t j = 0; j < a->GetChunks()[i]->EntityNum(); j++) {
 				auto e = *a->ReadAt<Entity>({ i,j });
 				listener->EnterEntity(e);
-				for (const auto& cmpt : a->Components({ i,j }, AccessMode::WRITE)) {
+				for (const auto& cmpt : a->AccessComponents({ i,j }, AccessMode::WRITE)) {
 					listener->EnterCmpt({ cmpt.AccessType(), cmpt.Ptr() });
 					listener->ExistCmpt({ cmpt.AccessType(), cmpt.Ptr() });
 				}
@@ -609,7 +623,7 @@ Entity EntityMngr::GetSingletonEntity(TypeID t) const {
 	return *archetype->ReadAt<Entity>({ 0,0 });
 }
 
-CmptAccessPtr EntityMngr::GetSingleton(AccessTypeID access_type) const {
+CmptAccessPtr EntityMngr::AccessSingleton(AccessTypeID access_type) const {
 	ArchetypeFilter filter{ {access_type}, {}, {} };
 	EntityQuery query{ move(filter) };
 	const auto& archetypes = QueryArchetypes(query);
@@ -628,6 +642,9 @@ CmptAccessPtr EntityMngr::GetSingleton(AccessTypeID access_type) const {
 
 	return { access_type, nullptr };
 }
+
+CmptAccessPtr EntityMngr::WriteSingleton(TypeID type) const { return AccessSingleton({ type, AccessMode::WRITE }); }
+CmptAccessPtr EntityMngr::ReadSingleton(TypeID type) const { return AccessSingleton({ type, AccessMode::LATEST }); }
 
 void EntityMngr::NewFrame() noexcept {
 	for (auto& [ts, a] : ts2a)

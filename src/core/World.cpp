@@ -373,6 +373,13 @@ void World::Accept(IListener* listener) const {
 	listener->ExistWorld(this);
 }
 
+synchronized_monotonic_buffer_resource* World::GetSyncFrameResource() { return sync_frame_rsrc.get(); }
+std::pmr::monotonic_buffer_resource* World::GetUnsyncFrameResource() { return unsync_frame_rsrc.get(); }
+std::pmr::synchronized_pool_resource* World::GetSyncResource() { return sync_rsrc.get(); }
+std::pmr::unsynchronized_pool_resource* World::GetUnsyncResource() { return unsync_rsrc.get(); }
+
+std::uint64_t World::Version() const noexcept { return version; }
+
 void World::AddCommand(std::function<void()> command, int layer) {
 	std::lock_guard<std::mutex> guard(commandBufferMutex);
 	lcommandBuffer[layer].AddCommand(command);

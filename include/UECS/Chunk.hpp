@@ -18,10 +18,10 @@ namespace Ubpa::UECS {
 		bool DidOrderChange(std::size_t version) const noexcept;
 
 		std::uint64_t GetComponentVersion(TypeID cmptType) const noexcept;
-		std::uint64_t GetOrderVersion() const noexcept { return GetHead()->order_version; }
+		std::uint64_t GetOrderVersion() const noexcept;
 
-		std::size_t EntityNum() const noexcept { return GetHead()->num_entity; }
-		std::size_t ComponentNum() const noexcept { return GetHead()->num_component; }
+		std::size_t EntityNum() const noexcept;
+		std::size_t ComponentNum() const noexcept;
 
 		// if not contains the component, return nullptr
 		void* GetCmptArray(TypeID cmptType) const noexcept;
@@ -34,10 +34,10 @@ namespace Ubpa::UECS {
 			else return {};
 		}
 
-		std::span<Entity> GetEntityArray() const noexcept { return GetCmptArray<Entity>(); }
+		std::span<Entity> GetEntityArray() const noexcept;
 
-		bool Full() const noexcept { return GetHead()->capacity == GetHead()->num_entity; }
-		bool Empty() const noexcept { return GetHead()->num_entity == 0; }
+		bool Full() const noexcept;
+		bool Empty() const noexcept;
 
 		bool HasAnyChange(std::span<const TypeID> types, std::uint64_t version) const noexcept;
 
@@ -46,10 +46,11 @@ namespace Ubpa::UECS {
 		// ApplyChanges
 		std::tuple<Entity*, small_vector<CmptAccessPtr>, small_vector<std::size_t>> Locate(std::span<const AccessTypeID> types);
 
-		std::pmr::unsynchronized_pool_resource* GetChunkUnsyncResource() noexcept { return &GetHead()->chunk_unsync_rsrc; }
-		std::pmr::monotonic_buffer_resource* GetChunkUnsyncFrameResource() noexcept { return (std::pmr::monotonic_buffer_resource*)&GetHead()->chunk_unsync_frame_rsrc; }
+		std::pmr::unsynchronized_pool_resource* GetChunkUnsyncResource() noexcept;
+		std::pmr::monotonic_buffer_resource* GetChunkUnsyncFrameResource() noexcept;
 
-		template<typename T, typename... Args> T* ChunkUnsyncNewFrameObject(Args&&... args) {
+		template<typename T, typename... Args>
+		T* ChunkUnsyncNewFrameObject(Args&&... args) {
 			auto rsrc = GetChunkUnsyncFrameResource();
 			auto obj = (T*)rsrc->allocate(sizeof(T), alignof(T));
 			std::pmr::polymorphic_allocator{ rsrc }.construct(obj, std::forward<Args>(args)...);
@@ -79,19 +80,19 @@ namespace Ubpa::UECS {
 			static_assert(sizeof(CmptInfo) == 24);
 
 			// sorted by ID
-			std::span<CmptInfo> GetCmptInfos() noexcept { return { (CmptInfo*)(this + 1), num_component }; }
-			std::span<const CmptInfo> GetCmptInfos() const noexcept { return const_cast<Head*>(this)->GetCmptInfos(); }
-
-			void ForceUpdateVersion(std::uint64_t version);
+			std::span<CmptInfo> GetCmptInfos() noexcept;
+			std::span<const CmptInfo> GetCmptInfos() const noexcept;
 		};
 
 		Chunk() noexcept = default;
-		~Chunk() { GetHead()->~Head(); }
+		~Chunk();
 
-		Head* GetHead() noexcept { return reinterpret_cast<Head*>(data); }
-		const Head* GetHead() const noexcept { return reinterpret_cast<const Head*>(data); }
+		Head* GetHead() noexcept;
+		const Head* GetHead() const noexcept;
 
 		std::size_t Erase(std::size_t idx);
+
+		void ForceUpdateVersion(std::uint64_t version);
 
 		static_assert(ChunkSize > sizeof(Head));
 		std::uint8_t data[ChunkSize];

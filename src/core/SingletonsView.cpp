@@ -2,7 +2,7 @@
 
 using namespace Ubpa::UECS;
 
-CmptAccessPtr SingletonsView::GetSingleton(AccessTypeID t) const noexcept {
+CmptAccessPtr SingletonsView::AccessSingleton(AccessTypeID t) const noexcept {
 	for (const auto& singleton : singletons) {
 		if (singleton.AccessType() == t)
 			return singleton;

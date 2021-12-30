@@ -118,7 +118,7 @@ namespace Ubpa::UECS {
 		Schedule& AddNone(std::string_view sys, TypeID, int layer = 0);
 		Schedule& Disable(std::string_view sys, int layer = 0);
 
-		World* GetWorld() const noexcept { return world; }
+		World* GetWorld() const noexcept;
 
 		std::string_view RegisterFrameString(std::string_view str);
 		

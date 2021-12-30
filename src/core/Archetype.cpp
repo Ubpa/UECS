@@ -45,7 +45,7 @@ Archetype::Archetype(const Archetype& src, World* world) : world{ world } {
 		std::memcpy(dstChunk, srcChunk, sizeof(Chunk::Head) + sizeof(Chunk::Head::CmptInfo) * cmptTraits.GetTypes().size());
 		new(&dstChunk->GetHead()->chunk_unsync_rsrc)std::pmr::unsynchronized_pool_resource(world->GetSyncResource());
 		new(&dstChunk->GetHead()->chunk_unsync_frame_rsrc)std::pmr::monotonic_buffer_resource(world->GetSyncFrameResource());
-		dstChunk->GetHead()->ForceUpdateVersion(world->Version());
+		dstChunk->ForceUpdateVersion(world->Version());
 		dstChunk->GetHead()->archetype = this;
 		std::size_t num = srcChunk->EntityNum();
 		for (std::size_t j = 0; j < cmptTraits.GetTraits().size(); j++) {
@@ -160,7 +160,7 @@ Archetype::EntityAddress Archetype::Create(Entity e) {
 		else
 			trait.DefaultConstruct(dst, chunk->GetChunkUnsyncResource());
 	}
-	chunk->GetHead()->ForceUpdateVersion(world->Version());
+	chunk->ForceUpdateVersion(world->Version());
 
 	return addr;
 }
@@ -179,7 +179,7 @@ Archetype::EntityAddress Archetype::RequestBuffer() {
 			info.ID = cmptTraits.GetTypes().data()[i];
 			info.offset = offsets[i];
 		}
-		chunk->GetHead()->ForceUpdateVersion(world->Version());
+		chunk->ForceUpdateVersion(world->Version());
 		new(&chunk->GetHead()->chunk_unsync_rsrc)std::pmr::unsynchronized_pool_resource(world->GetSyncResource());
 		new(&chunk->GetHead()->chunk_unsync_frame_rsrc)std::pmr::monotonic_buffer_resource(world->GetSyncFrameResource());
 
@@ -253,7 +253,7 @@ Archetype::EntityAddress Archetype::Instantiate(Entity e, EntityAddress src) {
 			trait.CopyConstruct(dstCmpt, srcCmpt, dstChunk->GetChunkUnsyncResource());
 	}
 
-	dstChunk->GetHead()->ForceUpdateVersion(world->Version());
+	dstChunk->ForceUpdateVersion(world->Version());
 
 	entityNum++;
 
@@ -315,7 +315,7 @@ std::size_t Archetype::Erase(EntityAddress addr) {
 	return movedEntityIdx;
 }
 
-vector<CmptAccessPtr> Archetype::Components(EntityAddress addr, AccessMode mode) const {
+vector<CmptAccessPtr> Archetype::AccessComponents(EntityAddress addr, AccessMode mode) const {
 	vector<CmptAccessPtr> rst;
 
 	for (const auto& type : cmptTraits.GetTypes()) {
