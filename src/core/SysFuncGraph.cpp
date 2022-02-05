@@ -6,6 +6,8 @@
 
 #include <cassert>
 
+#include <USmallFlat/small_vector.hpp>
+
 using namespace Ubpa::UECS;
 using namespace std;
 

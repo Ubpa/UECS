@@ -5,4 +5,4 @@ Ubpa_AddTarget(
   LIB
     Ubpa::UECS_core
 )
-target_precompile_headers(${tname} REUSE_FROM UECS_core)
+

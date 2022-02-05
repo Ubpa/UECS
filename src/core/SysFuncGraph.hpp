@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <vector>
 #include <memory_resource>
+#include <span>
 
 namespace Ubpa::UECS {
 	class SystemFunc;

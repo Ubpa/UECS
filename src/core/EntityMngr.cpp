@@ -2,9 +2,8 @@
 
 #include "Archetype.hpp"
 
-#include <UECS/SystemFunc.hpp>
 #include <UECS/IListener.hpp>
-#include <UECS/CommandBuffer.hpp>
+#include <UECS/World.hpp>
 
 using namespace Ubpa::UECS;
 using namespace std;

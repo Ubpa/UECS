@@ -2,6 +2,8 @@
 
 #include "SysFuncGraph.hpp"
 
+#include <UECS/World.hpp>
+
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 using namespace std;

@@ -1,5 +1,7 @@
 #include <UECS/CmptTraits.hpp>
 
+#include <UECS/Entity.hpp>
+
 using namespace Ubpa;
 using namespace Ubpa::UECS;
 

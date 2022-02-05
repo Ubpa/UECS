@@ -16,6 +16,7 @@ namespace Ubpa::UECS {
 	class IListener;
 	class Archetype;
 	class synchronized_monotonic_buffer_resource;
+	class Chunk;
 
 	// Entity Manager of World
 	// auto maintain Component's lifecycle ({default|copy|move} constructor, destructor)
